@@ -1,0 +1,54 @@
+/* src/App.css */
+body {
+    background-color: #e6f7ff;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden; /* Importante: esconde a barra de rolagem do body */
+}
+
+.game-screen {
+    position: relative;
+    width: 90%;
+    max-width: 1000px;
+    height: 300px;
+    border: 5px solid #0d47a1;
+    overflow: hidden; /* Importante: esconde o scroll do mundo */
+    background-color: #a0e0a0; /* Representa o solo/ambiente */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.hud {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 100;
+    font-weight: bold;
+}
+
+.world {
+    position: relative;
+    width: 2000px; /* Largura estendida para caber mais obstáculos */
+    height: 100%;
+    border-bottom: 2px solid #555; /* Linha do "chão" */
+    transition: transform 0.1s linear; /* Transição suave para o side-scroll */
+}
+
+.obstacle {
+    position: absolute;
+    bottom: 50px; 
+    width: 40px;
+    height: 40px;
+    font-size: 30px;
+    text-align: center;
+    line-height: 40px;
+    color: #cc0000;
+    z-index: 5;
+}
