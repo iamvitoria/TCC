@@ -121,26 +121,37 @@ function App() {
     // =================================================================
     // FUNÇÕES DO MODAL (APÓS RESPOSTA)
     // =================================================================
+    // No src/App.jsx
+
     const handleAnswer = (isCorrect) => {
         if (isCorrect) {
             setGameScore(prev => prev + 100);
-            setGameMessage(`🎉 Resposta Correta! +100 Pontos. `);
+            setGameMessage(`🎉 Resposta Correta! +100 Pontos.`);
             
-            // Encontra e marca o desafio como resolvido
+            // Marca como resolvido para não travar mais
             const challengeIndex = CHALLENGES.findIndex(c => c.id === activeChallenge.id);
             if(challengeIndex !== -1) {
                 CHALLENGES[challengeIndex].resolved = true;
             }
         } else {
-            setGameMessage("❌ Resposta Incorreta. Tente novamente no próximo ciclo.");
-            setGameScore(prev => Math.max(0, prev - 50)); 
+            setGameMessage("❌ Resposta Incorreta. Você foi empurrado para trás!");
+            setGameScore(prev => Math.max(0, prev - 50));
+            
+            // --- A MÁGICA AQUI ---
+            // Empurra o jogador 100px para trás para sair da colisão
+            setScrollOffset(prev => Math.max(0, prev - 100)); 
         }
         setActiveChallenge(null); 
     };
 
     const handleCloseModal = () => {
-        setGameMessage("Pulo liberado. Penalidade de 20 pontos por fugir do desafio.");
-        setGameScore(prev => Math.max(0, prev - 20)); 
+        setGameMessage("Você fugiu do desafio e recuou.");
+        setGameScore(prev => Math.max(0, prev - 20));
+        
+        // --- A MÁGICA AQUI TAMBÉM ---
+        // Empurra para trás ao fechar
+        setScrollOffset(prev => Math.max(0, prev - 100)); 
+        
         setActiveChallenge(null);
     };
 
@@ -160,28 +171,29 @@ function App() {
                 <p>Pontuação: {gameScore}</p>
             </div>
             
+            {/* O MUNDO (Cenário e Obstáculos) */}
             <div 
                 className="world"
-                // Aplica o offset para mover o cenário para a esquerda (side-scrolling)
                 style={{ transform: `translateX(-${scrollOffset}px)` }} 
             >
-                {/* O jogador permanece em uma posição fixa na tela */}
-                <Player position={PLAYER_FIXED_X} isJumping={isJumping} /> 
-
+                {/* O PLAYER NÃO PODE FICAR AQUI DENTRO! */}
+                
                 {/* Marcadores de Desafio (Obstáculos Visuais) */}
                 {CHALLENGES.map(c => (
                     <div 
                         key={c.id} 
                         className={`obstacle ${c.resolved ? 'resolved' : ''}`} 
-                        // O obstáculo é renderizado na sua posição REAL no mundo
                         style={{ left: `${c.position}px` }} 
                         title={`Obstáculo: ${c.type}`}
                     >
                         {c.resolved ? '✅' : c.icon}
                     </div>
                 ))}
-                
             </div>
+
+            {/* --- A CORREÇÃO: O Player fica FORA do world --- */}
+            {/* Assim ele fica fixo na tela (200px) enquanto o mundo roda por trás */}
+            <Player position={PLAYER_FIXED_X} isJumping={isJumping} /> 
 
             <ChallengeModal 
                 challenge={activeChallenge} 

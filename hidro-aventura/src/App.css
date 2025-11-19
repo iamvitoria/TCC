@@ -31,15 +31,25 @@
     transition: transform 0.1s linear; /* Deixa o movimento suave */
 }
 
-/* Decorar o chão com uma linha de grama (opcional, mas fica bonito) */
+/* src/App.css */
+
+/* Isso cria as listras na grama para você ver que está andando */
 .world::after {
     content: '';
     position: absolute;
-    top: 85%; /* Exatamente na linha do chão */
+    top: 85%; 
     left: 0;
     width: 100%;
-    height: 10px;
-    background-color: #4CAF50; /* Grama verde */
+    height: 20px; 
+    z-index: 5;
+    background: repeating-linear-gradient(
+        90deg,
+        #4CAF50,
+        #4CAF50 40px,
+        #2E7D32 40px,
+        #2E7D32 80px
+    );
+    border-top: 5px solid #1b5e20;
 }
 
 /* 3. HUD (Placar e Mensagens) */
@@ -80,4 +90,11 @@
 .obstacle.resolved {
     opacity: 0.5; /* Fica meio transparente */
     filter: grayscale(100%); /* Fica preto e branco */
+}
+
+/* Animação para a gota flutuar levemente quando parada */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
 }
