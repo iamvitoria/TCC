@@ -1,21 +1,16 @@
-// src/Player.jsx
 import React from 'react';
-import './Player.css';
 
 const Player = ({ position, isJumping }) => {
-    // Estilo que mantém o jogador na posição fixa (PLAYER_FIXED_X) na tela
-    const playerStyle = {
-        left: `${position}px`,
+    const style = {
+        position: 'absolute',
+        left: `${position}px`, // Posição horizontal fixa na tela
+        bottom: isJumping ? '200px' : '15%', // 15% é a altura do chão
+        fontSize: '50px',
+        transition: 'bottom 0.3s ease-out', // Animação do pulo
+        zIndex: 10
     };
 
-    return (
-        <div 
-            className={`player ${isJumping ? 'jumping' : ''}`} 
-            style={playerStyle}
-        >
-            💧
-        </div>
-    );
+    return <div style={style}>💧</div>;
 };
 
 export default Player;

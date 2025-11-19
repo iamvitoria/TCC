@@ -1,54 +1,83 @@
-/* src/App.css */
-body {
-    background-color: #e6f7ff;
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    overflow: hidden; /* Importante: esconde a barra de rolagem do body */
-}
+/* Importando a fonte pixelada (igual da Home) */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
+/* 1. A TELA DO JOGO (O Contêiner Principal) */
 .game-screen {
     position: relative;
-    width: 90%;
-    max-width: 1000px;
-    height: 300px;
-    border: 5px solid #0d47a1;
-    overflow: hidden; /* Importante: esconde o scroll do mundo */
-    background-color: #a0e0a0; /* Representa o solo/ambiente */
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 900px; /* Mesmo tamanho da Home */
+    height: 550px;    /* Mesmo tamanho da Home */
+    margin: 0 auto;   /* Centraliza na tela */
+    overflow: hidden; /* Esconde o que está fora da tela (side-scrolling) */
+    border: 8px solid #333;
+    background-color: #a0e0ff; /* Cor do céu caso o fundo falhe */
+    font-family: 'Press Start 2P', cursive; /* Fonte do jogo */
 }
 
+/* 2. O MUNDO (A parte que se move) */
+.world {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 10000px; /* Largura gigante para caber a fase inteira */
+    /* O Gradiente cria o CÉU e o CHÃO automaticamente */
+    background: linear-gradient(to bottom, 
+        #a0e0ff 0%, 
+        #a0e0ff 85%,  /* Céu vai até 85% da altura */
+        #8B4513 85%,  /* Chão começa em 85% */
+        #8B4513 100%
+    );
+    transition: transform 0.1s linear; /* Deixa o movimento suave */
+}
+
+/* Decorar o chão com uma linha de grama (opcional, mas fica bonito) */
+.world::after {
+    content: '';
+    position: absolute;
+    top: 85%; /* Exatamente na linha do chão */
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background-color: #4CAF50; /* Grama verde */
+}
+
+/* 3. HUD (Placar e Mensagens) */
 .hud {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 10px;
-    border-radius: 5px;
-    z-index: 100;
-    font-weight: bold;
+    top: 20px;
+    left: 20px;
+    width: auto;
+    max-width: 80%;
+    background: rgba(0, 0, 0, 0.7); /* Preto transparente */
+    color: #fff;
+    padding: 15px;
+    border: 4px solid #fff;
+    border-radius: 8px;
+    z-index: 100; /* Garante que fique EM CIMA de tudo */
+    font-size: 12px;
+    line-height: 1.5;
+    box-shadow: 4px 4px 0px #000;
 }
 
-.world {
-    position: relative;
-    width: 2000px; /* Largura estendida para caber mais obstáculos */
-    height: 100%;
-    border-bottom: 2px solid #555; /* Linha do "chão" */
-    transition: transform 0.1s linear; /* Transição suave para o side-scroll */
+.hud p {
+    margin: 5px 0;
 }
 
+/* 4. OBSTÁCULOS (Árvores, Prédios, etc) */
 .obstacle {
     position: absolute;
-    bottom: 50px; 
-    width: 40px;
-    height: 40px;
-    font-size: 30px;
-    text-align: center;
-    line-height: 40px;
-    color: #cc0000;
-    z-index: 5;
+    bottom: 15%; /* Fica apoiado no chão (85% é chão, 15% é a base) */
+    font-size: 60px; /* Tamanho dos ícones */
+    transform: translateY(10px); /* Pequeno ajuste fino para encostar no chão */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+/* Se o obstáculo já foi resolvido (check verde) */
+.obstacle.resolved {
+    opacity: 0.5; /* Fica meio transparente */
+    filter: grayscale(100%); /* Fica preto e branco */
 }
