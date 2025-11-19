@@ -2,17 +2,32 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); /* Fonte pixel-art */
 
+/* src/Home.css */
+
 .home-screen {
     position: relative;
-    width: 80%;       /* Ocupa 80% da largura do contêiner pai */
-    max-width: 900px; /* Limite máximo */
-    height: 550px;    /* Altura ajustada */
+    /* MUDANÇA AQUI: */
+    width: 100%;           /* Tenta ocupar o espaço disponível */
+    max-width: 900px;      /* Limite máximo (Desktop) */
+    min-width: 600px;      /* IMPORTANTE: impede que fique aquela tira fina */
+    height: 550px;         
+    
     overflow: hidden;
-    margin: 50px auto;
+    /* Removemos o 'margin: 50px auto' pois o flexbox do passo 1 já vai centralizar */
     border: 8px solid #333;
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    background: 
-        linear-gradient(to bottom, #a0e0ff 0%, #a0e0ff 70%, #82d47e 70%, #82d47e 100%); /* Céu azul e grama verde */
+    
+    /* Seu background original */
+    background: linear-gradient(to bottom, #a0e0ff 0%, #a0e0ff 70%, #82d47e 70%, #82d47e 100%);
+}
+
+/* Responsividade: Se a tela for muito pequena (celular), ajustamos a largura */
+@media (max-width: 650px) {
+    .home-screen {
+        min-width: 95vw; /* Ocupa 95% da largura da tela do celular */
+        height: 80vh;    /* Ajusta altura para celular */
+        border-width: 4px;
+    }
 }
 
 /* Camada de Nuvens (simulada com gradiente) */
