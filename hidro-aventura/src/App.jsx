@@ -35,9 +35,9 @@ const CHALLENGES = [
         resolved: false
     },
     { id: 5, position: 1700, type: 'Vitória!', icon: '🏁',
-        question: "Parabéns! Você concluiu a fase! Clique em fechar para ver seu resultado final.", 
-        options: ["Fechar"],
-        correctAnswer: "Fechar",
+        question: "Parabéns! Você concluiu a fase! Clique abaixo para encerrar.", 
+        options: ["Finalizar"],       // MUDOU DE "Fechar" PARA "Finalizar"
+        correctAnswer: "Finalizar",   // TEM QUE MUDAR AQUI TAMBÉM
         resolved: false
     },
 ];
@@ -125,10 +125,17 @@ function App() {
 
     const handleAnswer = (isCorrect) => {
         if (isCorrect) {
+            // Verifica se é o desafio final
+            if (activeChallenge.type === 'Vitória!') {
+                alert(`PARABÉNS! VOCÊ VENCEU!\n\nSua Pontuação Final: ${gameScore + 100}`);
+                window.location.reload(); // Reinicia o jogo
+                return;
+            }
+
             setGameScore(prev => prev + 100);
             setGameMessage(`🎉 Resposta Correta! +100 Pontos.`);
             
-            // Marca como resolvido para não travar mais
+            // Marca como resolvido
             const challengeIndex = CHALLENGES.findIndex(c => c.id === activeChallenge.id);
             if(challengeIndex !== -1) {
                 CHALLENGES[challengeIndex].resolved = true;
@@ -136,9 +143,6 @@ function App() {
         } else {
             setGameMessage("❌ Resposta Incorreta. Você foi empurrado para trás!");
             setGameScore(prev => Math.max(0, prev - 50));
-            
-            // --- A MÁGICA AQUI ---
-            // Empurra o jogador 100px para trás para sair da colisão
             setScrollOffset(prev => Math.max(0, prev - 100)); 
         }
         setActiveChallenge(null); 
