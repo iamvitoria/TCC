@@ -1,12 +1,11 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
-  Home, 
-  MapPin, 
-  Camera, 
-  Trophy, 
-  User, 
-  LogIn 
+  Heart,      
+  Star,       
+  Camera,     
+  ThumbsUp,   
+  User        
 } from "lucide-react";
 import "./Navbar.css";
 
@@ -14,54 +13,51 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Simulação de login (pode substituir pelo seu Context depois)
-  const isLoggedIn = true; 
-
-  // Função para verificar se o ícone está ativo (muda a opacidade)
   const isActive = (path) => location.pathname === path;
 
   return (
     <div className="navbar-container">
       <nav className="navbar-content">
         
-        {/* 1. HOME */}
+        {/* 1. CORAÇÃO */}
         <button
-          className={`nav-btn ${isActive("/home") ? "active" : ""}`}
+          className={`nav-btn ${isActive("/favoritos") ? "active" : ""}`}
+          onClick={() => navigate("/favoritos")}
+        >
+          <Heart size={24} />
+        </button>
+
+        {/* 2. ESTRELA */}
+        <button
+          className={`nav-btn ${isActive("/destaques") ? "active" : ""}`}
+          onClick={() => navigate("/destaques")}
+        >
+          <Star size={24} />
+        </button>
+
+        {/* 3. CÂMERA (AGORA É A HOME) */}
+        <button
+          // Adiciona classe extra se estiver na Home para destacar
+          className={`nav-btn camera-btn ${isActive("/home") ? "camera-active" : ""}`}
           onClick={() => navigate("/home")}
-        >
-          <Home size={24} />
-        </button>
-
-        {/* 2. MAPA / PONTOS */}
-        <button
-          className={`nav-btn ${isActive("/mapa") ? "active" : ""}`}
-          onClick={() => navigate("/mapa")} // Você pode criar essa rota depois
-        >
-          <MapPin size={24} />
-        </button>
-
-        {/* 3. CÂMERA (CENTRAL) */}
-        <button
-          className="nav-btn camera-btn"
-          onClick={() => navigate("/camera")} // Rota da câmera (futura)
         >
           <Camera size={28} />
         </button>
 
-        {/* 4. CONQUISTAS */}
+        {/* 4. LIKE */}
         <button
-          className={`nav-btn ${isActive("/conquistas") ? "active" : ""}`}
-          onClick={() => navigate("/conquistas")}
+          className={`nav-btn ${isActive("/curtidas") ? "active" : ""}`}
+          onClick={() => navigate("/curtidas")}
         >
-          <Trophy size={24} />
+          <ThumbsUp size={24} />
         </button>
 
-        {/* 5. PERFIL / LOGIN */}
+        {/* 5. PERFIL */}
         <button
           className={`nav-btn ${isActive("/perfil") ? "active" : ""}`}
-          onClick={() => navigate(isLoggedIn ? "/perfil" : "/login")}
+          onClick={() => navigate("/perfil")}
         >
-          {isLoggedIn ? <User size={24} /> : <LogIn size={24} />}
+          <User size={24} />
         </button>
 
       </nav>

@@ -1,15 +1,23 @@
 import React from "react";
 import picture from "../assets/picture.png"; 
-import Navbar from "../components/Navbar/Navbar"; // Importe a Navbar nova
+import Navbar from "../components/Navbar/Navbar";
+import { Header } from "../components/Header/Header"; 
 
 const Home = () => {
   return (
-    <div className="prototype-container">
-      {/* Imagem do Protótipo no Centro */}
-      <img src={picture} alt="Protótipo Home" className="prototype-image" />
+    <div className="full-screen-layout">
       
-      {/* Navbar Flutuante por cima de tudo */}
+      {/* 1. A IMAGEM DE FUNDO (Background) */}
+      <img src={picture} alt="Fundo" className="bg-image" />
+
+      {/* 2. HEADER (Fica por cima da imagem) */}
+      <div className="overlay-header">
+        <Header title="EcoMonitor" showBack={false} />
+      </div>
+
+      {/* 3. NAVBAR (Fica por cima da imagem) */}
       <Navbar />
+      
     </div>
   );
 };

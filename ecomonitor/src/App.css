@@ -1,16 +1,18 @@
 /* src/App.css */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
+/* --- 1. RESET GLOBAL --- */
 html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
-  background-color: #294C25;
-  overflow: hidden; /* Evita barras de rolagem se a imagem couber */
+  background-color: #294C25; /* Verde Fundo */
+  font-family: 'Roboto', sans-serif;
+  overflow: hidden; /* Evita rolagem na página inteira */
 }
 
-/* CONTAINER CENTRALIZADOR */
+/* --- 2. ESTILOS DE LOGIN E CADASTRO --- */
 .mobile-container {
   width: 100%;
   height: 100vh;
@@ -22,7 +24,6 @@ html, body, #root {
   box-sizing: border-box;
 }
 
-/* LOGO */
 .logo {
   width: 180px;
   max-width: 60%;
@@ -30,15 +31,12 @@ html, body, #root {
   display: block;
 }
 
-/* CAMPOS DE TEXTO (Inputs) */
 .input-field {
-  background-color: #E6E6E6; /* Cor Cinza Claro pedida */
+  background-color: #E6E6E6;
   width: 100%;
-  max-width: 320px; /* Mesma largura dos botões */
-  
+  max-width: 320px;
   padding: 16px;
-  margin-bottom: 15px; /* Espaço entre um campo e outro */
-  
+  margin-bottom: 15px;
   border: none;
   border-radius: 12px;
   font-size: 16px;
@@ -51,14 +49,11 @@ html, body, #root {
   color: #888;
 }
 
-/* BOTÃO PRINCIPAL (Entrar) */
 .btn-primary {
-  background-color: #78A64B; /* Verde Oliva */
+  background-color: #78A64B;
   color: white;
-  
   width: 100%;
   max-width: 320px;
-  
   padding: 16px;
   margin-top: 10px;
   border: none;
@@ -75,7 +70,6 @@ html, body, #root {
   box-shadow: 0 2px 0px #557a32;
 }
 
-/* LINKS SECUNDÁRIOS (Cadastrar / Acessar sem login) */
 .link-text {
   color: white;
   margin-top: 20px;
@@ -85,77 +79,159 @@ html, body, #root {
   opacity: 0.8;
 }
 
-.link-text:hover {
-  opacity: 1;
-}
+/* --- 3. ESTILOS DA HOME (Screen Layout) --- */
 
-/* CONTAINER PARA TELAS COM NAVBAR */
-.page-with-navbar {
+/* Container da Tela Principal (Header + Imagem + Navbar) */
+.screen-layout {
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  background-color: #294C25;
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  /* Espaço extra em baixo para a Navbar não cobrir o conteúdo */
-  padding-bottom: 90px; 
-  box-sizing: border-box;
-  background-color: #294C25; /* Garante fundo verde */
+  overflow: hidden;
 }
 
-/* PLACEHOLDER DA CÂMERA NA HOME */
-.camera-placeholder {
-  width: 100%;
-  flex-grow: 1; /* Ocupa todo o espaço disponível verticalmente */
-  background-color: #000;
-  border-radius: 20px;
-  border: 4px solid #E6E6E6;
+/* Área Central (Onde fica a imagem) */
+.content-area {
+  flex: 1; /* Ocupa todo o espaço livre no meio */
   display: flex;
-  flex-direction: column;
+  align-items: center;     /* Centraliza Vertical */
+  justify-content: center; /* Centraliza Horizontal */
+  padding-bottom: 90px;    /* Espaço para a Navbar não cobrir a imagem */
+  position: relative;
+}
+
+/* A Imagem do Protótipo */
+.center-image {
+  width: 100%;
+  max-width: 380px; /* Largura de celular */
+  height: auto;
+  max-height: 85%;  /* Altura máxima */
+  object-fit: contain;
+  filter: drop-shadow(0 0 15px rgba(0,0,0,0.5));
+}
+
+/* --- 4. ESTILOS DO HEADER (Incorporados aqui para evitar erro) --- */
+.custom-header {
+  width: 100%;
+  height: 80px;
+  background-color: #294C25;
+  position: relative;
+  display: flex;
   align-items: center;
   justify-content: center;
-  color: #888;
-  position: relative;
-  overflow: hidden;
-  margin-top: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 50; /* Garante que fique acima da imagem */
 }
 
-.camera-icon-big {
-  font-size: 60px;
-  opacity: 0.5;
-}
-
-.status-badge {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background-color: rgba(255,0,0,0.7);
+.header-text {
   color: white;
-  padding: 5px 10px;
-  border-radius: 10px;
-  font-size: 12px;
+  font-size: 20px;
   font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  z-index: 10;
+  margin: 0;
 }
 
-/* O CONTAINER QUE CENTRALIZA */
+/* Bolinhas decorativas do Header */
+.circle-deco {
+  position: absolute;
+  background-color: #78A64B;
+  border-radius: 50%;
+  opacity: 0.3;
+}
+
+.top-left {
+  width: 100px; height: 100px;
+  top: -30px; left: -30px;
+}
+
+.top-right {
+  width: 80px; height: 80px;
+  top: -20px; right: -20px;
+}
+
+/* src/App.css */
+
+/* 1. O CONTAINER PRINCIPAL (A tela toda) */
 .prototype-container {
   width: 100%;
-  height: 100vh; /* Ocupa 100% da altura da tela */
-  background-color: #294C25;
+  height: 100vh; /* Altura total da tela */
+  background-color: #294C25; /* Fundo Verde */
   
   display: flex;
-  justify-content: center; /* Centraliza na HORIZONTAL (Esquerda/Direita) */
-  align-items: center;     /* Centraliza na VERTICAL (Cima/Baixo) */
+  flex-direction: column; /* Organiza: Header em cima, Imagem no meio */
+  overflow: hidden; 
 }
 
-/* A IMAGEM */
-.prototype-image {
+/* 2. A ÁREA DA IMAGEM (O Recheio do sanduíche) */
+.image-area {
+  /* O segredo: flex: 1 faz essa div crescer e ocupar todo o espaço vazio */
+  flex: 1; 
   width: 100%;
-  max-width: 380px; /* Largura ideal para simular um celular */
-  height: auto;     /* Mantém a proporção correta */
   
-  /* Se a imagem for muito alta, limita ela para caber na tela sem rolar */
-  max-height: 95vh; 
-  object-fit: contain;
+  /* Centraliza o que está dentro (a imagem) */
+  display: flex;
+  justify-content: center; /* Centraliza na Horizontal */
+  align-items: center;     /* Centraliza na Vertical */
   
-  display: block;
+  /* Garante que não fique por cima do Header nem da Navbar */
+  padding-top: 20px;
+  padding-bottom: 100px; /* Espaço extra para a Navbar flutuante */
+  box-sizing: border-box;
+}
+
+/* 3. A IMAGEM EM SI */
+.prototype-image {
+  width: auto;      /* A largura se ajusta... */
+  height: auto;     /* A altura se ajusta... */
+  
+  /* ...mas respeitando os limites da tela */
+  max-width: 90%;   
+  max-height: 80%;
+  
+  object-fit: contain; /* Garante que a imagem apareça inteira */
+  
+  /* Sombra para destacar do fundo */
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+}
+
+/* --- LAYOUT TELA CHEIA (FULL BACKGROUND) --- */
+
+/* O Container Principal */
+.full-screen-layout {
+  position: relative; /* Necessário para os filhos absolutos funcionarem */
+  width: 100%;
+  height: 100vh;
+  background-color: #294C25; /* Cor de fundo de segurança */
+  overflow: hidden;
+}
+
+/* A Imagem de Fundo */
+.bg-image {
+  position: absolute; /* Tira do fluxo e permite colar nas bordas */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  
+  /* 'cover': Estica a imagem para cobrir tudo (pode cortar bordas) */
+  /* Se quiser ver a imagem inteira sem cortar, mude para 'contain' */
+  object-fit: cover; 
+  
+  z-index: 0; /* Fica na camada mais baixa (fundo) */
+  opacity: 0.9; /* Opcional: Leve transparência para misturar com o verde */
+}
+
+/* Wrapper para o Header ficar acima da imagem */
+.overlay-header {
+  position: relative;
+  z-index: 10; /* Fica acima da imagem (z-index 0) */
+  width: 100%;
+}
+
+/* Ajuste fino na Navbar para garantir que fique por cima */
+.navbar-container {
+  z-index: 20 !important; /* Força ficar acima de tudo */
 }

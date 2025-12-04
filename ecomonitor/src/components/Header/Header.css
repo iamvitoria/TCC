@@ -1,0 +1,40 @@
+.custom-header {
+  width: 100%;
+  height: 80px; /* Altura fixa */
+  background-color: #294C25; /* Verde Fundo */
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  flex-shrink: 0; /* Garante que o header não encolha */
+}
+
+.header-text {
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  z-index: 10;
+  margin: 0;
+}
+
+/* Decorações sutis */
+.circle-deco {
+  position: absolute;
+  background-color: #78A64B;
+  border-radius: 50%;
+  opacity: 0.3;
+}
+
+.top-left {
+  width: 100px; height: 100px;
+  top: -30px; left: -30px;
+}
+
+.top-right {
+  width: 80px; height: 80px;
+  top: -20px; right: -20px;
+}
