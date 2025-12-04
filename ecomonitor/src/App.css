@@ -235,3 +235,116 @@ html, body, #root {
 .navbar-container {
   z-index: 20 !important; /* Força ficar acima de tudo */
 }
+
+/* --- ESTILOS DA TELA DE CONTRIBUIÇÕES --- */
+
+/* Área de Conteúdo com Scroll */
+.content-scrollable {
+  flex: 1; /* Ocupa o espaço livre */
+  width: 100%;
+  overflow-y: auto; /* Permite rolar se a lista for grande */
+  padding: 20px;
+  padding-bottom: 100px; /* Espaço para a Navbar não cobrir o último item */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Card de Impacto (Verde Claro) */
+.impact-card {
+  background: linear-gradient(135deg, #78A64B, #558b2f);
+  width: 100%;
+  max-width: 380px;
+  padding: 20px;
+  border-radius: 20px;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  margin-bottom: 25px;
+}
+
+.impact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.impact-value {
+  font-size: 32px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.impact-subtitle {
+  font-size: 12px;
+  margin-top: 5px;
+  opacity: 0.8;
+}
+
+/* Título de Seção */
+.section-title {
+  color: white;
+  align-self: flex-start; /* Alinha à esquerda */
+  margin-bottom: 15px;
+  font-size: 18px;
+  max-width: 380px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Lista */
+.contributions-list {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Item da Lista */
+.contribution-item {
+  background-color: #f9f9f9;
+  border-radius: 15px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.item-icon-box {
+  width: 40px;
+  height: 40px;
+  background-color: #e8f5e9;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+}
+
+.item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.item-title {
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+}
+
+.item-date {
+  font-size: 12px;
+  color: #888;
+}
+
+.item-amount {
+  font-weight: bold;
+  color: #294C25;
+}

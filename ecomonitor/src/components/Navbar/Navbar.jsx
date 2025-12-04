@@ -19,10 +19,10 @@ const Navbar = () => {
     <div className="navbar-container">
       <nav className="navbar-content">
         
-        {/* 1. CORAÇÃO */}
+        {/* 1. CORAÇÃO -> CONTRIBUIÇÕES */}
         <button
-          className={`nav-btn ${isActive("/favoritos") ? "active" : ""}`}
-          onClick={() => navigate("/favoritos")}
+          className={`nav-btn ${isActive("/contribuicoes") ? "active" : ""}`}
+          onClick={() => navigate("/contribuicoes")}
         >
           <Heart size={24} />
         </button>
