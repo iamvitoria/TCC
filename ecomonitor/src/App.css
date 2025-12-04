@@ -1,0 +1,92 @@
+/* src/App.css */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+/* RESET GERAL */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #294C25; /* Fundo Verde */
+  font-family: 'Roboto', sans-serif;
+  overflow: hidden;
+}
+
+/* CONTAINER CENTRALIZADOR */
+.mobile-container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* LOGO */
+.logo {
+  width: 180px;
+  max-width: 60%;
+  margin-bottom: 30px;
+  display: block;
+}
+
+/* CAMPOS DE TEXTO (Inputs) */
+.input-field {
+  background-color: #E6E6E6; /* Cor Cinza Claro pedida */
+  width: 100%;
+  max-width: 320px; /* Mesma largura dos botões */
+  
+  padding: 16px;
+  margin-bottom: 15px; /* Espaço entre um campo e outro */
+  
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  color: #333;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.input-field::placeholder {
+  color: #888;
+}
+
+/* BOTÃO PRINCIPAL (Entrar) */
+.btn-primary {
+  background-color: #78A64B; /* Verde Oliva */
+  color: white;
+  
+  width: 100%;
+  max-width: 320px;
+  
+  padding: 16px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.1s;
+  box-shadow: 0 4px 0px #557a32;
+}
+
+.btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0px #557a32;
+}
+
+/* LINKS SECUNDÁRIOS (Cadastrar / Acessar sem login) */
+.link-text {
+  color: white;
+  margin-top: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+.link-text:hover {
+  opacity: 1;
+}
