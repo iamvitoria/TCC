@@ -1,15 +1,13 @@
 /* src/App.css */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
-/* RESET GERAL */
 html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
-  background-color: #294C25; /* Fundo Verde */
-  font-family: 'Roboto', sans-serif;
-  overflow: hidden;
+  background-color: #294C25;
+  overflow: hidden; /* Evita barras de rolagem se a imagem couber */
 }
 
 /* CONTAINER CENTRALIZADOR */
@@ -89,4 +87,75 @@ html, body, #root {
 
 .link-text:hover {
   opacity: 1;
+}
+
+/* CONTAINER PARA TELAS COM NAVBAR */
+.page-with-navbar {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  /* Espaço extra em baixo para a Navbar não cobrir o conteúdo */
+  padding-bottom: 90px; 
+  box-sizing: border-box;
+  background-color: #294C25; /* Garante fundo verde */
+}
+
+/* PLACEHOLDER DA CÂMERA NA HOME */
+.camera-placeholder {
+  width: 100%;
+  flex-grow: 1; /* Ocupa todo o espaço disponível verticalmente */
+  background-color: #000;
+  border-radius: 20px;
+  border: 4px solid #E6E6E6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  position: relative;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.camera-icon-big {
+  font-size: 60px;
+  opacity: 0.5;
+}
+
+.status-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background-color: rgba(255,0,0,0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* O CONTAINER QUE CENTRALIZA */
+.prototype-container {
+  width: 100%;
+  height: 100vh; /* Ocupa 100% da altura da tela */
+  background-color: #294C25;
+  
+  display: flex;
+  justify-content: center; /* Centraliza na HORIZONTAL (Esquerda/Direita) */
+  align-items: center;     /* Centraliza na VERTICAL (Cima/Baixo) */
+}
+
+/* A IMAGEM */
+.prototype-image {
+  width: 100%;
+  max-width: 380px; /* Largura ideal para simular um celular */
+  height: auto;     /* Mantém a proporção correta */
+  
+  /* Se a imagem for muito alta, limita ela para caber na tela sem rolar */
+  max-height: 95vh; 
+  object-fit: contain;
+  
+  display: block;
 }

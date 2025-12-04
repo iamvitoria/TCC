@@ -1,0 +1,65 @@
+/* Container que faz a barra flutuar */
+.navbar-container {
+  position: fixed;
+  bottom: 20px; /* bottom-4 */
+  left: 50%;    /* left-1/2 */
+  transform: translateX(-50%); /* Centraliza exato */
+  z-index: 9999;
+  
+  /* Largura ajustável, mas não muito larga */
+  width: 90%; 
+  max-width: 400px;
+}
+
+/* O "Corpo" da Navbar (Pílula Verde) */
+.navbar-content {
+  background-color: #78A64B; /* bg-primary (Seu Verde) */
+  border-radius: 9999px; /* rounded-full */
+  padding: 12px 24px;    /* px-6 py-3 */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); /* shadow-lg reforçada */
+  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Estilo dos Botões */
+.nav-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6); /* Cor padrão meio transparente */
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Quando passa o mouse ou clica */
+.nav-btn:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ícone Ativo (Página atual) */
+.nav-btn.active {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+/* Botão da Câmera (Destaque Central) */
+.camera-btn {
+  color: #294C25; /* Ícone verde escuro */
+  background-color: white; /* Fundo branco */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transform: scale(1.1);
+}
+
+.camera-btn:hover {
+  background-color: #f0f0f0;
+  color: #294C25;
+}
