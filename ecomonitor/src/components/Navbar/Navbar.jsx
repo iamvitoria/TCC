@@ -44,7 +44,7 @@ const Navbar = () => {
           className={`nav-btn ${isActive("/avaliacao") ? "active" : ""}`}
           onClick={() => navigate("/avaliacao")}
         >
-          <Star size={24} />
+          <ThumbsUp size={24} />
         </button>
 
         <button
