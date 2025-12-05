@@ -29,8 +29,8 @@ const Navbar = () => {
 
         {/* 2. ESTRELA */}
         <button
-          className={`nav-btn ${isActive("/destaques") ? "active" : ""}`}
-          onClick={() => navigate("/destaques")}
+          className={`nav-btn ${isActive("/conquistas") ? "active" : ""}`}
+          onClick={() => navigate("/conquistas")} 
         >
           <Star size={24} />
         </button>
