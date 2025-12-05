@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Profile from "./pages/Profile"; 
 import Contributions from "./pages/Contributions"; 
 import Achievements from "./pages/Achievements"; 
+import Evaluation from "./pages/Evaluation"; 
 import "./App.css";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="/perfil" element={<Profile />} />
         <Route path="/contribuicoes" element={<Contributions />} />
         <Route path="/conquistas" element={<Achievements />} />
+        <Route path="/avaliacao" element={<Evaluation />} />
       </Routes>
     </BrowserRouter>
   );

@@ -19,7 +19,6 @@ const Navbar = () => {
     <div className="navbar-container">
       <nav className="navbar-content">
         
-        {/* 1. CORAÇÃO -> CONTRIBUIÇÕES */}
         <button
           className={`nav-btn ${isActive("/contribuicoes") ? "active" : ""}`}
           onClick={() => navigate("/contribuicoes")}
@@ -27,7 +26,6 @@ const Navbar = () => {
           <Heart size={24} />
         </button>
 
-        {/* 2. ESTRELA */}
         <button
           className={`nav-btn ${isActive("/conquistas") ? "active" : ""}`}
           onClick={() => navigate("/conquistas")} 
@@ -35,24 +33,20 @@ const Navbar = () => {
           <Star size={24} />
         </button>
 
-        {/* 3. CÂMERA (AGORA É A HOME) */}
         <button
-          // Adiciona classe extra se estiver na Home para destacar
           className={`nav-btn camera-btn ${isActive("/home") ? "camera-active" : ""}`}
           onClick={() => navigate("/home")}
         >
           <Camera size={28} />
         </button>
 
-        {/* 4. LIKE */}
         <button
-          className={`nav-btn ${isActive("/curtidas") ? "active" : ""}`}
-          onClick={() => navigate("/curtidas")}
+          className={`nav-btn ${isActive("/avaliacao") ? "active" : ""}`}
+          onClick={() => navigate("/avaliacao")}
         >
-          <ThumbsUp size={24} />
+          <Star size={24} />
         </button>
 
-        {/* 5. PERFIL */}
         <button
           className={`nav-btn ${isActive("/perfil") ? "active" : ""}`}
           onClick={() => navigate("/perfil")}
