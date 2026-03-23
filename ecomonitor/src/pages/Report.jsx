@@ -11,7 +11,7 @@ const Report = () => {
     flex: 1,
     paddingBottom: "120px", 
     boxSizing: "border-box",
-    };
+  };
 
   const uploadBoxStyle = {
     border: "2px dashed #78A64B",
@@ -56,12 +56,13 @@ const Report = () => {
     border: "none",
     borderRadius: "10px",
     padding: "12px",
-    color: "white",
+    color: "white", 
     height: "110px", 
     resize: "none",
     fontSize: "14px",
     width: "100%",
-    boxSizing: "border-box"
+    boxSizing: "border-box",
+    fontFamily: "inherit" 
   };
 
   const submitBtnStyle = {
@@ -79,6 +80,16 @@ const Report = () => {
 
   return (
     <PageLayout title="Nova denúncia">
+      
+      <style>
+        {`
+          .white-placeholder::placeholder {
+            color: white;
+            opacity: 0.8; /* Deixa o branco levemente suave */
+          }
+        `}
+      </style>
+
       <div style={containerStyle}>
         
         <div style={uploadBoxStyle}>
@@ -103,7 +114,9 @@ const Report = () => {
         <label style={{ color: "#2D4627", fontWeight: "bold", fontSize: '15px', marginTop: '5px' }}>
           Descrição Opcional
         </label>
+        
         <textarea 
+          className="white-placeholder"
           placeholder="Descreva o problema em detalhes..." 
           style={textAreaStyle}
         />
