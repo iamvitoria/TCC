@@ -4,7 +4,7 @@ import {
   Heart,      
   Star,       
   House,     
-  ThumbsUp,   
+  Trophy,   
   User        
 } from "lucide-react";
 import "./Navbar.css";
@@ -41,10 +41,10 @@ const Navbar = () => {
         </button>
 
         <button
-          className={`nav-btn ${isActive("/avaliacao") ? "active" : ""}`}
-          onClick={() => navigate("/avaliacao")}
+          className={`nav-btn ${isActive("/ranking") ? "active" : ""}`}
+          onClick={() => navigate("/ranking")}
         >
-          <ThumbsUp size={24} />
+          <Trophy size={24} />
         </button>
 
         <button
