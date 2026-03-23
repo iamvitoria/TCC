@@ -23,24 +23,21 @@ const Home = () => {
 
   const fabStyle = {
     position: "absolute",
-    bottom: "75px", 
-    left: "85%",
-    transform: "translateX(-50%)",
-    width: "50px",
-    height: "50px",
+    bottom: "100px", 
+    right: "20px",
+    width: "55px",
+    height: "70px",
     backgroundColor: "#7FB04B",
     borderRadius: "50%",
     color: "white",
-    fontSize: "40px",
+    fontSize: "30px",
     fontWeight: "bold",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
     cursor: "pointer",
-    zIndex: 1000, 
-    padding: 0,
-    lineHeight: 0,
+    zIndex: 1000,
   };
 
   return (
