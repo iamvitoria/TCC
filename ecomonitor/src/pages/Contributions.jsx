@@ -1,61 +1,99 @@
 import React from "react";
-import Header from "../components/Header/Header";
-import Navbar from "../components/Navbar/Navbar";
-import { Heart, TreePine, Droplets, ArrowUpRight } from "lucide-react";
+import PageLayout from "../components/PageLayout/PageLayout";
 
 const Contributions = () => {
-  // Dados fictícios para simular histórico
-  const history = [
-    { id: 1, title: "Apoio ao Reflorestamento", date: "Hoje", amount: "R$ 50,00", icon: <TreePine size={20} color="#78A64B" /> },
-    { id: 2, title: "ONG Águas Limpas", date: "12/10", amount: "R$ 30,00", icon: <Droplets size={20} color="#00a8ff" /> },
-    { id: 3, title: "Resgate de Fauna", date: "05/09", amount: "R$ 20,00", icon: <Heart size={20} color="#ff6b6b" /> },
+  const contributionsData = [
+    { id: 1, title: "Lixo Acumulado", date: "15/10/2023", status: "Em análise" },
+    { id: 2, title: "Água parada", date: "12/10/2023", status: "Validado" },
+    { id: 3, title: "Buraco na via", date: "08/10/2023", status: "Resolvido" },
+    { id: 4, title: "Vazamento de água", date: "12/10/2023", status: "Validado" },
   ];
 
+
+  const containerStyle = {
+    display: "flex",
+    flexDirection: "column",
+    padding: "20px 5%", 
+    gap: "15px",
+    flex: 1,
+    overflowY: "auto", 
+    boxSizing: "border-box",
+  };
+
+  const itemCardStyle = {
+    backgroundColor: "#F0F0F0", 
+    borderRadius: "10px",
+    padding: "15px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    boxSizing: "border-box",
+    boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
+  };
+
+  const itemContentStyle = {
+    display: "flex",
+    flexDirection: "column",
+    gap: "5px",
+    flex: 1 
+  };
+
+  const itemTitleStyle = {
+    fontWeight: "bold",
+    color: "#2D4627", 
+    fontSize: "16px",
+    margin: 0
+  };
+
+  const itemDateStyle = {
+    color: "#757575", 
+    fontSize: "12px",
+    margin: 0
+  };
+
+  const statusBadgeStyleBase = {
+    padding: "6px 12px",
+    borderRadius: "20px",
+    color: "white",
+    fontWeight: "bold",
+    fontSize: "12px",
+    textAlign: "center",
+    whiteSpace: "nowrap", 
+  };
+
+  const statusColors = {
+    "Em análise": "#D6A352", 
+    "Validado": "#78A64B",    
+    "Resolvido": "#3D82D6"  
+  };
+
+  const getStatusStyle = (status) => {
+    const backgroundColor = statusColors[status] || "#757575";
+    return { ...statusBadgeStyleBase, backgroundColor };
+  };
+
   return (
-    <div className="screen-layout">
-      
-      {/* 1. TOPO */}
-      <Header title="Minhas Contribuições" />
-
-      {/* 2. CONTEÚDO (Com scroll vertical) */}
-      <div className="content-scrollable">
+    <PageLayout title="Contribuições">
+      <div style={containerStyle}>
         
-        {/* Card de Impacto Total */}
-        <div className="impact-card">
-          <div className="impact-header">
-            <span>Total Contribuído</span>
-            <Heart size={20} fill="white" stroke="none" />
-          </div>
-          <h2 className="impact-value">R$ 100,00</h2>
-          <p className="impact-subtitle">Você já ajudou 3 projetos este ano!</p>
-        </div>
-
-        {/* Título da Lista */}
-        <h3 className="section-title">Histórico Recente</h3>
-
-        {/* Lista de Contribuições */}
-        <div className="contributions-list">
-          {history.map((item) => (
-            <div key={item.id} className="contribution-item">
-              <div className="item-icon-box">
-                {item.icon}
-              </div>
-              <div className="item-info">
-                <span className="item-title">{item.title}</span>
-                <span className="item-date">{item.date}</span>
-              </div>
-              <div className="item-amount">
-                {item.amount}
-              </div>
+        {contributionsData.map((contribution) => (
+          <div key={contribution.id} style={itemCardStyle}>
+            
+            <div style={itemContentStyle}>
+              <p style={itemTitleStyle}>{contribution.title}</p>
+              <p style={itemDateStyle}>{contribution.date}</p>
             </div>
-          ))}
-        </div>
+
+            <div style={getStatusStyle(contribution.status)}>
+              {contribution.status}
+            </div>
+
+          </div>
+        ))}
 
       </div>
-
-      <Navbar />
-      
-    </div>
+    </PageLayout>
   );
 };
 
