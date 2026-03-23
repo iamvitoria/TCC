@@ -53,7 +53,6 @@ const Contributions = () => {
 
       </div>
 
-      {/* 3. NAVBAR */}
       <Navbar />
       
     </div>

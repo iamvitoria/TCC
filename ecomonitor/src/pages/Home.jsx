@@ -3,8 +3,7 @@ import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-import Header from "../components/Header/Header";
-import Navbar from "../components/Navbar/Navbar";
+import PageLayout from "../components/PageLayout/PageLayout";
 
 import iconRetina from "leaflet/dist/images/marker-icon-2x.png";
 import icon from "leaflet/dist/images/marker-icon.png";
@@ -43,18 +42,9 @@ const Home = () => {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", width: "100vw", overflow: "hidden" }}>
-      
-      <Header title="Mapa" />
-
-      <div style={{ 
-        flex: 1, 
-        position: "relative", 
-        borderTopLeftRadius: "30px", 
-        borderTopRightRadius: "30px",
-        overflow: "hidden",
-        backgroundColor: "white" 
-      }}>
+    <PageLayout title="Mapa">
+      <div style={{ width: "100%", height: "100%", position: "relative" }}>
+        
         <MapContainer 
           center={position} 
           zoom={15} 
@@ -68,11 +58,9 @@ const Home = () => {
         <button style={fabStyle} onClick={() => alert("Nova Denúncia")}>
           +
         </button>
+        
       </div>
-
-      <Navbar />
-      
-    </div>
+    </PageLayout>
   );
 };
 
