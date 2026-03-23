@@ -7,6 +7,7 @@ import Profile from "./pages/Profile";
 import Contributions from "./pages/Contributions"; 
 import Achievements from "./pages/Achievements"; 
 import Evaluation from "./pages/Evaluation"; 
+import Report from './pages/Report';
 import "./App.css";
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Route path="/contribuicoes" element={<Contributions />} />
         <Route path="/conquistas" element={<Achievements />} />
         <Route path="/avaliacao" element={<Evaluation />} />
+        <Route path="/denuncia" element={<Report />} />
       </Routes>
     </BrowserRouter>
   );

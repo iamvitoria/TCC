@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom"; 
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -17,6 +18,7 @@ L.Icon.Default.mergeOptions({
 });
 
 const Home = () => {
+  const navigate = useNavigate();
   const position = [-29.6842, -53.8069];
 
   const fabStyle = {
@@ -55,7 +57,7 @@ const Home = () => {
           <Marker position={position} />
         </MapContainer>
 
-        <button style={fabStyle} onClick={() => alert("Nova Denúncia")}>
+        <button style={fabStyle} onClick={() => navigate("/denuncia")}>
           +
         </button>
         
