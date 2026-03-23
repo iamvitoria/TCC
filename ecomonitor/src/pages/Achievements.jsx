@@ -1,77 +1,100 @@
 import React from "react";
-import Header from "../components/Header/Header";
-import Navbar from "../components/Navbar/Navbar";
-import { Trophy, Medal, Lock, Star, Zap, Award, Leaf } from "lucide-react";
+import PageLayout from "../components/PageLayout/PageLayout";
 
 const Achievements = () => {
-  // Dados fictícios (Mock)
-  const achievements = [
-    { id: 1, title: "Primeiros Passos", desc: "Criou sua conta", icon: <Zap size={24} color="#FFD700" />, unlocked: true },
-    { id: 2, title: "Observador", desc: "1ª ocorrência", icon: <Award size={24} color="#00d2d3" />, unlocked: true },
-    { id: 3, title: "Guardião", desc: "5 contribuições", icon: <Medal size={24} color="#ff9f43" />, unlocked: false },
-    { id: 4, title: "Influenciador", desc: "50 likes recebidos", icon: <Star size={24} color="#ff6b6b" />, unlocked: false },
-    { id: 5, title: "Expert", desc: "Atingiu Nível 5", icon: <Trophy size={24} color="#5f27cd" />, unlocked: false },
-    { id: 6, title: "Biólogo", desc: "Identificou 10 plantas", icon: <Leaf size={24} color="#10ac84" />, unlocked: false },
+  const achievementsData = [
+    { id: 1, title: "Primeiro Relato", desc: "10 pontos - 1 relatório", icon: "🏆" },
+    { id: 2, title: "Ativista Local", desc: "25 pontos - 5 relatórios", icon: "🏆" },
+    { id: 3, title: "Comunitário Ativo", desc: "50 pontos - 10 relatórios", icon: "🏆" },
+    { id: 4, title: "Comunitário Ativo", desc: "50 pontos - 10 relatórios", icon: "🏆" },
   ];
 
+  const containerStyle = {
+    display: "flex",
+    flexDirection: "column",
+    padding: "20px 5%",
+    gap: "15px",
+    flex: 1,
+    paddingBottom: "100px",
+    overflowY: "auto",
+    boxSizing: "border-box",
+  };
+
+  const sectionTitleStyle = {
+    color: "#2D4627", 
+    fontWeight: "bold",
+    fontSize: "18px",
+    margin: "0 0 5px 0",
+  };
+
+  const cardStyle = {
+    backgroundColor: "#78A64B",
+    borderRadius: "10px",
+    padding: "15px 20px",
+    display: "flex",
+    alignItems: "center",
+    color: "white",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+    boxSizing: "border-box",
+    width: "100%",
+  };
+
+  const iconContainerStyle = {
+    fontSize: "40px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingRight: "20px",
+    marginRight: "20px",
+    borderRight: "2px solid rgba(255, 255, 255, 0.4)", 
+  };
+
+  const textContainerStyle = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center", 
+    justifyContent: "center",
+    flex: 1, 
+    gap: "5px",
+  };
+
+  const titleStyle = {
+    fontWeight: "bold",
+    fontSize: "16px",
+    margin: 0,
+    textAlign: "center",
+  };
+
+  const descStyle = {
+    fontSize: "11px",
+    margin: 0,
+    fontWeight: "500",
+    textAlign: "center",
+  };
+
   return (
-    <div className="screen-layout">
-      
-      {/* 1. TOPO */}
-      <Header title="Conquistas" />
-
-      {/* 2. CONTEÚDO (Com Scroll) */}
-      <div className="content-scrollable">
+    <PageLayout title="Conquistas">
+      <div style={containerStyle}>
         
-        {/* Card de Nível (Dourado) */}
-        <div className="level-card">
-          <div className="level-info">
-            <div className="level-number">
-              <span>NÍVEL ATUAL</span>
-              <h1>2</h1>
+        <h3 style={sectionTitleStyle}>Badges e Conquistas</h3>
+        
+        {achievementsData.map((item) => (
+          <div key={item.id} style={cardStyle}>
+            
+            <div style={iconContainerStyle}>
+              {item.icon}
             </div>
-            <div className="level-xp">
-              <p>350 / 500 XP</p>
-              <span>Faltam 150 XP para o Nível 3</span>
+
+            <div style={textContainerStyle}>
+              <p style={titleStyle}>{item.title}</p>
+              <p style={descStyle}>{item.desc}</p>
             </div>
+
           </div>
-          
-          {/* Barra de Progresso */}
-          <div className="progress-bar-bg">
-            {/* Muda a width para simular a porcentagem */}
-            <div className="progress-bar-fill" style={{width: '70%'}}></div>
-          </div>
-        </div>
-
-        {/* Título da Seção */}
-        <h3 className="section-title">
-          Medalhas ({achievements.filter(a => a.unlocked).length}/{achievements.length})
-        </h3>
-
-        {/* Grade de Conquistas */}
-        <div className="achievements-grid">
-          {achievements.map((item) => (
-            <div key={item.id} className={`achievement-card ${item.unlocked ? 'unlocked' : 'locked'}`}>
-              
-              <div className="badge-icon">
-                {item.unlocked ? item.icon : <Lock size={24} color="#888" />}
-              </div>
-              
-              <div className="badge-info">
-                <h4>{item.title}</h4>
-                <p>{item.desc}</p>
-              </div>
-
-            </div>
-          ))}
-        </div>
+        ))}
 
       </div>
-
-      {/* 3. NAVBAR */}
-      <Navbar />
-      
-    </div>
+    </PageLayout>
   );
 };
 
