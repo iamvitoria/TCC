@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Heart,      
   Star,       
-  Camera,     
+  House,     
   ThumbsUp,   
   User        
 } from "lucide-react";
@@ -37,7 +37,7 @@ const Navbar = () => {
           className={`nav-btn camera-btn ${isActive("/home") ? "camera-active" : ""}`}
           onClick={() => navigate("/home")}
         >
-          <Camera size={28} />
+          <House size={28} />
         </button>
 
         <button

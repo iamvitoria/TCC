@@ -1,65 +1,60 @@
-/* Container que faz a barra flutuar */
 .navbar-container {
-  position: fixed;
-  bottom: 20px;
+  bottom: 15px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
-  width: 90%; 
-  max-width: 400px;
+  width: 70%;
+  max-width: 280px;
+  height: 60px;
 }
 
-/* O "Corpo" da Navbar */
 .navbar-content {
-  background-color: #78A64B; /* Verde */
-  border-radius: 9999px; 
-  padding: 12px 24px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  background-color: #78A64B; 
+  border-radius: 50px;
+  padding: 4px 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  height: 50px;
 }
 
-/* Botões Normais */
 .nav-btn {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
   padding: 8px;
-  border-radius: 50%;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 18px;
 }
 
 .nav-btn:hover {
   color: white;
-  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .nav-btn.active {
   color: white;
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1);
 }
 
-/* --- BOTÃO DA CÂMERA (HOME) --- */
-.camera-btn {
-  color: #294C25;       /* Ícone Verde Escuro por padrão */
+.home-btn {
   background-color: white; 
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  margin-top: -25px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  transform: scale(1.1);
+  border: 4px solid #78A64B;
+  color: #294C25;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
 }
 
-.camera-btn:hover {
-  background-color: #f0f0f0;
-}
-
-/* Quando você está na tela Home, a borda ou ícone muda para indicar ativo */
-.camera-active {
-  border: 3px solid #294C25; /* Borda verde extra */
-  color: #78A64B; /* Ícone fica verde claro */
+.home-btn:hover {
+  background-color: #f8f8f8;
 }

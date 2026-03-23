@@ -20,24 +20,26 @@ L.Icon.Default.mergeOptions({
 const Home = () => {
   const position = [-29.6842, -53.8069];
 
-  // Estilo apenas para o Botão Flutuante (+), pois ele pertence ao Mapa desta tela
   const fabStyle = {
     position: "absolute",
-    bottom: "20px",
-    right: "20px",
-    width: "65px",
-    height: "65px",
+    bottom: "75px", 
+    left: "85%",
+    transform: "translateX(-50%)",
+    width: "50px",
+    height: "50px",
     backgroundColor: "#7FB04B",
     borderRadius: "50%",
-    border: "none",
     color: "white",
-    fontSize: "35px",
+    fontSize: "40px",
+    fontWeight: "bold",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
     cursor: "pointer",
     zIndex: 1000, 
+    padding: 0,
+    lineHeight: 0,
   };
 
   return (
