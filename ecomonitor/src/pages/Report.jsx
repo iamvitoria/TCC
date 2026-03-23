@@ -6,12 +6,12 @@ const Report = () => {
   const containerStyle = {
     display: "flex",
     flexDirection: "column",
-    padding: "20px 30px 80px 30px", 
-    gap: "12px", 
-    height: "100%",
-    overflowY: "auto", 
-    boxSizing: "border-box"
-  };
+    padding: "20px 5%", 
+    gap: "15px",
+    flex: 1,
+    paddingBottom: "120px", 
+    boxSizing: "border-box",
+    };
 
   const uploadBoxStyle = {
     border: "2px dashed #78A64B",
@@ -29,17 +29,17 @@ const Report = () => {
   };
 
   const inputStyle = {
+    width: "100%", 
     backgroundColor: "#7FB04B",
     color: "white",
     border: "none",
     borderRadius: "10px",
-    padding: "10px 15px",
-    fontSize: "16px",
+    padding: "12px 15px",
+    fontSize: "1rem", 
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    width: "100%",
-    cursor: "pointer"
+    boxSizing: "border-box"
   };
 
   const locationCardStyle = {
