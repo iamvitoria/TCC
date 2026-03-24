@@ -5,12 +5,10 @@ import logo from "../assets/logo-ecomonitor.png";
 const Login = () => {
   const navigate = useNavigate();
 
-  // 2. Criamos os "cofres" para guardar o que o usuário digita
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
   const fazerLogin = async () => {
-    // Verificação rápida: o usuário preencheu tudo?
     if (!email || !senha) {
       alert("Por favor, preencha o e-mail e a senha!");
       return;
@@ -32,12 +30,10 @@ const Login = () => {
       if (resposta.ok) {
         const dados = await resposta.json();
         
-        // Guardamos a Pulseira VIP!
         localStorage.setItem('meuToken', dados.access_token);
         
         alert("Login feito com sucesso! 🎉");
         
-        // 3. AGORA SIM, depois do sucesso, nós navegamos para a Home!
         navigate("/home");
         
       } else {
@@ -54,7 +50,6 @@ const Login = () => {
     <div className="mobile-container">
       <img src={logo} alt="EcoMonitor Logo" className="logo" />
 
-      {/* 4. Conectamos os inputs aos nossos "cofres" do useState */}
       <input 
         type="email" 
         placeholder="E-mail" 
@@ -71,7 +66,6 @@ const Login = () => {
         onChange={(e) => setSenha(e.target.value)} 
       />
 
-      {/* 5. Mudamos o botão para chamar a função de login! */}
       <button className="btn-primary" onClick={fazerLogin}>
         Entrar
       </button>
