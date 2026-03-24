@@ -123,7 +123,7 @@ const Profile = () => {
   const logoutBtnStyle = { backgroundColor: "#78A64B", color: "white", border: "none", borderRadius: "10px", padding: "15px", fontSize: "18px", fontWeight: "bold", width: "100%", cursor: "pointer", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" };
 
   // O que usar se o usuário ainda não tiver foto? (A sua do Unsplash!)
-  const fotoParaMostrar = perfil.foto_perfil || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80";
+  const fotoParaMostrar = perfil.foto_perfil;
 
   // Função de deslogar
   const fazerLogout = () => {
