@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from "react"; // Adicionamos useState, useEffect e useRef
+import React, { useState, useEffect, useRef } from "react"; 
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../components/PageLayout/PageLayout";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const fileInputRef = useRef(null); // Referência para o nosso input invisível
+  const fileInputRef = useRef(null); 
 
   // 1. Estado para guardar os dados do usuário vindos do banco
   const [perfil, setPerfil] = useState({
@@ -23,7 +23,7 @@ const Profile = () => {
       }
 
       try {
-        const resposta = await fetch("http://localhost:8000/perfil", {
+        const resposta = await fetch("https://ecomonitor-api.onrender.com", {
           headers: {
             "Authorization": `Bearer ${token}` // Mostra a pulseira VIP pro segurança
           }
