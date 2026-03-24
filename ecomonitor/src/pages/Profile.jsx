@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react"; 
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../components/PageLayout/PageLayout";
+import API_URL from "../config";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const Profile = () => {
       }
 
       try {
-        const resposta = await fetch("https://ecomonitor-api.onrender.com/perfil", {
+        const resposta = await fetch(`${API_URL}/perfil`, {
           headers: {
             "Authorization": `Bearer ${token}` // Mostra a pulseira VIP pro segurança
           }
@@ -53,7 +54,7 @@ const Profile = () => {
     const token = localStorage.getItem("meuToken");
 
     try {
-      const resposta = await fetch("https://ecomonitor-api.onrender.com/perfil/foto", {
+      const resposta = await fetch(`${API_URL}/perfil/foto`,{
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
