@@ -19,7 +19,7 @@ const Login = () => {
       detalhesDoLogin.append('username', email); 
       detalhesDoLogin.append('password', senha);
 
-      const resposta = await fetch('https://ecomonitor-api.onrender.com', {
+      const resposta = await fetch('https://ecomonitor-api.onrender.com/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',

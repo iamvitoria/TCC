@@ -23,7 +23,7 @@ const Profile = () => {
       }
 
       try {
-        const resposta = await fetch("https://ecomonitor-api.onrender.com", {
+        const resposta = await fetch("https://ecomonitor-api.onrender.com/perfil", {
           headers: {
             "Authorization": `Bearer ${token}` // Mostra a pulseira VIP pro segurança
           }
@@ -53,7 +53,7 @@ const Profile = () => {
     const token = localStorage.getItem("meuToken");
 
     try {
-      const resposta = await fetch("http://localhost:8000/perfil/foto", {
+      const resposta = await fetch("https://ecomonitor-api.onrender.com/perfil/foto", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
