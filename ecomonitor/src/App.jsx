@@ -8,7 +8,7 @@ import Contributions from "./pages/Contributions";
 import Achievements from "./pages/Achievements"; 
 import Ranking from './pages/Ranking';
 import Report from './pages/Report';
-import ReportDetails from "./paginas/ReportDetails";
+import ReportDetails from "./pages/ReportDetails";
 import "./App.css";
 
 function App() {
