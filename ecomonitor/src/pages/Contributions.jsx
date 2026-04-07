@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-// Se você usa o PageLayout nas outras telas, mantenha o import:
 import PageLayout from "../components/PageLayout/PageLayout";
 
 const Contributions = () => {
@@ -8,8 +7,11 @@ const Contributions = () => {
   const [denuncias, setDenuncias] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+  
+  // Barra de filtros do topo
+  const filtros = ["Todas", "Recentes", "Aprovadas", "Pendentes"];
+  const [filtroAtivo, setFiltroAtivo] = useState("Todas");
 
-  // O useEffect roda assim que a tela abre, para buscar os dados
   useEffect(() => {
     const buscarDenuncias = async () => {
       const token = localStorage.getItem("meuToken");
@@ -30,7 +32,6 @@ const Contributions = () => {
 
         if (response.ok) {
           const data = await response.json();
-          // Guarda a lista de denúncias no nosso Estado
           setDenuncias(data); 
         } else {
           setErro("Não foi possível carregar as denúncias.");
@@ -46,6 +47,16 @@ const Contributions = () => {
     buscarDenuncias();
   }, []);
 
+  // Função para escolher um ícone baseado na categoria
+  const getIconeCategoria = (categoria) => {
+    const cat = categoria?.toLowerCase() || "";
+    if (cat.includes("desmatamento") || cat.includes("arvore")) return "🪓";
+    if (cat.includes("lixo") || cat.includes("residuos")) return "🗑️";
+    if (cat.includes("fogo") || cat.includes("queimada")) return "🔥";
+    if (cat.includes("agua") || cat.includes("esgoto")) return "💧";
+    return "🌱"; // Padrão
+  };
+
   // --- ESTILOS ---
   const containerStyle = {
     padding: "20px 5%",
@@ -55,73 +66,119 @@ const Contributions = () => {
     gap: "15px"
   };
 
+  const scrollBarStyle = {
+    display: "flex",
+    gap: "10px",
+    overflowX: "auto",
+    paddingBottom: "5px",
+    scrollbarWidth: "none"
+  };
+
+  const getFiltroStyle = (filtro) => ({
+    padding: "6px 15px",
+    borderRadius: "20px",
+    backgroundColor: filtro === filtroAtivo ? "#7FB04B" : "transparent",
+    color: filtro === filtroAtivo ? "white" : "#7FB04B",
+    border: `1px solid ${filtro === filtroAtivo ? "#7FB04B" : "#A1C680"}`,
+    fontSize: "14px",
+    cursor: "pointer",
+    whiteSpace: "nowrap"
+  });
+
   const cardStyle = {
     backgroundColor: "#F1F8E9",
     borderRadius: "15px",
-    overflow: "hidden",
-    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-    border: "1px solid #78A64B"
+    padding: "15px",
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
+    cursor: "pointer", 
+    border: "1px solid transparent"
   };
 
-  const statusBadgeStyle = (status) => ({
-    backgroundColor: status === "Resolvida" ? "#2D4627" : "#7FB04B",
-    color: "white",
-    padding: "4px 10px",
-    borderRadius: "20px",
-    fontSize: "12px",
-    fontWeight: "bold",
-    display: "inline-block",
-    marginBottom: "8px"
+  const getStatusButtonStyle = (status) => {
+    let bgColor = "#7FB04B"; // Verde padrão
+    let color = "white";
+
+    if (status === "Pendente" || status?.includes("análise")) {
+      bgColor = "#FFD54F"; // Amarelo
+      color = "#2D4627";
+    } else if (status === "Resolvida") {
+      bgColor = "#2D4627"; // Verde escuro
+    }
+
+    return {
+      border: "none",
+      padding: "4px 12px",
+      borderRadius: "20px",
+      backgroundColor: bgColor,
+      color: color,
+      fontSize: "12px",
+      fontWeight: "600",
+      marginTop: "4px",
+      display: "inline-block"
+    };
+  };
+
+  // Aplica o filtro na lista (simples frontend)
+  const denunciasFiltradas = denuncias.filter(d => {
+    if (filtroAtivo === "Todas" || filtroAtivo === "Recentes") return true;
+    if (filtroAtivo === "Pendentes") return d.status === "Pendente" || d.status === "Em Análise";
+    if (filtroAtivo === "Aprovadas") return d.status === "Validado" || d.status === "Resolvida";
+    return true;
   });
 
   return (
     <PageLayout title="Minhas Contribuições">
+      {/* 1. Barra de Filtros */}
+      <div style={{...containerStyle, paddingBottom: 0}}>
+          <div style={scrollBarStyle}>
+              {filtros.map(filtro => (
+                  <button key={filtro} style={getFiltroStyle(filtro)} onClick={() => setFiltroAtivo(filtro)}>
+                      {filtro}
+                  </button>
+              ))}
+          </div>
+      </div>
+
+      {/* 2. Lista de Cards */}
       <div style={containerStyle}>
-        
         {carregando && <p style={{ textAlign: "center", color: "#2D4627" }}>Carregando suas denúncias... ⏳</p>}
         {erro && <p style={{ color: "red", textAlign: "center" }}>{erro}</p>}
 
-        {!carregando && !erro && denuncias.length === 0 && (
-          <div style={{ textAlign: "center", color: "#2D4627", marginTop: "40px" }}>
-            <h2>🌱 Nenhuma denúncia ainda!</h2>
-            <p>Que tal começar a ajudar o meio ambiente agora?</p>
-            <button 
-              onClick={() => navigate("/report")} 
-              style={{ backgroundColor: "#2D4627", color: "white", padding: "10px 20px", borderRadius: "10px", border: "none", marginTop: "15px", cursor: "pointer" }}
-            >
-              Fazer uma Denúncia
-            </button>
+        {!carregando && !erro && denunciasFiltradas.length === 0 && (
+          <div style={{ textAlign: "center", color: "#2D4627", marginTop: "20px" }}>
+            <p>Nenhuma denúncia encontrada para este filtro.</p>
           </div>
         )}
 
-        {!carregando && denuncias.map((denuncia) => (
-          <div key={denuncia.id} style={cardStyle}>
-            {/* O Backend salva a foto_url como "uploads/foto.png", então precisamos juntar com o link da API */}
-            <img 
-              src={`https://ecomonitor-api.onrender.com/${denuncia.foto_url}`} 
-              alt="Foto da denúncia" 
-              style={{ width: "100%", height: "180px", objectFit: "cover" }}
-              onError={(e) => { e.target.src = "https://placehold.co/400x200/cccccc/ffffff?text=Sem+Foto" }}
-            />
-            
-            <div style={{ padding: "15px" }}>
-              <span style={statusBadgeStyle(denuncia.status)}>
-                {denuncia.status || "Pendente"}
-              </span>
-              <h3 style={{ margin: "0 0 5px 0", color: "#2D4627", textTransform: "capitalize" }}>
+        {!carregando && denunciasFiltradas.map((denuncia) => (
+          <div 
+            key={denuncia.id} 
+            style={cardStyle} 
+            // ENVIA OS DADOS DA DENÚNCIA JUNTO COM O REDIRECIONAMENTO 👇
+            onClick={() => navigate(`/report-details/${denuncia.id}`, { state: { denunciaSelecionada: denuncia } })}
+          >
+            {/* Ícone na esquerda */}
+            <div style={{ fontSize: "30px", width: "45px", textAlign: "center" }}>
+                {getIconeCategoria(denuncia.categoria)}
+            </div>
+
+            {/* Textos no meio e status */}
+            <div style={{ flex: 1 }}>
+              <h3 style={{ margin: 0, color: "#2D4627", fontSize: "16px", textTransform: "capitalize" }}>
                 {denuncia.categoria.replace("_", " ")}
               </h3>
-              <p style={{ margin: "0 0 10px 0", color: "#555", fontSize: "14px" }}>
-                {denuncia.descricao || "Sem descrição."}
+              <p style={{ margin: "2px 0 0 0", color: "#A1C680", fontSize: "12px" }}>
+                Acompanhe o status:
               </p>
-              <div style={{ fontSize: "12px", color: "#888", display: "flex", justifyContent: "space-between" }}>
-                <span>📍 GPS: {denuncia.latitude.toFixed(2)}, {denuncia.longitude.toFixed(2)}</span>
-                <span>ID: #{denuncia.id}</span>
+              <div style={getStatusButtonStyle(denuncia.status)}>
+                {denuncia.status || "Pendente"}
               </div>
             </div>
           </div>
         ))}
-
       </div>
     </PageLayout>
   );

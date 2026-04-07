@@ -8,6 +8,7 @@ import Contributions from "./pages/Contributions";
 import Achievements from "./pages/Achievements"; 
 import Ranking from './pages/Ranking';
 import Report from './pages/Report';
+import ReportDetails from "./paginas/ReportDetails";
 import "./App.css";
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Route path="/conquistas" element={<Achievements />} />
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/denuncia" element={<Report />} />
+        <Route path="/report-details/:id" element={<ReportDetails />} />
       </Routes>
     </BrowserRouter>
   );
