@@ -7,10 +7,6 @@ const Contributions = () => {
   const [denuncias, setDenuncias] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
-  
-  // Barra de filtros do topo
-  const filtros = ["Todas", "Recentes", "Aprovadas", "Pendentes"];
-  const [filtroAtivo, setFiltroAtivo] = useState("Todas");
 
   useEffect(() => {
     const buscarDenuncias = async () => {
@@ -47,17 +43,7 @@ const Contributions = () => {
     buscarDenuncias();
   }, []);
 
-  // Função para escolher um ícone baseado na categoria
-  const getIconeCategoria = (categoria) => {
-    const cat = categoria?.toLowerCase() || "";
-    if (cat.includes("desmatamento") || cat.includes("arvore")) return "🪓";
-    if (cat.includes("lixo") || cat.includes("residuos")) return "🗑️";
-    if (cat.includes("fogo") || cat.includes("queimada")) return "🔥";
-    if (cat.includes("agua") || cat.includes("esgoto")) return "💧";
-    return "🌱"; // Padrão
-  };
-
-  // --- ESTILOS ---
+  // --- ESTILOS IDÊNTICOS AO SEU PRINT ---
   const containerStyle = {
     padding: "20px 5%",
     paddingBottom: "120px",
@@ -66,119 +52,113 @@ const Contributions = () => {
     gap: "15px"
   };
 
-  const scrollBarStyle = {
-    display: "flex",
-    gap: "10px",
-    overflowX: "auto",
-    paddingBottom: "5px",
-    scrollbarWidth: "none"
-  };
-
-  const getFiltroStyle = (filtro) => ({
-    padding: "6px 15px",
-    borderRadius: "20px",
-    backgroundColor: filtro === filtroAtivo ? "#7FB04B" : "transparent",
-    color: filtro === filtroAtivo ? "white" : "#7FB04B",
-    border: `1px solid ${filtro === filtroAtivo ? "#7FB04B" : "#A1C680"}`,
-    fontSize: "14px",
-    cursor: "pointer",
-    whiteSpace: "nowrap"
-  });
-
   const cardStyle = {
-    backgroundColor: "#F1F8E9",
+    backgroundColor: "#EBEBEB", // Cinza claro do seu print
     borderRadius: "15px",
-    padding: "15px",
+    padding: "20px 15px",
     display: "flex",
+    justifyContent: "space-between",
     alignItems: "center",
-    gap: "15px",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
-    cursor: "pointer", 
-    border: "1px solid transparent"
+    boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+    cursor: "pointer", // Mãozinha ao passar o mouse
+    transition: "transform 0.1s"
   };
 
-  const getStatusButtonStyle = (status) => {
-    let bgColor = "#7FB04B"; // Verde padrão
-    let color = "white";
+  const leftSideStyle = {
+    display: "flex",
+    flexDirection: "column",
+    gap: "5px"
+  };
 
-    if (status === "Pendente" || status?.includes("análise")) {
-      bgColor = "#FFD54F"; // Amarelo
-      color = "#2D4627";
+  const titleStyle = {
+    margin: 0,
+    color: "#2D4627", // Verde escuro
+    fontSize: "16px",
+    fontWeight: "bold",
+    textTransform: "capitalize"
+  };
+
+  const dateStyle = {
+    margin: 0,
+    color: "#666",
+    fontSize: "12px"
+  };
+
+  // Cores dos botões baseadas no seu print
+  const getStatusBadgeStyle = (status) => {
+    let bgColor = "#7FB04B"; // Verde padrão (Validado)
+    let textStatus = "Validado";
+
+    // O banco salva "Pendente", mas no seu design aparece "Em análise" em laranja
+    if (status === "Pendente" || status === "Em Análise") {
+      bgColor = "#D59A53"; // Laranja do print
+      textStatus = "Em análise";
     } else if (status === "Resolvida") {
-      bgColor = "#2D4627"; // Verde escuro
+      bgColor = "#3B75A3"; // Azul do print
+      textStatus = "Resolvido";
     }
 
     return {
-      border: "none",
-      padding: "4px 12px",
-      borderRadius: "20px",
-      backgroundColor: bgColor,
-      color: color,
-      fontSize: "12px",
-      fontWeight: "600",
-      marginTop: "4px",
-      display: "inline-block"
+      style: {
+        backgroundColor: bgColor,
+        color: "white",
+        padding: "8px 16px",
+        borderRadius: "10px",
+        fontSize: "14px",
+        fontWeight: "bold",
+        border: "none"
+      },
+      text: textStatus
     };
   };
 
-  // Aplica o filtro na lista (simples frontend)
-  const denunciasFiltradas = denuncias.filter(d => {
-    if (filtroAtivo === "Todas" || filtroAtivo === "Recentes") return true;
-    if (filtroAtivo === "Pendentes") return d.status === "Pendente" || d.status === "Em Análise";
-    if (filtroAtivo === "Aprovadas") return d.status === "Validado" || d.status === "Resolvida";
-    return true;
-  });
-
   return (
     <PageLayout title="Minhas Contribuições">
-      {/* 1. Barra de Filtros */}
-      <div style={{...containerStyle, paddingBottom: 0}}>
-          <div style={scrollBarStyle}>
-              {filtros.map(filtro => (
-                  <button key={filtro} style={getFiltroStyle(filtro)} onClick={() => setFiltroAtivo(filtro)}>
-                      {filtro}
-                  </button>
-              ))}
-          </div>
-      </div>
-
-      {/* 2. Lista de Cards */}
       <div style={containerStyle}>
+        
         {carregando && <p style={{ textAlign: "center", color: "#2D4627" }}>Carregando suas denúncias... ⏳</p>}
         {erro && <p style={{ color: "red", textAlign: "center" }}>{erro}</p>}
 
-        {!carregando && !erro && denunciasFiltradas.length === 0 && (
-          <div style={{ textAlign: "center", color: "#2D4627", marginTop: "20px" }}>
-            <p>Nenhuma denúncia encontrada para este filtro.</p>
+        {!carregando && !erro && denuncias.length === 0 && (
+          <div style={{ textAlign: "center", color: "#2D4627", marginTop: "40px" }}>
+            <h2>🌱 Nenhuma denúncia ainda!</h2>
+            <button 
+              onClick={() => navigate("/report")} 
+              style={{ backgroundColor: "#2D4627", color: "white", padding: "10px 20px", borderRadius: "10px", border: "none", marginTop: "15px", cursor: "pointer" }}
+            >
+              Fazer uma Denúncia
+            </button>
           </div>
         )}
 
-        {!carregando && denunciasFiltradas.map((denuncia) => (
-          <div 
-            key={denuncia.id} 
-            style={cardStyle} 
-            // ENVIA OS DADOS DA DENÚNCIA JUNTO COM O REDIRECIONAMENTO 👇
-            onClick={() => navigate(`/report-details/${denuncia.id}`, { state: { denunciaSelecionada: denuncia } })}
-          >
-            {/* Ícone na esquerda */}
-            <div style={{ fontSize: "30px", width: "45px", textAlign: "center" }}>
-                {getIconeCategoria(denuncia.categoria)}
-            </div>
+        {/* LISTA DE CARDS */}
+        {!carregando && denuncias.map((denuncia) => {
+          const badgeInfo = getStatusBadgeStyle(denuncia.status);
+          
+          return (
+            <div 
+              key={denuncia.id} 
+              style={cardStyle}
+              // 👇 AQUI ACONTECE A MÁGICA: Redireciona e envia os dados da denúncia!
+              onClick={() => navigate(`/report-details/${denuncia.id}`, { state: { denunciaSelecionada: denuncia } })}
+            >
+              <div style={leftSideStyle}>
+                <h3 style={titleStyle}>
+                  {denuncia.categoria.replace("_", " ")}
+                </h3>
+                {/* Como não temos data no banco ainda, coloquei a de hoje como exemplo */}
+                <p style={dateStyle}>07/04/2026</p> 
+              </div>
 
-            {/* Textos no meio e status */}
-            <div style={{ flex: 1 }}>
-              <h3 style={{ margin: 0, color: "#2D4627", fontSize: "16px", textTransform: "capitalize" }}>
-                {denuncia.categoria.replace("_", " ")}
-              </h3>
-              <p style={{ margin: "2px 0 0 0", color: "#A1C680", fontSize: "12px" }}>
-                Acompanhe o status:
-              </p>
-              <div style={getStatusButtonStyle(denuncia.status)}>
-                {denuncia.status || "Pendente"}
+              <div>
+                <button style={badgeInfo.style}>
+                  {badgeInfo.text}
+                </button>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
+
       </div>
     </PageLayout>
   );
