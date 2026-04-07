@@ -8,10 +8,12 @@ const Report = () => {
   const [preview, setPreview] = useState(null);
   const [categoria, setCategoria] = useState("");
   const [descricao, setDescricao] = useState("");
+  
+  // O estado já começa carregando para não precisarmos forçar uma atualização na primeira tela
   const [localizacao, setLocalizacao] = useState({
     lat: null,
     lng: null,
-    carregando: false,
+    carregando: true,
     erro: null
   });
 
@@ -23,8 +25,35 @@ const Report = () => {
     }
   };
 
+  // 1. Efeito para a PRIMEIRA vez que a tela abre (livre do erro de "cascading renders")
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (posicao) => {
+          setLocalizacao({
+            lat: posicao.coords.latitude,
+            lng: posicao.coords.longitude,
+            carregando: false,
+            erro: null
+          });
+        },
+        (erro) => {
+          console.error(erro);
+          setLocalizacao(prev => ({ ...prev, carregando: false, erro: "Não foi possível obter a localização." }));
+        },
+        { enableHighAccuracy: true }
+      );
+    } else {
+      // O setTimeout engana o React para ele não achar que é uma atualização síncrona na montagem
+      setTimeout(() => {
+        setLocalizacao(prev => ({ ...prev, carregando: false, erro: "GPS não suportado." }));
+      }, 0);
+    }
+  }, []);
+
+  // 2. Função exclusiva para quando o usuário CLICAR em "Atualizar GPS"
   const buscarGPS = () => {
-    setLocalizacao({ ...localizacao, carregando: true, erro: null });
+    setLocalizacao(prev => ({ ...prev, carregando: true, erro: null }));
     
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -38,34 +67,59 @@ const Report = () => {
         },
         (erro) => {
           console.error(erro);
-          setLocalizacao({ ...localizacao, carregando: false, erro: "Não foi possível obter a localização." });
+          setLocalizacao(prev => ({ ...prev, carregando: false, erro: "Não foi possível obter a localização." }));
         },
         { enableHighAccuracy: true }
       );
-    } else {
-      setLocalizacao({ ...localizacao, carregando: false, erro: "GPS não suportado neste navegador." });
     }
   };
 
-  useEffect(() => {
-    buscarGPS();
-  }, []);
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!foto || !categoria || !localizacao.lat) {
       alert("Por favor, adicione uma foto, escolha uma categoria e aguarde o GPS!");
       return;
     }
     
-    console.log("Pronto para enviar:", {
-      foto: foto.name,
-      categoria,
-      descricao,
-      lat: localizacao.lat,
-      lng: localizacao.lng
-    });
-    
-    alert("Dados coletados com sucesso! (Pronto para conectar ao Backend)");
+    const token = localStorage.getItem("token"); 
+
+    if (!token) {
+      alert("Você precisa estar logado para fazer uma denúncia!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("categoria", categoria);
+    formData.append("descricao", descricao);
+    formData.append("latitude", localizacao.lat);
+    formData.append("longitude", localizacao.lng);
+    formData.append("foto", foto);
+
+    try {
+      // CONECTANDO AO SERVIDOR HOSPEDADO NO RENDER! 🚀
+      const response = await fetch("https://ecomonitor-api.onrender.com/denuncias", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}` 
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`🎉 ${data.mensagem}\nVocê ganhou ${data.pontos_ganhos} pontos!`);
+        
+        setFoto(null);
+        setPreview(null);
+        setCategoria("");
+        setDescricao("");
+      } else {
+        const erroData = await response.json();
+        alert(`Erro ao enviar: ${erroData.detail || "Tente novamente."}`);
+      }
+    } catch (error) {
+      console.error("Erro de conexão:", error);
+      alert("Não foi possível conectar ao servidor. Verifique sua internet.");
+    }
   };
 
   const containerStyle = {
