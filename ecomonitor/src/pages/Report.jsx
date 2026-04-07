@@ -80,8 +80,7 @@ const Report = () => {
     }
     
     // Busca o token inteligentemente (tenta "token" ou "access_token")
-    const token = localStorage.getItem("token") || localStorage.getItem("access_token"); 
-
+    const token = localStorage.getItem("meuToken");
     if (!token) {
       alert("Você precisa estar logado para fazer uma denúncia!");
       return;
