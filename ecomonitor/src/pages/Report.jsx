@@ -25,7 +25,7 @@ const Report = () => {
     }
   };
 
-  // 1. Efeito para a PRIMEIRA vez que a tela abre (livre do erro de "cascading renders")
+  // 1. Efeito para a PRIMEIRA vez que a tela abre
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -44,7 +44,6 @@ const Report = () => {
         { enableHighAccuracy: true }
       );
     } else {
-      // O setTimeout engana o React para ele não achar que é uma atualização síncrona na montagem
       setTimeout(() => {
         setLocalizacao(prev => ({ ...prev, carregando: false, erro: "GPS não suportado." }));
       }, 0);
@@ -80,7 +79,8 @@ const Report = () => {
       return;
     }
     
-    const token = localStorage.getItem("token"); 
+    // Busca o token inteligentemente (tenta "token" ou "access_token")
+    const token = localStorage.getItem("token") || localStorage.getItem("access_token"); 
 
     if (!token) {
       alert("Você precisa estar logado para fazer uma denúncia!");
@@ -108,6 +108,7 @@ const Report = () => {
         const data = await response.json();
         alert(`🎉 ${data.mensagem}\nVocê ganhou ${data.pontos_ganhos} pontos!`);
         
+        // Limpa o formulário após o sucesso
         setFoto(null);
         setPreview(null);
         setCategoria("");
@@ -122,6 +123,7 @@ const Report = () => {
     }
   };
 
+  // --- ESTILOS CSS ---
   const containerStyle = {
     display: "flex", flexDirection: "column", padding: "20px 5%", 
     gap: "15px", flex: 1, paddingBottom: "120px", boxSizing: "border-box",
@@ -211,7 +213,8 @@ const Report = () => {
           <div style={{ width: "30%", backgroundColor: "#eee", display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: "hidden" }}>
              {localizacao.lat ? (
                 <img 
-                  src={`https://via.placeholder.com/150x100/2D4627/FFFFFF?text=${localizacao.lat.toFixed(2)},${localizacao.lng.toFixed(2)}`} 
+                  // CORRIGIDO AQUI 👇: Trocamos o via.placeholder pelo placehold.co (muito mais estável)
+                  src={`https://placehold.co/150x100/2D4627/FFFFFF/png?text=${localizacao.lat.toFixed(2)},${localizacao.lng.toFixed(2)}`} 
                   alt="map coordinates" 
                   style={{width: '100%', height: '100%', objectFit: 'cover'}}
                 />
