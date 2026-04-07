@@ -44,14 +44,31 @@ const ReportDetails = () => {
     padding: "15px",
   };
 
+  // --- FUNÇÃO DE STATUS CORRIGIDA E UNIFICADA ---
   const getStatusBadge = (status) => {
-    let bgColor = "#D59A53"; 
-    if (status === "Validado") bgColor = "#7FB04B"; 
-    if (status === "Resolvida") bgColor = "#3B75A3"; 
+    const statusFormatado = status ? status.toLowerCase() : "pendente";
+    
+    // Valores padrão para caso venha algum status muito louco do banco
+    let bgColor = "#888888"; 
+    let texto = status || "Desconhecido";
+
+    if (statusFormatado === "validado") {
+      bgColor = "#7FB04B"; // Verde
+      texto = "Validado";
+    } else if (statusFormatado === "resolvido" || statusFormatado === "resolvida") {
+      bgColor = "#3B75A3"; // Azul
+      texto = "Resolvido";
+    } else if (statusFormatado === "negado" || statusFormatado === "rejeitado") {
+      bgColor = "#D9534F"; // Vermelho
+      texto = "Negado";
+    } else if (statusFormatado === "pendente" || statusFormatado === "em analise" || statusFormatado === "em análise") {
+      bgColor = "#D59A53"; // Laranja
+      texto = "Em Análise"; // Unifica tudo para "Em Análise" igual à tela de contribuições!
+    }
 
     return (
       <span style={{ backgroundColor: bgColor, color: "white", padding: "4px 10px", borderRadius: "15px", fontSize: "12px", fontWeight: "bold" }}>
-        {status || "Pendente"}
+        {texto}
       </span>
     );
   };
