@@ -2,6 +2,23 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import PageLayout from "../components/PageLayout/PageLayout";
 
+// Importações do Leaflet para o mapa interativo
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Correção para o ícone padrão do Marker no React-Leaflet não sumir
+import icon from "leaflet/dist/images/marker-icon.png";
+import iconShadow from "leaflet/dist/images/marker-shadow.png";
+
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+L.Marker.prototype.options.icon = DefaultIcon;
+
 const ReportDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,26 +61,24 @@ const ReportDetails = () => {
     padding: "15px",
   };
 
-  // --- FUNÇÃO DE STATUS CORRIGIDA E UNIFICADA ---
   const getStatusBadge = (status) => {
     const statusFormatado = status ? status.toLowerCase() : "pendente";
     
-    // Valores padrão para caso venha algum status muito louco do banco
     let bgColor = "#888888"; 
     let texto = status || "Desconhecido";
 
     if (statusFormatado === "validado") {
-      bgColor = "#7FB04B"; // Verde
+      bgColor = "#7FB04B";
       texto = "Validado";
     } else if (statusFormatado === "resolvido" || statusFormatado === "resolvida") {
-      bgColor = "#3B75A3"; // Azul
+      bgColor = "#3B75A3";
       texto = "Resolvido";
     } else if (statusFormatado === "negado" || statusFormatado === "rejeitado") {
-      bgColor = "#D9534F"; // Vermelho
+      bgColor = "#D9534F";
       texto = "Negado";
     } else if (statusFormatado === "pendente" || statusFormatado === "em analise" || statusFormatado === "em análise") {
-      bgColor = "#D59A53"; // Laranja
-      texto = "Em Análise"; // Unifica tudo para "Em Análise" igual à tela de contribuições!
+      bgColor = "#D59A53";
+      texto = "Em Análise";
     }
 
     return (
@@ -73,12 +88,49 @@ const ReportDetails = () => {
     );
   };
 
-  const historicoMock = [
-    { data: "15/10/2023", hora: "14:30", texto: "Denúncia enviada pelo usuário\n(+50 pts)" },
-    { data: "16/10/2023", hora: "10:15", texto: "Status alterado para \"em análise\"\n(by admin)" },
-    { data: "18/10/2023", hora: "09:00", texto: "Status alterado para \"validado\"" },
-    { data: "20/10/2023", hora: "08:00", texto: "Programação de coleta de lixo" }
-  ];
+  const formatarData = (dataIso) => {
+    if (!dataIso) return "Data indisponível";
+    const date = new Date(dataIso);
+    if (isNaN(date.getTime())) return "Data indisponível";
+    return date.toLocaleDateString("pt-BR");
+  };
+
+  const formatarHora = (dataIso) => {
+    if (!dataIso) return "--:--";
+    const date = new Date(dataIso);
+    if (isNaN(date.getTime())) return "--:--";
+    return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const dataBase = denuncia.data_criacao || denuncia.criado_em || new Date().toISOString();
+
+  const gerarHistorico = () => {
+    const historico = [
+      { 
+        data: formatarData(dataBase), 
+        hora: formatarHora(dataBase), 
+        texto: "Denúncia enviada pelo usuário\n(+50 pts)" 
+      }
+    ];
+
+    const statusFormatado = denuncia.status ? denuncia.status.toLowerCase() : "pendente";
+
+    if (statusFormatado !== "pendente" && statusFormatado !== "em analise" && statusFormatado !== "em análise") {
+      historico.push({
+        data: formatarData(new Date().toISOString()),
+        hora: formatarHora(new Date().toISOString()),
+        texto: `Status atualizado para "${denuncia.status}"`
+      });
+    }
+
+    return historico;
+  };
+
+  const historicoDinamico = gerarHistorico();
+
+  const posicaoMapa = denuncia.latitude && denuncia.longitude 
+    ? [denuncia.latitude, denuncia.longitude] 
+    : null;
 
   return (
     <PageLayout title="Detalhes da denúncia">
@@ -96,19 +148,18 @@ const ReportDetails = () => {
 
         <div style={whiteCardStyle}>
           
-          {/* 1. DADOS GERAIS */}
           <div>
             <h3 style={sectionTitleStyle}>Dados gerais</h3>
             <div style={{ ...grayBoxStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
                 <span style={{ fontSize: "12px", fontWeight: "bold", color: "#2D4627" }}>Categoria</span>
                 <span style={{ fontSize: "12px", color: "#444", textTransform: "capitalize" }}>
-                  {denuncia.categoria.replace("_", " ")}
+                  {denuncia.categoria ? denuncia.categoria.replace("_", " ") : "Desconhecida"}
                 </span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
                 <span style={{ fontSize: "12px", fontWeight: "bold", color: "#2D4627" }}>Data</span>
-                <span style={{ fontSize: "12px", color: "#444" }}>15/10/2023</span>
+                <span style={{ fontSize: "12px", color: "#444" }}>{formatarData(dataBase)}</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "5px", alignItems: "center" }}>
                 <span style={{ fontSize: "12px", fontWeight: "bold", color: "#2D4627" }}>Status</span>
@@ -117,7 +168,6 @@ const ReportDetails = () => {
             </div>
           </div>
 
-          {/* 2. DESCRIÇÃO COMPLETA */}
           <div>
             <h3 style={sectionTitleStyle}>Descrição completa</h3>
             <div style={grayBoxStyle}>
@@ -127,12 +177,11 @@ const ReportDetails = () => {
             </div>
           </div>
 
-          {/* 3. IMAGENS */}
           <div>
             <h3 style={sectionTitleStyle}>Imagens</h3>
             <div style={{ display: "flex", gap: "10px", overflowX: "auto" }}>
               <img 
-                src={`https://ecomonitor-api.onrender.com/${denuncia.foto_url}`} 
+                src={denuncia.foto_url ? `https://ecomonitor-api.onrender.com/${denuncia.foto_url}` : "https://placehold.co/100x100/cccccc/ffffff?text=Sem+Foto"} 
                 alt="Denúncia" 
                 style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "15px" }}
                 onError={(e) => { e.target.src = "https://placehold.co/100x100/cccccc/ffffff?text=Sem+Foto" }}
@@ -140,27 +189,41 @@ const ReportDetails = () => {
             </div>
           </div>
 
-          {/* 4. LOCALIZAÇÃO */}
           <div>
             <h3 style={sectionTitleStyle}>Localização capturada</h3>
-            <div style={{ ...grayBoxStyle, display: "flex", gap: "15px", alignItems: "center", padding: "10px" }}>
-              <img 
-                src={`https://placehold.co/120x80/e8f2db/2D4627/png?text=Mapa`} 
-                alt="Mapa" 
-                style={{ width: "100px", height: "60px", objectFit: "cover", borderRadius: "8px" }}
-              />
-              <div style={{ fontSize: "12px", color: "#444", lineHeight: "1.4" }}>
-                Lat: {denuncia.latitude?.toFixed(4)}<br/>
-                Lng: {denuncia.longitude?.toFixed(4)}
+            <div style={{ ...grayBoxStyle, padding: "0", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+              {/* Mapa Interativo */}
+              {posicaoMapa ? (
+                <div style={{ height: "150px", width: "100%", zIndex: 0 }}>
+                  <MapContainer 
+                    center={posicaoMapa} 
+                    zoom={16} 
+                    style={{ height: "100%", width: "100%" }}
+                    zoomControl={false}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <Marker position={posicaoMapa} />
+                  </MapContainer>
+                </div>
+              ) : (
+                <div style={{ height: "150px", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#e8f2db", color: "#2D4627", fontSize: "12px" }}>
+                  Coordenadas não disponíveis
+                </div>
+              )}
+              {/* Coordenadas abaixo do mapa */}
+              <div style={{ padding: "10px 15px", fontSize: "12px", color: "#444", borderTop: "1px solid #ddd", display: "flex", justifyContent: "space-between" }}>
+                <span><strong>Lat:</strong> {denuncia.latitude ? denuncia.latitude.toFixed(6) : "N/D"}</span>
+                <span><strong>Lng:</strong> {denuncia.longitude ? denuncia.longitude.toFixed(6) : "N/D"}</span>
               </div>
             </div>
           </div>
 
-          {/* 5. HISTÓRICO */}
           <div>
             <h3 style={sectionTitleStyle}>Histórico</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "0", marginTop: "10px" }}>
-              {historicoMock.map((item, index) => (
+              {historicoDinamico.map((item, index) => (
                 <div key={index} style={{ display: "flex", gap: "15px", minHeight: "50px" }}>
                   <div style={{ width: "70px", textAlign: "right", fontSize: "11px", color: "#444", paddingTop: "2px" }}>
                     <div>{item.data}</div>
@@ -168,7 +231,7 @@ const ReportDetails = () => {
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "20px" }}>
                     <div style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#2D4627", zIndex: 2 }}></div>
-                    {index !== historicoMock.length - 1 && (
+                    {index !== historicoDinamico.length - 1 && (
                       <div style={{ width: "2px", flex: 1, backgroundColor: "#2D4627", marginTop: "-2px", marginBottom: "-2px" }}></div>
                     )}
                   </div>
