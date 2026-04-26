@@ -59,6 +59,21 @@ const ReportDetails = () => {
     padding: "15px",
   };
 
+  const formatarNomeCategoria = (slug) => {
+    if (!slug) return "Desconhecida";
+    const nomes = {
+      lixo: "Descarte Irregular de Lixo",
+      desmatamento: "Desmatamento",
+      poluicao_agua: "Poluição da Água",
+      queimada: "Queimada",
+      poluicao_ar: "Poluição do Ar",
+      animais: "Maus-tratos Animais",
+      foco_mosquito: "Foco de Mosquito",
+      esgoto: "Esgoto Aberto"
+    };
+    return nomes[slug] || slug.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase());
+  };
+
   const getStatusBadge = (status) => {
     const statusFormatado = status ? status.toLowerCase() : "pendente";
     
@@ -151,8 +166,8 @@ const ReportDetails = () => {
             <div style={{ ...grayBoxStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
                 <span style={{ fontSize: "12px", fontWeight: "bold", color: "#2D4627" }}>Categoria</span>
-                <span style={{ fontSize: "12px", color: "#444", textTransform: "capitalize" }}>
-                  {denuncia.categoria ? denuncia.categoria.replace("_", " ") : "Desconhecida"}
+                <span style={{ fontSize: "12px", color: "#444" }}>
+                  {formatarNomeCategoria(denuncia.categoria)}
                 </span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
@@ -189,9 +204,9 @@ const ReportDetails = () => {
 
           <div>
             <h3 style={sectionTitleStyle}>Localização capturada</h3>
-            <div style={{ ...grayBoxStyle, padding: "0", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-=              {posicaoMapa ? (
-                <div style={{ height: "150px", width: "100%", zIndex: 0 }}>
+            <div style={{ ...grayBoxStyle, padding: "0", overflow: "hidden", display: "flex", flexDirection: "row", height: "90px" }}>
+              {posicaoMapa ? (
+                <div style={{ height: "100%", width: "40%", zIndex: 0 }}>
                   <MapContainer 
                     center={posicaoMapa} 
                     zoom={16} 
@@ -205,11 +220,11 @@ const ReportDetails = () => {
                   </MapContainer>
                 </div>
               ) : (
-                <div style={{ height: "150px", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#e8f2db", color: "#2D4627", fontSize: "12px" }}>
-                  Coordenadas não disponíveis
+                <div style={{ height: "100%", width: "40%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#e8f2db", color: "#2D4627", fontSize: "11px", textAlign: "center" }}>
+                  Sem mapa
                 </div>
               )}
-              <div style={{ padding: "10px 15px", fontSize: "12px", color: "#444", borderTop: "1px solid #ddd", display: "flex", justifyContent: "space-between" }}>
+              <div style={{ flex: 1, padding: "0 15px", fontSize: "12px", color: "#444", display: "flex", flexDirection: "column", justifyContent: "center", gap: "4px" }}>
                 <span><strong>Lat:</strong> {denuncia.latitude ? denuncia.latitude.toFixed(6) : "N/D"}</span>
                 <span><strong>Lng:</strong> {denuncia.longitude ? denuncia.longitude.toFixed(6) : "N/D"}</span>
               </div>

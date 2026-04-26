@@ -119,6 +119,7 @@ const Report = () => {
         const erroData = await response.json();
         setMensagem({ texto: `Erro: ${erroData.detail || "Tente novamente."}`, tipo: "erro" });
       }
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setMensagem({ texto: "Erro de conexão com o servidor.", tipo: "erro" });
     } finally {
