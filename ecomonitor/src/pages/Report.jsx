@@ -4,19 +4,17 @@ import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Correção para o ícone do marcador do Leaflet não sumir em produção
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
 let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Sub-componente para atualizar a visão do mapa quando a localização mudar
 const RecenterMap = ({ lat, lng }) => {
   const map = useMap();
   useEffect(() => {
@@ -33,6 +31,9 @@ const Report = () => {
   const [categoria, setCategoria] = useState("");
   const [descricao, setDescricao] = useState("");
   
+  const [enviando, setEnviando] = useState(false);
+  const [mensagem, setMensagem] = useState({ texto: "", tipo: "" }); 
+
   const [localizacao, setLocalizacao] = useState({
     lat: null,
     lng: null,
@@ -77,16 +78,20 @@ const Report = () => {
   }, []);
 
   const handleSubmit = async () => {
+    setMensagem({ texto: "", tipo: "" });
+
     if (!foto || !categoria || !localizacao.lat) {
-      alert("⚠️ Preencha: Foto, Categoria e aguarde o GPS!");
+      setMensagem({ texto: "⚠️ Preencha: Foto, Categoria e aguarde o GPS!", tipo: "erro" });
       return;
     }
     
     const token = localStorage.getItem("meuToken");
     if (!token) {
-      alert("❌ Você precisa estar logado!");
+      setMensagem({ texto: "❌ Você precisa estar logado!", tipo: "erro" });
       return;
     }
+
+    setEnviando(true);
 
     const formData = new FormData();
     formData.append("categoria", categoria);
@@ -104,18 +109,23 @@ const Report = () => {
 
       if (response.ok) {
         const data = await response.json();
-        alert(`🎉 Denúncia enviada!\nVocê ganhou ${data.pontos_ganhos} pontos!`);
+        setMensagem({ texto: `🎉 Denúncia enviada! Você ganhou ${data.pontos_ganhos} pontos!`, tipo: "sucesso" });
         setFoto(null); setPreview(null); setCategoria(""); setDescricao("");
+        
+        setTimeout(() => {
+          setMensagem({ texto: "", tipo: "" });
+        }, 5000);
       } else {
         const erroData = await response.json();
-        alert(`Erro: ${erroData.detail || "Tente novamente."}`);
+        setMensagem({ texto: `Erro: ${erroData.detail || "Tente novamente."}`, tipo: "erro" });
       }
     } catch (error) {
-      alert("Erro de conexão com o servidor.");
+      setMensagem({ texto: "Erro de conexão com o servidor.", tipo: "erro" });
+    } finally {
+      setEnviando(false);
     }
   };
 
-  // --- ESTILOS ---
   const containerStyle = { display: "flex", flexDirection: "column", padding: "20px 5%", gap: "15px", paddingBottom: "120px" };
   const uploadBoxStyle = {
     border: preview ? "none" : "2px dashed #78A64B", borderRadius: "15px", backgroundColor: preview ? "transparent" : "#F1F8E9",
@@ -124,11 +134,20 @@ const Report = () => {
   const locationCardStyle = { display: "flex", backgroundColor: "#7FB04B", borderRadius: "10px", overflow: "hidden", height: "100px", width: "100%" };
   const inputStyle = { width: "100%", backgroundColor: "#7FB04B", color: "white", border: "none", borderRadius: "10px", padding: "12px", appearance: "none" };
 
+  const mensagemStyle = {
+    padding: "10px",
+    borderRadius: "10px",
+    textAlign: "center",
+    fontWeight: "bold",
+    fontSize: "14px",
+    backgroundColor: mensagem.tipo === "sucesso" ? "#DFF2BF" : "#FFD2D2",
+    color: mensagem.tipo === "sucesso" ? "#2D4627" : "#D8000C",
+  };
+
   return (
     <PageLayout title="Nova denúncia">
       <div style={containerStyle}>
         
-        {/* INPUT DE CÂMERA PRIORITÁRIO */}
         <input 
           type="file" accept="image/*" capture="environment" 
           style={{ display: "none" }} ref={fileInputRef} onChange={handleFotoChange} 
@@ -147,13 +166,16 @@ const Report = () => {
 
         <select style={inputStyle} value={categoria} onChange={(e) => setCategoria(e.target.value)}>
           <option value="" disabled>Escolha a Categoria</option>
-          <option value="lixo">Lixo / Descarte Irregular</option>
-          <option value="agua">Foco de Água Parada</option>
-          <option value="queimada">Queimada / Poluição</option>
+          <option value="lixo">Descarte Irregular de lixo</option>
+          <option value="desmatamento">Desmatamento</option>
+          <option value="poluicao_agua">Poluição da Água</option>
+          <option value="queimada">Queimada</option>
+          <option value="poluicao_ar">Poluição do Ar</option>
+          <option value="animais">Maus-tratos aos Animais</option>
+          <option value="foco_mosquito">Foco de Mosquito</option>
           <option value="esgoto">Esgoto a Céu Aberto</option>
         </select>
 
-        {/* CARD DE LOCALIZAÇÃO COM MAPA LEAFLET */}
         <div style={locationCardStyle}>
           <div style={{ width: "40%", backgroundColor: "#ddd", position: "relative" }}>
             {localizacao.lat ? (
@@ -189,12 +211,56 @@ const Report = () => {
           value={descricao} onChange={(e) => setDescricao(e.target.value)}
         />
 
+        {mensagem.texto && (
+          <div style={mensagemStyle}>
+            {mensagem.texto}
+          </div>
+        )}
+
         <button 
-          style={{ backgroundColor: "#2D4627", color: "white", border: "none", borderRadius: "10px", padding: "15px", fontSize: "18px", fontWeight: "bold" }}
+          style={{ 
+            backgroundColor: enviando ? "#5c7556" : "#2D4627", 
+            color: "white", 
+            border: "none", 
+            borderRadius: "10px", 
+            padding: "15px", 
+            fontSize: "18px", 
+            fontWeight: "bold",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: "10px",
+            cursor: enviando ? "not-allowed" : "pointer",
+            opacity: enviando ? 0.8 : 1
+          }}
           onClick={handleSubmit}
+          disabled={enviando}
         >
-          Enviar Denúncia
+          {enviando ? (
+            <>
+              <style>
+                {`
+                  @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
+                `}
+              </style>
+              <div style={{
+                border: "3px solid rgba(255,255,255,0.3)",
+                borderTop: "3px solid white",
+                borderRadius: "50%",
+                width: "20px",
+                height: "20px",
+                animation: "spin 1s linear infinite"
+              }} />
+              Enviando...
+            </>
+          ) : (
+            "Enviar Denúncia"
+          )}
         </button>
+
       </div>
     </PageLayout>
   );

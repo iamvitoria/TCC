@@ -28,6 +28,7 @@ const Contributions = () => {
 
         if (response.ok) {
           const data = await response.json();
+          console.log("DADOS DA API:", data);
           setDenuncias(data); 
         } else {
           setErro("Não foi possível carregar as denúncias.");
@@ -46,9 +47,10 @@ const Contributions = () => {
 
   const formatarNomeCategoria = (slug) => {
     const nomes = {
-      lixo: "Descarte de Lixo",
+      lixo: "Descarte Irregular de Lixo",
       desmatamento: "Desmatamento",
       poluicao_agua: "Poluição da Água",
+      queimada: "Queimada",
       poluicao_ar: "Poluição do Ar",
       animais: "Maus-tratos Animais",
       foco_mosquito: "Foco de Mosquito",
@@ -58,15 +60,20 @@ const Contributions = () => {
   };
 
   const formatarData = (dataIso) => {
-    // Se a data vier do banco como null ou undefined
     if (!dataIso) return "Data não informada"; 
 
-    const data = new Date(dataIso);
-    
-    // Verifica se o objeto Date é válido
-    if (isNaN(data.getTime())) return "Data em processamento";
+    try {
+      const data = new Date(dataIso);
+      
+      if (isNaN(data.getTime())) {
+         console.warn("Data inválida recebida:", dataIso);
+         return "Processando data...";
+      }
 
-    return data.toLocaleDateString("pt-BR");
+      return data.toLocaleDateString("pt-BR");
+    } catch (e) {
+      return "Erro no formato";
+    }
   };
 
   const containerStyle = {
@@ -143,18 +150,13 @@ const Contributions = () => {
 
         {!carregando && !erro && denuncias.length === 0 && (
           <div style={{ textAlign: "center", color: "#2D4627", marginTop: "40px" }}>
-            <h2>🌱 Nenhuma denúncia ainda!</h2>
-            <button 
-              onClick={() => navigate("/report")} 
-              style={{ backgroundColor: "#2D4627", color: "white", padding: "10px 20px", borderRadius: "10px", border: "none", marginTop: "15px", cursor: "pointer" }}
-            >
-              Fazer uma Denúncia
-            </button>
+            <h2>Nenhuma denúncia relatada</h2>
           </div>
         )}
 
         {!carregando && denuncias.map((denuncia) => {
           const badgeInfo = getStatusBadgeStyle(denuncia.status);
+          const dataReal = denuncia.data_criacao || denuncia.created_at;
           
           return (
             <div 
@@ -167,7 +169,7 @@ const Contributions = () => {
                   {formatarNomeCategoria(denuncia.categoria)}
                 </h3>
                 <p style={dateStyle}>
-                  {formatarData(denuncia.data_criacao || denuncia.created_at)}
+                  {formatarData(dataReal)}
                 </p>
               </div>
 

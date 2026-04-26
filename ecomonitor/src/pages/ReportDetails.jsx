@@ -2,12 +2,10 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import PageLayout from "../components/PageLayout/PageLayout";
 
-// Importações do Leaflet para o mapa interativo
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// Correção para o ícone padrão do Marker no React-Leaflet não sumir
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
@@ -192,8 +190,7 @@ const ReportDetails = () => {
           <div>
             <h3 style={sectionTitleStyle}>Localização capturada</h3>
             <div style={{ ...grayBoxStyle, padding: "0", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-              {/* Mapa Interativo */}
-              {posicaoMapa ? (
+=              {posicaoMapa ? (
                 <div style={{ height: "150px", width: "100%", zIndex: 0 }}>
                   <MapContainer 
                     center={posicaoMapa} 
@@ -212,7 +209,6 @@ const ReportDetails = () => {
                   Coordenadas não disponíveis
                 </div>
               )}
-              {/* Coordenadas abaixo do mapa */}
               <div style={{ padding: "10px 15px", fontSize: "12px", color: "#444", borderTop: "1px solid #ddd", display: "flex", justifyContent: "space-between" }}>
                 <span><strong>Lat:</strong> {denuncia.latitude ? denuncia.latitude.toFixed(6) : "N/D"}</span>
                 <span><strong>Lng:</strong> {denuncia.longitude ? denuncia.longitude.toFixed(6) : "N/D"}</span>
