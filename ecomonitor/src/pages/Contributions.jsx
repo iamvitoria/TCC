@@ -43,7 +43,26 @@ const Contributions = () => {
     buscarDenuncias();
   }, []);
 
-  // --- ESTILOS IDÊNTICOS AO SEU PRINT ---
+
+  const formatarNomeCategoria = (slug) => {
+    const nomes = {
+      lixo: "Descarte de Lixo",
+      desmatamento: "Desmatamento",
+      poluicao_agua: "Poluição da Água",
+      poluicao_ar: "Poluição do Ar",
+      animais: "Maus-tratos Animais",
+      foco_mosquito: "Foco de Mosquito",
+      esgoto: "Esgoto Aberto"
+    };
+    return nomes[slug] || slug.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const formatarData = (dataIso) => {
+    if (!dataIso) return "Data não disponível";
+    const data = new Date(dataIso);
+    return data.toLocaleDateString("pt-BR");
+  };
+
   const containerStyle = {
     padding: "20px 5%",
     paddingBottom: "120px",
@@ -53,14 +72,14 @@ const Contributions = () => {
   };
 
   const cardStyle = {
-    backgroundColor: "#EBEBEB", // Cinza claro do seu print
+    backgroundColor: "#EBEBEB",
     borderRadius: "15px",
     padding: "20px 15px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-    cursor: "pointer", // Mãozinha ao passar o mouse
+    cursor: "pointer",
     transition: "transform 0.1s"
   };
 
@@ -72,10 +91,9 @@ const Contributions = () => {
 
   const titleStyle = {
     margin: 0,
-    color: "#2D4627", // Verde escuro
+    color: "#2D4627",
     fontSize: "16px",
-    fontWeight: "bold",
-    textTransform: "capitalize"
+    fontWeight: "bold"
   };
 
   const dateStyle = {
@@ -84,17 +102,15 @@ const Contributions = () => {
     fontSize: "12px"
   };
 
-  // Cores dos botões baseadas no seu print
   const getStatusBadgeStyle = (status) => {
-    let bgColor = "#7FB04B"; // Verde padrão (Validado)
+    let bgColor = "#7FB04B"; 
     let textStatus = "Validado";
 
-    // O banco salva "Pendente", mas no seu design aparece "Em análise" em laranja
     if (status === "Pendente" || status === "Em Análise") {
-      bgColor = "#D59A53"; // Laranja do print
+      bgColor = "#D59A53"; 
       textStatus = "Em análise";
     } else if (status === "Resolvida") {
-      bgColor = "#3B75A3"; // Azul do print
+      bgColor = "#3B75A3"; 
       textStatus = "Resolvido";
     }
 
@@ -131,7 +147,6 @@ const Contributions = () => {
           </div>
         )}
 
-        {/* LISTA DE CARDS */}
         {!carregando && denuncias.map((denuncia) => {
           const badgeInfo = getStatusBadgeStyle(denuncia.status);
           
@@ -139,15 +154,15 @@ const Contributions = () => {
             <div 
               key={denuncia.id} 
               style={cardStyle}
-              // 👇 AQUI ACONTECE A MÁGICA: Redireciona e envia os dados da denúncia!
               onClick={() => navigate(`/report-details/${denuncia.id}`, { state: { denunciaSelecionada: denuncia } })}
             >
               <div style={leftSideStyle}>
                 <h3 style={titleStyle}>
-                  {denuncia.categoria.replace("_", " ")}
+                  {formatarNomeCategoria(denuncia.categoria)}
                 </h3>
-                {/* Como não temos data no banco ainda, coloquei a de hoje como exemplo */}
-                <p style={dateStyle}>07/04/2026</p> 
+                <p style={dateStyle}>
+                  {formatarData(denuncia.data_criacao)}
+                </p> 
               </div>
 
               <div>
