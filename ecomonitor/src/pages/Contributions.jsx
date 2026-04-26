@@ -161,8 +161,8 @@ const Contributions = () => {
                   {formatarNomeCategoria(denuncia.categoria)}
                 </h3>
                 <p style={dateStyle}>
-                  {formatarData(denuncia.data_criacao)}
-                </p> 
+                  {formatarData(denuncia.data_criacao || denuncia.created_at)}
+                </p>
               </div>
 
               <div>
