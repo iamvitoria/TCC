@@ -58,8 +58,14 @@ const Contributions = () => {
   };
 
   const formatarData = (dataIso) => {
-    if (!dataIso) return "Data não disponível";
+    // Se a data vier do banco como null ou undefined
+    if (!dataIso) return "Data não informada"; 
+
     const data = new Date(dataIso);
+    
+    // Verifica se o objeto Date é válido
+    if (isNaN(data.getTime())) return "Data em processamento";
+
     return data.toLocaleDateString("pt-BR");
   };
 
