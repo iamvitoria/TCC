@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
   const [busca, setBusca] = useState('');
@@ -9,16 +10,19 @@ export default function AdminDashboard() {
   const [denuncias, setDenuncias] = useState([]);
   const [carregando, setCarregando] = useState(true);
 
+  const navigate = useNavigate();
+  
   useEffect(() => {
     buscarDenuncias();
   }, []);
 
   const buscarDenuncias = async () => {
     try {
-      const resposta = await fetch('https://ecomonitor-api.onrender.com/minhas-denuncias'); 
+      const resposta = await fetch('https://ecomonitor-api.onrender.com/denuncias'); 
       
       if (resposta.ok) {
         const dados = await resposta.json();
+        console.log("Dados recebidos:", dados);
         setDenuncias(dados);
       } else {
         console.error("Erro ao buscar dados do servidor");
@@ -40,7 +44,7 @@ export default function AdminDashboard() {
     <div style={{ backgroundColor: '#f4f4f4', minHeight: '100vh', paddingBottom: '20px' }}>
       
       <header style={{ backgroundColor: '#2C5E2E', color: 'white', padding: '20px', textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>
-        Denúncias Recebidas (Gestão)
+        Denúncias Recebidas
       </header>
 
       <main style={{ padding: '20px' }}>
@@ -68,9 +72,10 @@ export default function AdminDashboard() {
               <label style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#333' }}>Status</label>
               <select value={status} onChange={(e) => setStatus(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: 'none' }}>
                 <option>Todos</option>
-                <option>Pendente</option>
                 <option>Em análise</option>
                 <option>Validado</option>
+                <option>Resolvido</option>
+                <option>Cancelado</option>
               </select>
             </div>
 
@@ -101,7 +106,7 @@ export default function AdminDashboard() {
                   boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
                   cursor: 'pointer' 
                 }}
-                //onClick={() => navigate(`/admin/denuncia/${denuncia.id}`)}
+                onClick={() => navigate(`/admin/denuncia/${denuncia.id}`)}
               >
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', width: '70%' }}>

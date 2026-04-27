@@ -10,6 +10,7 @@ import Ranking from './pages/Ranking';
 import Report from './pages/Report';
 import ReportDetails from "./pages/ReportDetails";
 import AdminDashboard from './pages/AdminDashboard';
+import AdminReportDetails from './pages/AdminReportDetails';
 import "./App.css";
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
         <Route path="/denuncia" element={<Report />} />
         <Route path="/report-details/:id" element={<ReportDetails />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/denuncia/:id" element={<AdminReportDetails />} />
       </Routes>
     </BrowserRouter>
   );
