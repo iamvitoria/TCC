@@ -71,8 +71,7 @@ const Contributions = () => {
       }
 
       return data.toLocaleDateString("pt-BR");
-    // eslint-disable-next-line no-unused-vars
-    } catch (e) {
+    } catch {
       return "Erro no formato";
     }
   };

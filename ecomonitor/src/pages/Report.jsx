@@ -109,7 +109,7 @@ const Report = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setMensagem({ texto: `🎉 Denúncia enviada! Você ganhou ${data.pontos_ganhos} pontos!`, tipo: "sucesso" });
+        setMensagem({ texto: `Denúncia enviada! Você ganhou ${data.pontos_ganhos} pontos!`, tipo: "sucesso" });
         setFoto(null); setPreview(null); setCategoria(""); setDescricao("");
         
         setTimeout(() => {

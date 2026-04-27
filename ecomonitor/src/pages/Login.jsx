@@ -39,7 +39,7 @@ const Login = () => {
         const dados = await resposta.json();
         localStorage.setItem('meuToken', dados.access_token);
         
-        setAlerta({ visivel: true, texto: "Login feito com sucesso! 🎉 Redirecionando...", tipo: "sucesso" });
+        setAlerta({ visivel: true, texto: "Login feito com sucesso!", tipo: "sucesso" });
         
         setTimeout(() => {
           navigate("/home");
@@ -137,8 +137,8 @@ const Login = () => {
           Não tem conta? Cadastre-se
         </p>
         
-        <p className="link-text" onClick={() => navigate("/home")}>
-          Acessar sem login
+        <p className="link-text" onClick={() => navigate("/admin-dashboard")}>
+          Logar como admin
         </p>
       </div>
     </div>
