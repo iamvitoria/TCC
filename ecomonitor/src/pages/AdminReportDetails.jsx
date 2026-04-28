@@ -73,39 +73,47 @@ export default function AdminReportDetails() {
   }
 
   return (
-    <div style={{ backgroundColor: '#f4f4f4', height: '100vh', overflowY: 'auto', paddingBottom: '40px' }}>
+    <div style={{ backgroundColor: '#f4f4f4', height: '100vh', overflowY: 'auto', paddingBottom: '40px', fontFamily: 'sans-serif' }}>
       
-      <header style={{ backgroundColor: '#2C5E2E', color: 'white', padding: '20px', textAlign: 'center' }}>
+      <header style={{ backgroundColor: '#2C5E2E', color: 'white', padding: '20px', textAlign: 'center', position: 'relative' }}>
+        <button 
+          onClick={() => navigate('/admin-dashboard')}
+          style={{ position: 'absolute', left: '20px', top: '22px', background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer' }}
+        >
+          ←
+        </button>
         <h1 style={{ fontSize: '1.2rem', margin: 0 }}>Detalhes da denúncia (adm)</h1>
       </header>
 
       <main style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
         
+        {/* INFORMAÇÕES DA DENÚNCIA */}
         <section>
           <h2 style={{ fontSize: '1.1rem', color: '#2C5E2E', marginBottom: '10px' }}>Informações da Denúncia</h2>
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
             
             <div style={{ backgroundColor: '#EAEAEA', padding: '10px', borderRadius: '8px' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block' }}>Categoria</span>
-              <span>{denuncia.categoria}</span>
+              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block', color: '#4A7C59' }}>Categoria</span>
+              <span style={{ fontSize: '0.9rem' }}>{denuncia.categoria}</span>
             </div>
             
             <div style={{ backgroundColor: '#EAEAEA', padding: '10px', borderRadius: '8px' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block' }}>Data</span>
-              <span>{formatarData(denuncia.data_criacao)}</span>
+              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block', color: '#4A7C59' }}>Data</span>
+              <span style={{ fontSize: '0.9rem' }}>{formatarData(denuncia.data_criacao)}</span>
             </div>
 
             <div style={{ backgroundColor: '#EAEAEA', padding: '10px', borderRadius: '8px', gridColumn: 'span 2' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block' }}>Descrição</span>
-              <span>{denuncia.descricao || 'Nenhuma descrição informada'}</span>
+              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block', color: '#4A7C59' }}>Descrição</span>
+              <span style={{ fontSize: '0.9rem' }}>{denuncia.descricao || 'Nenhuma descrição informada'}</span>
             </div>
 
             <div style={{ gridColumn: 'span 2', height: '120px', backgroundColor: '#ddd', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
-              <p style={{ color: '#666', fontSize: '0.9rem' }}>Mapa: Lat {denuncia.latitude?.toFixed(4)}, Lng {denuncia.longitude?.toFixed(4)}</p>
+              <p style={{ color: '#666', fontSize: '0.8rem' }}>Mapa: Lat {denuncia.latitude?.toFixed(4)}, Lng {denuncia.longitude?.toFixed(4)}</p>
             </div>
           </div>
         </section>
 
+        {/* FOTO */}
         <section>
           <h2 style={{ fontSize: '1.1rem', color: '#2C5E2E', marginBottom: '10px' }}>Foto</h2>
           {denuncia.foto_url ? (
@@ -121,26 +129,41 @@ export default function AdminReportDetails() {
           )}
         </section>
 
+        {/* INFORMAÇÕES DO USUÁRIO - DINÂMICO */}
         <section>
-          <h2 style={{ fontSize: '1.1rem', color: '#2C5E2E', marginBottom: '10px' }}>Informações do Usuário</h2>
-          <div style={{ backgroundColor: '#EAEAEA', padding: '15px', borderRadius: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+          <h2 style={{ fontSize: '1.1rem', color: '#2C5E2E', marginBottom: '10px', fontWeight: 'bold' }}>
+            Informações do Usuário
+          </h2>
+          <div style={{ 
+            backgroundColor: '#EAEAEA', 
+            padding: '20px', 
+            borderRadius: '20px', 
+            display: 'grid', 
+            gridTemplateColumns: '1fr 1fr 1fr', 
+            gap: '15px' 
+          }}>
             <div>
-              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block' }}>Nome</span>
-              <span style={{ fontSize: '0.9rem' }}>
-                {denuncia.usuario?.nome || 'Usuário desconhecido'}
+              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#4A7C59', display: 'block' }}>Nome</span>
+              <span style={{ fontSize: '14px', color: '#555' }}>
+                {denuncia.usuario?.nome || 'Não identificado'}
               </span>
             </div>
             <div>
-              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block' }}>Região</span>
-              <span style={{ fontSize: '0.9rem' }}>Santa Maria</span> {/* Ou denuncia.usuario.regiao se tiver no banco */}
+              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#4A7C59', display: 'block' }}>Região</span>
+              <span style={{ fontSize: '14px', color: '#555' }}>
+                {denuncia.usuario?.regiao || 'Santa Maria'}
+              </span>
             </div>
             <div>
-              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block' }}>Status Conta</span>
-              <span style={{ fontSize: '0.9rem' }}>Ativa</span>
+              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#4A7C59', display: 'block' }}>Contribuições</span>
+              <span style={{ fontSize: '14px', color: '#555' }}>
+                {denuncia.usuario?.contribuicoes ?? 0} denúncias
+              </span>
             </div>
           </div>
         </section>
 
+        {/* AÇÕES ADMINISTRATIVAS */}
         <section>
           <h2 style={{ fontSize: '1.1rem', color: '#2C5E2E', marginBottom: '10px' }}>Ações Administrativas</h2>
           <div style={{ backgroundColor: 'white', padding: '15px', borderRadius: '15px', border: '1px solid #ddd', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
@@ -154,7 +177,7 @@ export default function AdminReportDetails() {
             <select 
               value={novoStatus} 
               onChange={(e) => setNovoStatus(e.target.value)}
-              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '15px', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '15px', fontSize: '1rem', outline: 'none' }}
             >
               <option value="Em análise">Em análise</option>
               <option value="Validado">Validado</option>

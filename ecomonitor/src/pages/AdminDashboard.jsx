@@ -14,15 +14,25 @@ export default function AdminDashboard() {
   }, []);
 
   const buscarDenuncias = async () => {
+    setCarregando(true);
     try {
-      const resposta = await fetch('https://ecomonitor-api.onrender.com/denuncias');
+      const resposta = await fetch(`https://ecomonitor-api.onrender.com/denuncias?t=${new Date().getTime()}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
       if (resposta.ok) {
         const dados = await resposta.json();
-        console.log("DADOS DO BANCO:", dados); 
-        setDenuncias(dados.sort((a, b) => b.id - a.id));
+        console.log("Chegou do banco:", dados);
+        setDenuncias(dados);
+      } else {
+        console.error("Servidor respondeu com erro:", resposta.status);
       }
     } catch (erro) {
-      console.error("Erro:", erro);
+      console.error("Erro na chamada fetch:", erro);
     } finally {
       setCarregando(false);
     }
