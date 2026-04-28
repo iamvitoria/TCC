@@ -47,7 +47,7 @@ export default function AdminReportDetails() {
       if (resposta.ok) {
         alert("Status atualizado com sucesso!");
         setDenuncia({ ...denuncia, status: novoStatus });
-        // Opcional: navigate('/admin-dashboard') se quiser que ele volte para a lista após salvar
+        navigate('/admin-dashboard') 
       } else {
         alert("Erro ao atualizar o status.");
       }
