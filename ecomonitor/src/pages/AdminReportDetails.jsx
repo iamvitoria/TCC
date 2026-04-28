@@ -73,10 +73,8 @@ export default function AdminReportDetails() {
   }
 
   return (
-    // Adicionado height e overflowY para garantir que o scroll funcione
     <div style={{ backgroundColor: '#f4f4f4', height: '100vh', overflowY: 'auto', paddingBottom: '40px' }}>
       
-      {/* Cabeçalho centralizado e sem flecha */}
       <header style={{ backgroundColor: '#2C5E2E', color: 'white', padding: '20px', textAlign: 'center' }}>
         <h1 style={{ fontSize: '1.2rem', margin: 0 }}>Detalhes da denúncia (adm)</h1>
       </header>
@@ -128,15 +126,17 @@ export default function AdminReportDetails() {
           <div style={{ backgroundColor: '#EAEAEA', padding: '15px', borderRadius: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
             <div>
               <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block' }}>Nome</span>
-              <span style={{ fontSize: '0.9rem' }}>Vitória Camara</span>
+              <span style={{ fontSize: '0.9rem' }}>
+                {denuncia.usuario?.nome || 'Usuário desconhecido'}
+              </span>
             </div>
             <div>
               <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block' }}>Região</span>
-              <span style={{ fontSize: '0.9rem' }}>Santa Maria</span>
+              <span style={{ fontSize: '0.9rem' }}>Santa Maria</span> {/* Ou denuncia.usuario.regiao se tiver no banco */}
             </div>
             <div>
-              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block' }}>Contribuições</span>
-              <span style={{ fontSize: '0.9rem' }}>5</span>
+              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block' }}>Status Conta</span>
+              <span style={{ fontSize: '0.9rem' }}>Ativa</span>
             </div>
           </div>
         </section>
