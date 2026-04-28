@@ -18,6 +18,7 @@ export default function AdminDashboard() {
       const resposta = await fetch('https://ecomonitor-api.onrender.com/denuncias');
       if (resposta.ok) {
         const dados = await resposta.json();
+        console.log("DADOS DO BANCO:", dados); 
         setDenuncias(dados.sort((a, b) => b.id - a.id));
       }
     } catch (erro) {
@@ -28,11 +29,15 @@ export default function AdminDashboard() {
   };
 
   const denunciasFiltradas = denuncias.filter(d => {
-    const matchesBusca = d.id.toString().includes(termoBusca);
-    const matchesStatus = filtroStatus === 'Todos' || d.status === filtroStatus;
-    const matchesCategoria = filtroCategoria === 'Todas' || d.categoria === filtroCategoria;
-    return matchesBusca && matchesStatus && matchesCategoria;
-  });
+  if (!d) return false;
+  const matchesBusca = termoBusca === '' || d.id?.toString().includes(termoBusca);
+  const matchesStatus = filtroStatus === 'Todos' || d.status === filtroStatus;
+  const matchesCategoria = 
+    filtroCategoria === 'Todas' || 
+    d.categoria?.trim().toLowerCase() === filtroCategoria.trim().toLowerCase();
+  
+  return matchesBusca && matchesStatus && matchesCategoria;
+});
 
   return (
     <div style={{ backgroundColor: '#2C4E2E', minHeight: '100vh', fontFamily: 'sans-serif' }}>
