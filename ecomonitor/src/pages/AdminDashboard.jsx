@@ -37,14 +37,12 @@ export default function AdminDashboard() {
   return (
     <div style={{ backgroundColor: '#2C4E2E', minHeight: '100vh', fontFamily: 'sans-serif' }}>
       
-      {/* Título Superior */}
       <header style={{ padding: '40px 20px', textAlign: 'center' }}>
         <h1 style={{ color: 'white', margin: 0, fontSize: '24px', fontWeight: 'bold' }}>
           Denúncias Recebidas
         </h1>
       </header>
 
-      {/* Container Branco Arredondado */}
       <main style={{ 
         backgroundColor: '#F5F5F5', 
         borderTopLeftRadius: '30px', 
@@ -53,7 +51,6 @@ export default function AdminDashboard() {
         padding: '25px 20px' 
       }}>
         
-        {/* Painel de Filtros Cinza */}
         <section style={{ 
           backgroundColor: '#EAEAEA', 
           borderRadius: '20px', 
@@ -85,10 +82,15 @@ export default function AdminDashboard() {
                 onChange={(e) => setFiltroCategoria(e.target.value)}
                 style={selectStyle}
               >
-                <option>Todas</option>
-                <option>Descarte irregular de lixo</option>
-                <option>Foco de mosquito</option>
-                <option>Queimada</option>
+                <option value="Todas">Todas</option>
+                <option value="Descarte Irregular de Lixo">Descarte Irregular de Lixo</option>
+                <option value="Desmatamento">Desmatamento</option>
+                <option value="Poluição da Água">Poluição da Água</option>
+                <option value="Queimada">Queimada</option>
+                <option value="Poluição do Ar">Poluição do Ar</option>
+                <option value="Maus-tratos Animais">Maus-tratos Animais</option>
+                <option value="Foco de Mosquito">Foco de Mosquito</option>
+                <option value="Esgoto Aberto">Esgoto Aberto</option>
               </select>
             </div>
             <div>
@@ -115,7 +117,6 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        {/* Lista de Cards */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           {carregando ? <p style={{textAlign: 'center'}}>Carregando...</p> : 
            denunciasFiltradas.map((denuncia) => (
