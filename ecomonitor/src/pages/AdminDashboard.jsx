@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PageLayout from "../components/PageLayout/PageLayout";
 
 export default function AdminDashboard() {
   const [denuncias, setDenuncias] = useState([]);
@@ -39,31 +40,43 @@ export default function AdminDashboard() {
   };
 
   const denunciasFiltradas = denuncias.filter(d => {
-  if (!d) return false;
-  const matchesBusca = termoBusca === '' || d.id?.toString().includes(termoBusca);
-  const matchesStatus = filtroStatus === 'Todos' || d.status === filtroStatus;
-  const matchesCategoria = 
-    filtroCategoria === 'Todas' || 
-    d.categoria?.trim().toLowerCase() === filtroCategoria.trim().toLowerCase();
-  
-  return matchesBusca && matchesStatus && matchesCategoria;
-});
+    if (!d) return false;
+    const matchesBusca = termoBusca === '' || d.id?.toString().includes(termoBusca);
+    const matchesStatus = filtroStatus === 'Todos' || d.status === filtroStatus;
+    const matchesCategoria = 
+      filtroCategoria === 'Todas' || 
+      d.categoria?.trim().toLowerCase() === filtroCategoria.trim().toLowerCase();
+    
+    return matchesBusca && matchesStatus && matchesCategoria;
+  });
+
+  // Função de cores do status importada para o Dashboard
+  const obterCorStatus = (status) => {
+    switch (status) {
+      case 'Em análise':
+        return '#F5B041'; // Amarelo
+      case 'Validado':
+        return '#28A745'; // Verde
+      case 'Resolvido':
+        return '#007BFF'; // Azul
+      case 'Negado':
+      case 'Cancelado':
+        return '#DC3545'; // Vermelho
+      default:
+        return '#6C757D'; // Cinza
+    }
+  };
 
   return (
-    <div style={{ backgroundColor: '#2C4E2E', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-      
-      <header style={{ padding: '40px 20px', textAlign: 'center' }}>
-        <h1 style={{ color: 'white', margin: 0, fontSize: '24px', fontWeight: 'bold' }}>
-          Denúncias Recebidas
-        </h1>
-      </header>
-
+    <PageLayout title="Denúncias Recebidas">
       <main style={{ 
         backgroundColor: '#F5F5F5', 
         borderTopLeftRadius: '30px', 
         borderTopRightRadius: '30px', 
         minHeight: 'calc(100vh - 110px)',
-        padding: '25px 20px' 
+        padding: '25px 20px',
+        paddingBottom: '80px', // Espaço extra para não esconder itens atrás do menu verde
+        fontFamily: 'sans-serif'
       }}>
         
         <section style={{ 
@@ -115,10 +128,12 @@ export default function AdminDashboard() {
                 onChange={(e) => setFiltroStatus(e.target.value)}
                 style={selectStyle}
               >
-                <option>Todos</option>
-                <option>Em análise</option>
-                <option>Validado</option>
-                <option>Resolvido</option>
+                <option value="Todos">Todos</option>
+                <option value="Em análise">Em análise</option>
+                <option value="Validado">Validado</option>
+                <option value="Resolvido">Resolvido</option>
+                <option value="Negado">Negado</option>
+                <option value="Cancelado">Cancelado</option>
               </select>
             </div>
             <div>
@@ -165,12 +180,15 @@ export default function AdminDashboard() {
               </div>
 
               <div style={{ 
-                backgroundColor: '#D98C3A', 
+                backgroundColor: obterCorStatus(denuncia.status || 'Em análise'), 
                 color: 'white', 
                 padding: '8px 15px', 
                 borderRadius: '15px', 
                 fontSize: '12px',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                textShadow: '0px 1px 2px rgba(0,0,0,0.3)',
+                textAlign: 'center',
+                minWidth: '85px'
               }}>
                 {denuncia.status || 'Em análise'}
               </div>
@@ -178,8 +196,7 @@ export default function AdminDashboard() {
           ))}
         </div>
       </main>
-      
-    </div>
+    </PageLayout>
   );
 }
 

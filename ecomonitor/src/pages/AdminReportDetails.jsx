@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import PageLayout from "../components/PageLayout/PageLayout";
 
 export default function AdminReportDetails() {
   const { id } = useParams(); 
@@ -10,6 +11,7 @@ export default function AdminReportDetails() {
   
   const [novoStatus, setNovoStatus] = useState(''); 
   const [atualizando, setAtualizando] = useState(false);
+  const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
 
   useEffect(() => {
     const buscarDetalhesDenuncia = async () => {
@@ -33,8 +35,10 @@ export default function AdminReportDetails() {
   }, [id]); 
 
   const confirmarAlteracao = async () => {
+    setMensagem({ texto: '', tipo: '' });
+
     if (novoStatus === denuncia.status) {
-      alert("O status selecionado já é o status atual!");
+      setMensagem({ texto: "O status selecionado já é o status atual!", tipo: 'erro' });
       return;
     }
 
@@ -45,14 +49,18 @@ export default function AdminReportDetails() {
       });
 
       if (resposta.ok) {
-        alert("Status atualizado com sucesso!");
+        setMensagem({ texto: "Status atualizado com sucesso! Redirecionando...", tipo: 'sucesso' });
         setDenuncia({ ...denuncia, status: novoStatus });
-        navigate('/admin-dashboard') 
+        
+        setTimeout(() => {
+          navigate('/admin-dashboard');
+        }, 1500); 
       } else {
-        alert("Erro ao atualizar o status.");
+        setMensagem({ texto: "Erro ao atualizar o status.", tipo: 'erro' });
       }
     } catch (erro) {
       console.error("Erro na requisição:", erro);
+      setMensagem({ texto: "Erro na conexão com o servidor.", tipo: 'erro' });
     } finally {
       setAtualizando(false);
     }
@@ -64,6 +72,23 @@ export default function AdminReportDetails() {
     return data.toLocaleDateString('pt-BR');
   };
 
+  // Função para definir a cor baseada no status
+  const obterCorStatus = (status) => {
+    switch (status) {
+      case 'Em análise':
+        return '#F5B041'; // Amarelo/Laranja
+      case 'Validado':
+        return '#28A745'; // Verde
+      case 'Resolvido':
+        return '#007BFF'; // Azul
+      case 'Negado':
+      case 'Cancelado':
+        return '#DC3545'; // Vermelho
+      default:
+        return '#6C757D'; // Cinza (caso venha algum status diferente)
+    }
+  };
+
   if (carregando) {
     return <p style={{ textAlign: 'center', marginTop: '50px' }}>Carregando detalhes...</p>;
   }
@@ -73,19 +98,8 @@ export default function AdminReportDetails() {
   }
 
   return (
-    <div style={{ backgroundColor: '#f4f4f4', height: '100vh', overflowY: 'auto', paddingBottom: '40px', fontFamily: 'sans-serif' }}>
-      
-      <header style={{ backgroundColor: '#2C5E2E', color: 'white', padding: '20px', textAlign: 'center', position: 'relative' }}>
-        <button 
-          onClick={() => navigate('/admin-dashboard')}
-          style={{ position: 'absolute', left: '20px', top: '22px', background: 'none', border: 'none', color: 'white', fontSize: '20px', cursor: 'pointer' }}
-        >
-          ←
-        </button>
-        <h1 style={{ fontSize: '1.2rem', margin: 0 }}>Detalhes da denúncia (adm)</h1>
-      </header>
-
-      <main style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <PageLayout title="Detalhes da denúncia (adm)">
+      <main style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '80px', fontFamily: 'sans-serif' }}>
         
         <section>
           <h2 style={{ fontSize: '1.1rem', color: '#2C5E2E', marginBottom: '10px' }}>Informações da Denúncia</h2>
@@ -170,7 +184,7 @@ export default function AdminReportDetails() {
             <div>
               <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#4A7C59', display: 'block' }}>Contribuições</span>
               <span style={{ fontSize: '14px', color: '#555' }}>
-                {denuncia.usuario?.contribuicoes ?? 0} denúncias
+                {denuncia.usuario?.contribuicoes ?? 0} denúncia(s)
               </span>
             </div>
           </div>
@@ -182,10 +196,22 @@ export default function AdminReportDetails() {
             <h3 style={{ fontSize: '1rem', margin: '0 0 10px 0' }}>Alterar Status</h3>
             
             <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem' }}>
-              Status atual: <span style={{ backgroundColor: '#D98C3A', color: 'white', padding: '3px 8px', borderRadius: '10px', fontWeight: 'bold', fontSize: '0.8rem' }}>{denuncia.status}</span>
+              Status atual: 
+              <span style={{ 
+                backgroundColor: obterCorStatus(denuncia.status), 
+                color: 'white', 
+                padding: '4px 10px', 
+                borderRadius: '12px', 
+                fontWeight: 'bold', 
+                fontSize: '0.8rem',
+                marginLeft: '8px',
+                textShadow: '0px 1px 2px rgba(0,0,0,0.3)' // Sombra para ajudar na leitura do texto branco
+              }}>
+                {denuncia.status}
+              </span>
             </p>
             
-            <label style={{ fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Selecione o novo status:</label>
+            <label style={{ fontSize: '0.9rem', display: 'block', marginBottom: '5px', marginTop: '15px' }}>Selecione o novo status:</label>
             <select 
               value={novoStatus} 
               onChange={(e) => setNovoStatus(e.target.value)}
@@ -195,7 +221,24 @@ export default function AdminReportDetails() {
               <option value="Validado">Validado</option>
               <option value="Resolvido">Resolvido</option>
               <option value="Negado">Negado</option>
+              <option value="Cancelado">Cancelado</option>
             </select>
+
+            {mensagem.texto && (
+              <div style={{ 
+                padding: '10px', 
+                marginBottom: '15px', 
+                borderRadius: '8px', 
+                textAlign: 'center',
+                fontSize: '0.9rem',
+                fontWeight: 'bold',
+                backgroundColor: mensagem.tipo === 'sucesso' ? '#D4EDDA' : '#F8D7DA',
+                color: mensagem.tipo === 'sucesso' ? '#155724' : '#721C24',
+                border: `1px solid ${mensagem.tipo === 'sucesso' ? '#C3E6CB' : '#F5C6CB'}`
+              }}>
+                {mensagem.texto}
+              </div>
+            )}
 
             <button 
               onClick={confirmarAlteracao}
@@ -218,6 +261,6 @@ export default function AdminReportDetails() {
         </section>
 
       </main>
-    </div>
+    </PageLayout>
   );
 }
