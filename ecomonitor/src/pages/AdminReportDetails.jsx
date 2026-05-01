@@ -87,7 +87,6 @@ export default function AdminReportDetails() {
 
       <main style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
         
-        {/* INFORMAÇÕES DA DENÚNCIA */}
         <section>
           <h2 style={{ fontSize: '1.1rem', color: '#2C5E2E', marginBottom: '10px' }}>Informações da Denúncia</h2>
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
@@ -107,13 +106,28 @@ export default function AdminReportDetails() {
               <span style={{ fontSize: '0.9rem' }}>{denuncia.descricao || 'Nenhuma descrição informada'}</span>
             </div>
 
-            <div style={{ gridColumn: 'span 2', height: '120px', backgroundColor: '#ddd', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
-              <p style={{ color: '#666', fontSize: '0.8rem' }}>Mapa: Lat {denuncia.latitude?.toFixed(4)}, Lng {denuncia.longitude?.toFixed(4)}</p>
+            <div style={{ 
+              width: '100%', 
+              height: '300px', 
+              borderRadius: '8px', 
+              overflow: 'hidden', 
+              marginTop: '16px',
+              gridColumn: 'span 2' 
+            }}>
+              <iframe
+                width="100%"
+                height="100%"
+                frameBorder="0"
+                style={{ border: 0 }}
+                src={`https://maps.google.com/maps?q=${denuncia.latitude},${denuncia.longitude}&z=16&output=embed`}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
             </div>
           </div>
         </section>
 
-        {/* FOTO */}
         <section>
           <h2 style={{ fontSize: '1.1rem', color: '#2C5E2E', marginBottom: '10px' }}>Foto</h2>
           {denuncia.foto_url ? (
@@ -129,7 +143,6 @@ export default function AdminReportDetails() {
           )}
         </section>
 
-        {/* INFORMAÇÕES DO USUÁRIO - DINÂMICO */}
         <section>
           <h2 style={{ fontSize: '1.1rem', color: '#2C5E2E', marginBottom: '10px', fontWeight: 'bold' }}>
             Informações do Usuário
@@ -163,7 +176,6 @@ export default function AdminReportDetails() {
           </div>
         </section>
 
-        {/* AÇÕES ADMINISTRATIVAS */}
         <section>
           <h2 style={{ fontSize: '1.1rem', color: '#2C5E2E', marginBottom: '10px' }}>Ações Administrativas</h2>
           <div style={{ backgroundColor: 'white', padding: '15px', borderRadius: '15px', border: '1px solid #ddd', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
