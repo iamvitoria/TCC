@@ -150,7 +150,6 @@ const Profile = () => {
           {fotoParaMostrar && (
             <img 
               src={fotoParaMostrar} 
-              alt="Foto de Perfil" 
               style={profilePicStyle} 
             />
           )}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../components/PageLayout/PageLayout";
 import API_BASE_URL from "../config"; 
+
 const Achievements = () => {
   const navigate = useNavigate();
   
@@ -12,9 +13,11 @@ const Achievements = () => {
   useEffect(() => {
     const carregarDados = async () => {
       const token = localStorage.getItem("token");
+      
+      console.log("Token recuperado:", token); 
 
       if (!token) {
-        setErro("Usuário não autenticado.");
+        setErro("Sessão expirada. Por favor, faça login novamente.");
         setLoading(false);
         return;
       }
@@ -23,20 +26,25 @@ const Achievements = () => {
         const resposta = await fetch(`${API_BASE_URL}/usuarios/conquistas`, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`,
+            "Authorization": `Bearer ${token}`, 
             "Content-Type": "application/json"
           }
         });
 
+        if (resposta.status === 401) {
+           setErro("Sua sessão expirou. Entre novamente.");
+           return;
+        }
+
         if (!resposta.ok) {
-          throw new Error("Erro ao carregar conquistas do servidor.");
+          throw new Error("Erro ao carregar conquistas.");
         }
 
         const dados = await resposta.json();
         setConquistas(dados);
+      // eslint-disable-next-line no-unused-vars
       } catch (err) {
-        console.error("Erro:", err);
-        setErro("Não foi possível carregar as conquistas.");
+        setErro("Não foi possível conectar ao servidor.");
       } finally {
         setLoading(false);
       }
@@ -86,13 +94,14 @@ const Achievements = () => {
           </h3>
 
           {loading && (
-            <div style={{ textAlign: "center", color: "#666", padding: "20px" }}>
-              Buscando suas medalhas... 🏅
+            <div style={{ textAlign: "center", color: "#666", padding: "40px" }}>
+              <div className="spinner"></div> 
+              <p>Buscando suas medalhas... 🏅</p>
             </div>
           )}
 
           {erro && (
-            <div style={{ textAlign: "center", color: "red", padding: "20px" }}>
+            <div style={{ textAlign: "center", color: "#D9534F", padding: "20px", backgroundColor: "#F9EBEB", borderRadius: "10px" }}>
               {erro}
             </div>
           )}
@@ -104,38 +113,53 @@ const Achievements = () => {
                 <div 
                   key={conquista.id} 
                   style={{ 
-                    backgroundColor: conquista.desbloqueado ? "#F2F7ED" : "#F0F0F0", 
-                    border: conquista.desbloqueado ? "1px solid #7FB04B" : "1px dashed #CCC",
+                    backgroundColor: conquista.desbloqueado ? "#F2F7ED" : "#F9F9F9", 
+                    border: conquista.desbloqueado ? "1.5px solid #7FB04B" : "1px solid #EEE",
                     borderRadius: "15px", 
                     padding: "15px",
                     display: "flex",
                     alignItems: "center",
                     gap: "15px",
-                    opacity: conquista.desbloqueado ? 1 : 0.7,
-                    filter: conquista.desbloqueado ? "none" : "grayscale(100%)",
-                    transition: "all 0.3s ease"
+                    boxShadow: conquista.desbloqueado ? "0 4px 6px rgba(0,0,0,0.05)" : "none",
+                    transition: "transform 0.2s ease"
                   }}
                 >
-                  <div style={{ fontSize: "40px", position: "relative" }}>
-                    {conquista.icone_url}
+                  <div style={{ 
+                    fontSize: "35px", 
+                    position: "relative",
+                    filter: conquista.desbloqueado ? "none" : "grayscale(100%) blur(0.5px)",
+                    opacity: conquista.desbloqueado ? 1 : 0.5
+                  }}>
+                    {conquista.icone_url || "🏅"}
                     {!conquista.desbloqueado && (
                       <span style={{ 
                         position: "absolute", 
-                        bottom: "-5px", 
+                        top: "-5px", 
                         right: "-5px", 
-                        fontSize: "16px",
+                        fontSize: "14px",
                         background: "white",
                         borderRadius: "50%",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                         padding: "2px"
                       }}>🔒</span>
                     )}
                   </div>
 
                   <div style={{ flex: 1 }}>
-                    <h4 style={{ margin: "0 0 5px 0", color: "#2D4627", fontSize: "15px" }}>
+                    <h4 style={{ 
+                      margin: "0 0 3px 0", 
+                      color: conquista.desbloqueado ? "#2D4627" : "#888", 
+                      fontSize: "15px",
+                      fontWeight: "bold"
+                    }}>
                       {conquista.nome}
                     </h4>
-                    <p style={{ margin: 0, fontSize: "12px", color: "#666", lineHeight: "1.4" }}>
+                    <p style={{ 
+                      margin: 0, 
+                      fontSize: "12px", 
+                      color: conquista.desbloqueado ? "#555" : "#AAA", 
+                      lineHeight: "1.3" 
+                    }}>
                       {conquista.descricao}
                     </p>
                   </div>
@@ -143,8 +167,8 @@ const Achievements = () => {
               ))}
 
               {conquistas.length === 0 && (
-                <p style={{ textAlign: "center", color: "#666" }}>
-                  Nenhuma conquista disponível no momento.
+                <p style={{ textAlign: "center", color: "#666", marginTop: "20px" }}>
+                  Nenhuma conquista cadastrada no sistema.
                 </p>
               )}
 

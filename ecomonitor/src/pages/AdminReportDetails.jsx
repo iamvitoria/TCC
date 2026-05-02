@@ -221,7 +221,6 @@ export default function AdminReportDetails() {
               <option value="Validado">Validado</option>
               <option value="Resolvido">Resolvido</option>
               <option value="Negado">Negado</option>
-              <option value="Cancelado">Cancelado</option>
             </select>
 
             {mensagem.texto && (
