@@ -33,10 +33,23 @@ const Profile = () => {
 
         if (resposta.ok) {
           const dados = await resposta.json();
-          setPerfil(dados);
+          setPerfil({
+            nome: dados.nome || "Sem Nome",
+            pontuacao: dados.pontuacao || 0,
+            foto_perfil: dados.foto_perfil || null,
+            posicao_ranking: dados.posicao_ranking || null,
+            cidade_ranking: dados.cidade_ranking || "Região não informada",
+            conquistas: dados.conquistas || []
+          });
+        } else {
+          // SE DER ERRO, VAI APARECER NO CONSOLE PARA SABERMOS O MOTIVO
+          const erroApi = await resposta.text();
+          console.error(`Erro na API (${resposta.status}):`, erroApi);
+          setPerfil(prev => ({ ...prev, nome: "Erro ao carregar dados", cidade_ranking: "Erro" }));
         }
       } catch (erro) {
-        console.error("Erro ao carregar perfil:", erro);
+        console.error("Erro de conexão no fetch:", erro);
+        setPerfil(prev => ({ ...prev, nome: "Erro de conexão", cidade_ranking: "Erro" }));
       }
     };
 
@@ -152,12 +165,16 @@ const Profile = () => {
         </div>
 
         <div style={rankingCardStyle}>
-          <div style={{ fontSize: "40px", fontWeight: "bold", marginRight: "20px" }}>
-            {perfil.posicao_ranking ? `${perfil.posicao_ranking}º` : "-"}
+          <div style={{ display: "flex", alignItems: "flex-start", marginRight: "25px" }}>
+            <span style={{ fontSize: "55px", fontWeight: "bold", lineHeight: "1" }}>
+              {perfil.posicao_ranking || "-"}
+            </span>
+            <span style={{ fontSize: "20px", fontWeight: "bold", marginTop: "5px" }}>º</span>
           </div>
+          
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontWeight: "bold", fontSize: "16px" }}>Sua posição</span>
-            <span style={{ fontSize: "12px", opacity: 0.9 }}>Ranking {perfil.cidade_ranking}</span>
+            <span style={{ fontWeight: "bold", fontSize: "18px" }}>Sua posição</span>
+            <span style={{ fontSize: "13px", opacity: 0.9 }}>Ranking {perfil.cidade_ranking}</span>
           </div>
         </div>
 
@@ -169,7 +186,7 @@ const Profile = () => {
               </div>
             ))
           ) : (
-            <div style={{...achievementMiniCardStyle, opacity: 0.7}}>
+            <div style={{...achievementMiniCardStyle, opacity: 0.7, backgroundColor: "#E0E0E0", color: "#666"}}>
               Nenhuma conquista ainda
             </div>
           )}
