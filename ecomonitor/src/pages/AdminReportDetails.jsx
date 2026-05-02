@@ -98,7 +98,7 @@ export default function AdminReportDetails() {
   }
 
   return (
-    <PageLayout title="Detalhes da denúncia (adm)">
+    <PageLayout title="Detalhes da denúncia (adm)" isAdmin="true">
       <main style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '80px', fontFamily: 'sans-serif' }}>
         
         <section>

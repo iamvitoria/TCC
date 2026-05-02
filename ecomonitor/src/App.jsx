@@ -11,6 +11,7 @@ import Report from './pages/Report';
 import ReportDetails from "./pages/ReportDetails";
 import AdminDashboard from './pages/AdminDashboard';
 import AdminReportDetails from './pages/AdminReportDetails';
+import AdminPerfil from './pages/AdminPerfil';
 import "./App.css";
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
         <Route path="/report-details/:id" element={<ReportDetails />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin/denuncia/:id" element={<AdminReportDetails />} />
+        <Route path="/admin-perfil" element={<AdminPerfil />} />
       </Routes>
     </BrowserRouter>
   );

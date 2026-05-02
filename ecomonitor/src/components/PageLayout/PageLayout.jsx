@@ -2,7 +2,7 @@ import React from "react";
 import Header from "../Header/Header";
 import Navbar from "../Navbar/Navbar";
 
-const PageLayout = ({ title, children }) => {
+const PageLayout = ({ title, children, isAdmin = false }) => {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", backgroundColor: "#2D4627" }}>
       <Header title={title} />
@@ -20,7 +20,8 @@ const PageLayout = ({ title, children }) => {
             {children}
         </div>
 
-      <Navbar />
+      <Navbar isAdmin={isAdmin} />
+
     </div>
   );
 };

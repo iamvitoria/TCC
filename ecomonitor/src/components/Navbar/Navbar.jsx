@@ -5,15 +5,47 @@ import {
   Star,       
   House,     
   Trophy,   
-  User        
+  User,
+  LayoutDashboard 
 } from "lucide-react";
 import "./Navbar.css";
 
-const Navbar = () => {
+const Navbar = ({ isAdmin = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const isActive = (path) => location.pathname === path;
+
+  if (isAdmin) {
+    return (
+      <div className="navbar-container">
+        <nav className="navbar-content" style={{ justifyContent: 'space-evenly' }}>
+          
+          <button
+            className={`nav-btn ${isActive("/admin-dashboard") ? "active" : ""}`}
+            onClick={() => navigate("/admin-dashboard")}
+          >
+            <LayoutDashboard size={24} />
+          </button>
+
+          <button
+            className={`nav-btn camera-btn ${isActive("/admin-home") ? "camera-active" : ""}`}
+            onClick={() => navigate("/admin-dashboard")}
+          >
+            <House size={28} />
+          </button>
+
+          <button
+            className={`nav-btn ${isActive("/admin-perfil") ? "active" : ""}`}
+            onClick={() => navigate("/admin-perfil")} 
+          >
+            <User size={24} />
+          </button>
+
+        </nav>
+      </div>
+    );
+  }
 
   return (
     <div className="navbar-container">

@@ -37,12 +37,20 @@ const Login = () => {
 
       if (resposta.ok) {
         const dados = await resposta.json();
+        
         localStorage.setItem('meuToken', dados.access_token);
         
+        const perfilDoUsuario = dados.perfil || 'user'; 
+        localStorage.setItem('perfilUsuario', perfilDoUsuario); 
+
         setAlerta({ visivel: true, texto: "Login feito com sucesso!", tipo: "sucesso" });
         
         setTimeout(() => {
-          navigate("/home");
+          if (perfilDoUsuario === 'admin') {
+            navigate("/admin-dashboard"); 
+          } else {
+            navigate("/home");            
+          }
         }, 1500);
         
       } else {
@@ -137,9 +145,6 @@ const Login = () => {
           Não tem conta? Cadastre-se
         </p>
         
-        <p className="link-text" onClick={() => navigate("/admin-dashboard")}>
-          Logar como admin
-        </p>
       </div>
     </div>
   );

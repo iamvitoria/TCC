@@ -50,32 +50,31 @@ export default function AdminDashboard() {
     return matchesBusca && matchesStatus && matchesCategoria;
   });
 
-  // Função de cores do status importada para o Dashboard
   const obterCorStatus = (status) => {
     switch (status) {
       case 'Em análise':
-        return '#F5B041'; // Amarelo
+        return '#F5B041'; 
       case 'Validado':
-        return '#28A745'; // Verde
+        return '#28A745'; 
       case 'Resolvido':
-        return '#007BFF'; // Azul
+        return '#007BFF'; 
       case 'Negado':
       case 'Cancelado':
-        return '#DC3545'; // Vermelho
+        return '#DC3545'; 
       default:
-        return '#6C757D'; // Cinza
+        return '#6C757D'; 
     }
   };
 
   return (
-    <PageLayout title="Denúncias Recebidas">
+    <PageLayout title="Denúncias Recebidas" isAdmin={true}>
       <main style={{ 
         backgroundColor: '#F5F5F5', 
         borderTopLeftRadius: '30px', 
         borderTopRightRadius: '30px', 
         minHeight: 'calc(100vh - 110px)',
         padding: '25px 20px',
-        paddingBottom: '80px', // Espaço extra para não esconder itens atrás do menu verde
+        paddingBottom: '80px', 
         fontFamily: 'sans-serif'
       }}>
         

@@ -7,7 +7,6 @@ const Register = () => {
 
   return (
     <div className="mobile-container">
-      {/* 1. Logo (um pouco menor para caber os campos extras) */}
       <img 
         src={logo} 
         alt="EcoMonitor Logo" 
@@ -15,12 +14,10 @@ const Register = () => {
         style={{ width: '150px', marginBottom: '20px' }} 
       />
 
-      {/* Título para orientar o usuário */}
       <h2 style={{ color: 'white', marginBottom: '20px', fontSize: '20px' }}>
         Crie sua conta
       </h2>
 
-      {/* 2. Campos de Cadastro (Cinzas) */}
       <input 
         type="text" 
         placeholder="Nome completo" 
@@ -45,12 +42,10 @@ const Register = () => {
         className="input-field" 
       />
 
-      {/* 3. Botão de Ação */}
       <button className="btn-primary" onClick={() => navigate("/home")}>
         Cadastrar
       </button>
 
-      {/* 4. Link para voltar ao Login */}
       <div style={{marginTop: '20px', textAlign: 'center'}}>
         <p className="link-text" onClick={() => navigate("/login")}>
           Já tem uma conta? Faça Login
