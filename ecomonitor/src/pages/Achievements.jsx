@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../components/PageLayout/PageLayout";
-import API_BASE_URL from "../config"; // Importando sua URL centralizada
-
+import API_BASE_URL from "../config"; 
 const Achievements = () => {
   const navigate = useNavigate();
   
@@ -14,7 +13,6 @@ const Achievements = () => {
     const carregarDados = async () => {
       const token = localStorage.getItem("token");
 
-      // Validamos o token dentro da função assíncrona
       if (!token) {
         setErro("Usuário não autenticado.");
         setLoading(false);
@@ -63,7 +61,6 @@ const Achievements = () => {
     <PageLayout title="Minhas Conquistas">
       <div style={{ paddingBottom: "150px" }}>
         
-        {/* Botão Voltar */}
         <div style={{ padding: "0 5%" }}>
           <button 
             style={{ 
@@ -83,27 +80,23 @@ const Achievements = () => {
           </button>
         </div>
 
-        {/* Card Branco Principal */}
         <div style={whiteCardStyle}>
           <h3 style={{ color: "#2D4627", fontSize: "18px", margin: "0 0 10px 0" }}>
             Suas Medalhas
           </h3>
 
-          {/* Estado de Carregamento */}
           {loading && (
             <div style={{ textAlign: "center", color: "#666", padding: "20px" }}>
               Buscando suas medalhas... 🏅
             </div>
           )}
 
-          {/* Estado de Erro */}
           {erro && (
             <div style={{ textAlign: "center", color: "red", padding: "20px" }}>
               {erro}
             </div>
           )}
 
-          {/* Lista de Conquistas */}
           {!loading && !erro && (
             <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
               
@@ -123,7 +116,6 @@ const Achievements = () => {
                     transition: "all 0.3s ease"
                   }}
                 >
-                  {/* Ícone da Conquista */}
                   <div style={{ fontSize: "40px", position: "relative" }}>
                     {conquista.icone_url}
                     {!conquista.desbloqueado && (
@@ -139,7 +131,6 @@ const Achievements = () => {
                     )}
                   </div>
 
-                  {/* Textos */}
                   <div style={{ flex: 1 }}>
                     <h4 style={{ margin: "0 0 5px 0", color: "#2D4627", fontSize: "15px" }}>
                       {conquista.nome}
@@ -151,7 +142,6 @@ const Achievements = () => {
                 </div>
               ))}
 
-              {/* Mensagem caso não existam conquistas cadastradas no banco */}
               {conquistas.length === 0 && (
                 <p style={{ textAlign: "center", color: "#666" }}>
                   Nenhuma conquista disponível no momento.

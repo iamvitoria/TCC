@@ -116,15 +116,26 @@ const Contributions = () => {
   };
 
   const getStatusBadgeStyle = (status) => {
+    const s = status ? status.toLowerCase().trim() : "";
+
     let bgColor = "#7FB04B"; 
     let textStatus = "Validado";
 
-    if (status === "Pendente" || status === "Em Análise") {
-      bgColor = "#D59A53"; 
+    if (s === "pendente" || s === "em análise" || s === "em analise") {
+      bgColor = "#D59A53";
       textStatus = "Em análise";
-    } else if (status === "Resolvida") {
+    } 
+    else if (s === "validado" || s === "aceito") {
+      bgColor = "#7FB04B"; 
+      textStatus = "Validado";
+    }
+    else if (s === "resolvida" || s === "resolvido") {
       bgColor = "#3B75A3"; 
       textStatus = "Resolvido";
+    }
+    else if (s === "cancelado" || s === "rejeitado" || s === "cancelada") {
+      bgColor = "#E74C3C";
+      textStatus = "Cancelado";
     }
 
     return {
@@ -135,7 +146,9 @@ const Contributions = () => {
         borderRadius: "10px",
         fontSize: "14px",
         fontWeight: "bold",
-        border: "none"
+        border: "none",
+        minWidth: "110px", 
+        textAlign: "center"
       },
       text: textStatus
     };
