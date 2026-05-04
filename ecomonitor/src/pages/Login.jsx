@@ -38,7 +38,7 @@ const Login = () => {
       if (resposta.ok) {
         const dados = await resposta.json();
         
-        localStorage.setItem('meuToken', dados.access_token);
+        localStorage.setItem('token', dados.access_token);
         
         const perfilDoUsuario = dados.perfil || 'user'; 
         localStorage.setItem('perfilUsuario', perfilDoUsuario); 
@@ -65,14 +65,88 @@ const Login = () => {
     }
   };
 
+  const containerStyle = {
+    backgroundColor: "#1C3520", 
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "30px",
+    boxSizing: "border-box",
+    fontFamily: "Arial, sans-serif"
+  };
+
+  const logoStyle = {
+    height: "220px",
+    marginBottom: "-30px",
+    marginTop: "-100px"
+  };
+
+  const titleStyle = {
+    color: "white",
+    fontSize: "26px",
+    fontWeight: "bold",
+    margin: "0 0 10px 0"
+  };
+
+  const subtitleStyle = {
+    color: "#5FA362", 
+    fontSize: "15px",
+    marginBottom: "30px"
+  };
+
+  const inputStyle = {
+    width: "100%",
+    backgroundColor: "#2E4731", 
+    border: "1px solid #48684A", 
+    borderRadius: "12px",
+    padding: "18px 15px",
+    marginBottom: "15px",
+    color: "white",
+    fontSize: "16px",
+    outline: "none",
+    boxSizing: "border-box",
+  };
+
+  const buttonStyle = {
+    width: "100%",
+    backgroundColor: "#4E9A51", 
+    color: "white",
+    border: "none",
+    borderRadius: "12px",
+    padding: "18px",
+    fontSize: "18px",
+    fontWeight: "bold",
+    marginTop: "10px",
+    cursor: carregando ? "not-allowed" : "pointer",
+    opacity: carregando ? 0.7 : 1,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "10px",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+  };
+
+  const linkStyle = {
+    color: "#5FA362", 
+    fontSize: "14px",
+    marginTop: "25px",
+    cursor: "pointer",
+    fontWeight: "bold"
+  };
+
   return (
-    <div className="mobile-container">
-      <img src={logo} alt="EcoMonitor Logo" className="logo" />
+    <div style={containerStyle}>
+      <img src={logo} alt="EcoMonitor Logo" style={logoStyle} />
+
+      <h1 style={titleStyle}>Bem-Vindo!</h1>
+      <p style={subtitleStyle}>Faça login para entrar</p>
 
       <input 
         type="email" 
-        placeholder="E-mail" 
-        className="input-field"
+        placeholder="Email" 
+        style={inputStyle}
         value={email}
         onChange={(e) => setEmail(e.target.value)} 
       />
@@ -80,18 +154,17 @@ const Login = () => {
       <input 
         type="password" 
         placeholder="Senha" 
-        className="input-field"
+        style={inputStyle}
         value={senha}
         onChange={(e) => setSenha(e.target.value)} 
       />
 
       {alerta.visivel && (
         <div style={{
-          padding: "10px",
-          marginTop: "3px",
-          marginBottom: "3px",
-          borderRadius: "8px",
-          width: "44%",
+          padding: "15px",
+          marginBottom: "15px",
+          borderRadius: "12px",
+          width: "100%", 
           boxSizing: "border-box",
           display: "flex",
           justifyContent: "space-between",
@@ -108,23 +181,15 @@ const Login = () => {
       )}
 
       <button 
-        className="btn-primary" 
         onClick={fazerLogin} 
         disabled={carregando}
-        style={{ 
-          opacity: carregando ? 0.7 : 1, 
-          cursor: carregando ? "not-allowed" : "pointer",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: "10px"
-        }}
+        style={buttonStyle}
       >
         {carregando ? (
           <>
             <div style={{
-              width: "18px",
-              height: "18px",
+              width: "20px",
+              height: "20px",
               border: "3px solid rgba(255,255,255,0.3)",
               borderTop: "3px solid white",
               borderRadius: "50%",
@@ -140,12 +205,10 @@ const Login = () => {
         )}
       </button>
 
-      <div style={{marginTop: '20px', textAlign: 'center'}}>
-        <p className="link-text" onClick={() => navigate("/register")}>
-          Não tem conta? Cadastre-se
-        </p>
-        
-      </div>
+      <p style={linkStyle} onClick={() => navigate("/register")}>
+        Não tem uma conta? Cadastre-se
+      </p>
+      
     </div>
   );
 };
