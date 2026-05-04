@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/logo-ecomonitor.png"; 
 import API_URL from "../config"; 
 
 const Register = () => {
@@ -63,31 +62,110 @@ const Register = () => {
     }
   };
 
-  return (
-    <div className="mobile-container">
-      <img 
-        src={logo} 
-        alt="EcoMonitor Logo" 
-        className="logo" 
-        style={{ width: '150px', marginBottom: '20px' }} 
-      />
+  const containerStyle = {
+    backgroundColor: "#1C3520", 
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center", 
+    padding: "30px",
+    boxSizing: "border-box",
+    fontFamily: "Arial, sans-serif"
+  };
 
-      <h2 style={{ color: 'white', marginBottom: '20px', fontSize: '20px' }}>
-        Crie sua conta
-      </h2>
+  const backButtonStyle = {
+    color: "#5FA362",
+    display: "flex",
+    alignItems: "center",
+    cursor: "pointer",
+    fontWeight: "bold",
+    fontSize: "16px",
+    marginBottom: "40px",
+    marginTop: "-20px" 
+  };
+
+  const titleStyle = {
+    color: "white",
+    fontSize: "32px", 
+    fontWeight: "bold",
+    margin: "0 0 10px 0",
+    textAlign: "left"
+  };
+
+  const subtitleStyle = {
+    color: "#5FA362", 
+    fontSize: "16px",
+    marginBottom: "30px",
+    textAlign: "left"
+  };
+
+  const inputStyle = {
+    width: "100%",
+    backgroundColor: "#2E4731", 
+    border: "1px solid #48684A", 
+    borderRadius: "12px",
+    padding: "18px 15px",
+    marginBottom: "15px",
+    color: "white",
+    fontSize: "16px",
+    outline: "none",
+    boxSizing: "border-box",
+  };
+
+  const buttonStyle = {
+    width: "100%",
+    backgroundColor: "#4E9A51", 
+    color: "white",
+    border: "none",
+    borderRadius: "12px",
+    padding: "18px",
+    fontSize: "18px",
+    fontWeight: "bold",
+    marginTop: "10px",
+    cursor: carregando ? "not-allowed" : "pointer",
+    opacity: carregando ? 0.7 : 1,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "10px",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+  };
+
+  return (
+    <div style={containerStyle}>
+      
+      <div style={backButtonStyle} onClick={() => navigate(-1)}>
+        <svg 
+          width="20" 
+          height="20" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2.5" 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          style={{ marginRight: '6px' }}
+        >
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Voltar
+      </div>
+
+      <h1 style={titleStyle}>Criar conta</h1>
+      <p style={subtitleStyle}>Junte-se à comunidade</p>
 
       <input 
         type="text" 
         placeholder="Nome completo" 
-        className="input-field" 
+        style={inputStyle} 
         value={nome}
         onChange={(e) => setNome(e.target.value)}
       />
 
       <input 
         type="email" 
-        placeholder="E-mail" 
-        className="input-field" 
+        placeholder="Email" 
+        style={inputStyle} 
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
@@ -95,7 +173,7 @@ const Register = () => {
       <input 
         type="password" 
         placeholder="Senha" 
-        className="input-field" 
+        style={inputStyle} 
         value={senha}
         onChange={(e) => setSenha(e.target.value)}
       />
@@ -103,19 +181,17 @@ const Register = () => {
       <input 
         type="password" 
         placeholder="Confirmar senha" 
-        className="input-field" 
+        style={inputStyle} 
         value={confirmarSenha}
         onChange={(e) => setConfirmarSenha(e.target.value)}
       />
 
       {alerta.visivel && (
         <div style={{
-          padding: "10px",
-          marginTop: "10px",
-          marginBottom: "10px",
-          borderRadius: "8px",
-          width: "44%",
-          minWidth: "250px",
+          padding: "15px",
+          marginBottom: "15px",
+          borderRadius: "12px",
+          width: "100%", 
           boxSizing: "border-box",
           display: "flex",
           justifyContent: "space-between",
@@ -124,33 +200,23 @@ const Register = () => {
           color: alerta.tipo === "erro" ? "#c62828" : "#2e7d32",
           border: `1px solid ${alerta.tipo === "erro" ? "#ef9a9a" : "#a5d6a7"}`,
           fontWeight: "bold",
-          fontSize: "14px",
-          textAlign: "center"
+          fontSize: "14px"
         }}>
-          <span style={{ flex: 1 }}>{alerta.texto}</span>
-          <span onClick={fecharAlerta} style={{ cursor: "pointer", fontSize: "16px", marginLeft: "10px" }}>✖</span>
+          <span>{alerta.texto}</span>
+          <span onClick={fecharAlerta} style={{ cursor: "pointer", fontSize: "16px" }}>✖</span>
         </div>
       )}
 
       <button 
-        className="btn-primary" 
         onClick={fazerCadastro}
         disabled={carregando}
-        style={{ 
-          opacity: carregando ? 0.7 : 1, 
-          cursor: carregando ? "not-allowed" : "pointer",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: "10px",
-          marginTop: "10px"
-        }}
+        style={buttonStyle}
       >
         {carregando ? (
           <>
             <div style={{
-              width: "18px",
-              height: "18px",
+              width: "20px",
+              height: "20px",
               border: "3px solid rgba(255,255,255,0.3)",
               borderTop: "3px solid white",
               borderRadius: "50%",
@@ -162,15 +228,10 @@ const Register = () => {
             Cadastrando...
           </>
         ) : (
-          "Cadastrar"
+          "Criar conta"
         )}
       </button>
-
-      <div style={{marginTop: '20px', textAlign: 'center'}}>
-        <p className="link-text" onClick={() => navigate("/login")} style={{ cursor: 'pointer' }}>
-          Já tem uma conta? Faça Login
-        </p>
-      </div>
+      
     </div>
   );
 };
