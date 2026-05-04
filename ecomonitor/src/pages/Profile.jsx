@@ -18,8 +18,10 @@ const Profile = () => {
 
   useEffect(() => {
     const buscarPerfil = async () => {
-      const token = localStorage.getItem("meuToken");
+      const token = localStorage.getItem("meuToken"); 
+      
       if (!token) {
+        console.error("Token não encontrado no localStorage");
         navigate("/"); 
         return;
       }
@@ -38,18 +40,16 @@ const Profile = () => {
             pontuacao: dados.pontuacao || 0,
             foto_perfil: dados.foto_perfil || null,
             posicao_ranking: dados.posicao_ranking || null,
-            cidade_ranking: dados.cidade_ranking || "Região não informada",
+            cidade_ranking: dados.cidade_ranking || "Brasil",
             conquistas: dados.conquistas || []
           });
         } else {
-          // SE DER ERRO, VAI APARECER NO CONSOLE PARA SABERMOS O MOTIVO
           const erroApi = await resposta.text();
           console.error(`Erro na API (${resposta.status}):`, erroApi);
-          setPerfil(prev => ({ ...prev, nome: "Erro ao carregar dados", cidade_ranking: "Erro" }));
+          if(resposta.status === 401) navigate("/");
         }
       } catch (erro) {
         console.error("Erro de conexão no fetch:", erro);
-        setPerfil(prev => ({ ...prev, nome: "Erro de conexão", cidade_ranking: "Erro" }));
       }
     };
 
@@ -76,11 +76,16 @@ const Profile = () => {
 
       if (resposta.ok) {
         const dados = await resposta.json();
-        setPerfil({ ...perfil, foto_perfil: dados.foto_perfil });
+        setPerfil(prev => ({ ...prev, foto_perfil: dados.foto_perfil }));
       }
     } catch (erro) {
       console.error("Erro ao fazer upload:", erro);
     }
+  };
+
+  const fazerLogout = () => {
+    localStorage.removeItem("meuToken"); 
+    navigate("/");
   };
 
   const containerStyle = {
@@ -93,8 +98,7 @@ const Profile = () => {
     width: "140px", height: "140px", backgroundColor: "#7FB04B", 
     borderRadius: "40% 60% 70% 30% / 40% 50% 60% 50%", 
     display: "flex", justifyContent: "center", alignItems: "center",
-    position: "relative", marginTop: "10px",
-    cursor: "pointer" 
+    position: "relative", marginTop: "10px", cursor: "pointer" 
   };
 
   const profilePicStyle = {
@@ -103,9 +107,7 @@ const Profile = () => {
     boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
   };
 
-  const nameStyle = {
-    color: "#2D4627", fontWeight: "bold", fontSize: "20px", margin: "-5px 0 0 0",
-  };
+  const nameStyle = { color: "#2D4627", fontWeight: "bold", fontSize: "20px", margin: "-5px 0 0 0" };
 
   const progressBarContainer = {
     width: "100%", backgroundColor: "#78A64B", borderRadius: "20px",
@@ -115,23 +117,30 @@ const Profile = () => {
   const progressBarFill = {
     width: `${Math.min((perfil.pontuacao / 1000) * 100, 100)}%`, 
     backgroundColor: "#2D4627", height: "100%", borderRadius: "20px",
-    display: "flex", alignItems: "center", paddingLeft: "20px", boxSizing: "border-box"
+    display: "flex", alignItems: "center", paddingLeft: "20px", boxSizing: "border-box",
+    transition: "width 0.5s ease-in-out"
   };
 
-  const progressTextStyle = {
-    color: "white", fontWeight: "bold", fontSize: "16px", zIndex: 2,
+  const progressTextStyle = { color: "white", fontWeight: "bold", fontSize: "16px", zIndex: 2 };
+
+  const rankingCardStyle = { 
+    backgroundColor: "#78A64B", borderRadius: "15px", padding: "20px", 
+    width: "100%", display: "flex", alignItems: "center", color: "white", 
+    boxSizing: "border-box", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" 
   };
 
-  const rankingCardStyle = { backgroundColor: "#78A64B", borderRadius: "15px", padding: "20px", width: "100%", display: "flex", alignItems: "center", color: "white", boxSizing: "border-box", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" };
   const achievementsRowStyle = { display: "flex", width: "100%", gap: "10px", flexWrap: "wrap" };
-  const achievementMiniCardStyle = { backgroundColor: "#78A64B", borderRadius: "10px", padding: "15px 10px", flex: 1, minWidth: "120px", textAlign: "center", color: "white", fontWeight: "bold", fontSize: "14px", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" };
-  const logoutBtnStyle = { backgroundColor: "#78A64B", color: "white", border: "none", borderRadius: "10px", padding: "15px", fontSize: "18px", fontWeight: "bold", width: "100%", cursor: "pointer", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" };
 
-  const fotoParaMostrar = perfil.foto_perfil;
+  const achievementMiniCardStyle = { 
+    backgroundColor: "#78A64B", borderRadius: "10px", padding: "15px 10px", 
+    flex: "1 1 120px", textAlign: "center", color: "white", 
+    fontWeight: "bold", fontSize: "14px", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" 
+  };
 
-  const fazerLogout = () => {
-    localStorage.removeItem("meuToken"); 
-    navigate("/");
+  const logoutBtnStyle = { 
+    backgroundColor: "#78A64B", color: "white", border: "none", 
+    borderRadius: "10px", padding: "15px", fontSize: "18px", 
+    fontWeight: "bold", width: "100%", cursor: "pointer", marginTop: "10px"
   };
 
   return (
@@ -147,11 +156,10 @@ const Profile = () => {
         />
 
         <div style={blobBackgroundStyle} onClick={() => fileInputRef.current.click()}>
-          {fotoParaMostrar && (
-            <img 
-              src={fotoParaMostrar} 
-              style={profilePicStyle} 
-            />
+          {perfil.foto_perfil ? (
+            <img src={perfil.foto_perfil} alt="Perfil" style={profilePicStyle} />
+          ) : (
+            <div style={{color: "white", fontSize: "40px"}}>👤</div>
           )}
         </div>
 
@@ -170,7 +178,6 @@ const Profile = () => {
             </span>
             <span style={{ fontSize: "20px", fontWeight: "bold", marginTop: "5px" }}>º</span>
           </div>
-          
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span style={{ fontWeight: "bold", fontSize: "18px" }}>Sua posição</span>
             <span style={{ fontSize: "13px", opacity: 0.9 }}>Ranking {perfil.cidade_ranking}</span>
@@ -179,7 +186,7 @@ const Profile = () => {
 
         <div style={achievementsRowStyle}>
           {perfil.conquistas && perfil.conquistas.length > 0 ? (
-            perfil.conquistas.map((conquista, index) => (
+            [...new Set(perfil.conquistas)].map((conquista, index) => (
               <div key={index} style={achievementMiniCardStyle}>
                 {conquista}
               </div>
