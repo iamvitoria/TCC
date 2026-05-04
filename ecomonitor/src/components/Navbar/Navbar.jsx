@@ -1,14 +1,13 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
-  Heart,      
-  Star,       
-  House,     
+  House,      
+  MapPin,       
+  Plus,         
   Trophy,   
   User,
   LayoutDashboard 
 } from "lucide-react";
-import "./Navbar.css";
 
 const Navbar = ({ isAdmin = false }) => {
   const navigate = useNavigate();
@@ -16,77 +15,104 @@ const Navbar = ({ isAdmin = false }) => {
 
   const isActive = (path) => location.pathname === path;
 
+  const navbarContainerStyle = {
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    width: "100%",
+    backgroundColor: "white",
+    borderTopLeftRadius: "25px",
+    borderTopRightRadius: "25px",
+    boxShadow: "0 -2px 10px rgba(0,0,0,0.05)",
+    padding: "15px 25px 20px 25px",
+    boxSizing: "border-box",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    zIndex: 1000
+  };
+
+  const getIconColor = (active) => active ? "#4E9A51" : "#A0AEC0"; // Verde se ativo, cinza se inativo
+
+  const navButtonStyle = {
+    background: "none",
+    border: "none",
+    padding: "0",
+    cursor: "pointer",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    transition: "color 0.2s"
+  };
+
+  const centerButtonContainer = {
+    position: "relative",
+    width: "60px",
+    display: "flex",
+    justifyContent: "center"
+  };
+
+  const centerButtonStyle = {
+    position: "absolute",
+    bottom: "-10px", 
+    backgroundColor: "#4E9A51",
+    color: "white",
+    border: "none",
+    borderRadius: "50%",
+    width: "60px",
+    height: "60px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    boxShadow: "0 4px 10px rgba(78, 154, 81, 0.4)",
+    cursor: "pointer"
+  };
+
   if (isAdmin) {
     return (
-      <div className="navbar-container">
-        <nav className="navbar-content" style={{ justifyContent: 'space-evenly' }}>
-          
-          <button
-            className={`nav-btn ${isActive("/admin-dashboard") ? "active" : ""}`}
-            onClick={() => navigate("/admin-dashboard")}
-          >
-            <LayoutDashboard size={24} />
-          </button>
+      <div style={navbarContainerStyle}>
+        <button style={navButtonStyle} onClick={() => navigate("/admin-dashboard")}>
+          <LayoutDashboard size={28} color={getIconColor(isActive("/admin-dashboard"))} />
+        </button>
 
-          <button
-            className={`nav-btn camera-btn ${isActive("/admin-home") ? "camera-active" : ""}`}
-            onClick={() => navigate("/admin-dashboard")}
-          >
-            <House size={28} />
+        <div style={centerButtonContainer}>
+          <button style={centerButtonStyle} onClick={() => navigate("/admin-home")}>
+            <House size={28} color="white" />
           </button>
+        </div>
 
-          <button
-            className={`nav-btn ${isActive("/admin-perfil") ? "active" : ""}`}
-            onClick={() => navigate("/admin-perfil")} 
-          >
-            <User size={24} />
-          </button>
-
-        </nav>
+        <button style={navButtonStyle} onClick={() => navigate("/admin-perfil")}>
+          <User size={28} color={getIconColor(isActive("/admin-perfil"))} />
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="navbar-container">
-      <nav className="navbar-content">
-        
-        <button
-          className={`nav-btn ${isActive("/contribuicoes") ? "active" : ""}`}
-          onClick={() => navigate("/contribuicoes")}
-        >
-          <Heart size={24} />
-        </button>
+    <div style={navbarContainerStyle}>
+      
+      <button style={navButtonStyle} onClick={() => navigate("/home")}>
+        <House size={28} color={getIconColor(isActive("/home"))} />
+      </button>
 
-        <button
-          className={`nav-btn ${isActive("/conquistas") ? "active" : ""}`}
-          onClick={() => navigate("/conquistas")} 
-        >
-          <Star size={24} />
-        </button>
+      <button style={navButtonStyle} onClick={() => navigate("/mapa")}>
+        <MapPin size={28} color={getIconColor(isActive("/mapa"))} />
+      </button>
 
-        <button
-          className={`nav-btn camera-btn ${isActive("/home") ? "camera-active" : ""}`}
-          onClick={() => navigate("/home")}
-        >
-          <House size={28} />
+      <div style={centerButtonContainer}>
+        <button style={centerButtonStyle} onClick={() => navigate("/denuncia")}>
+          <Plus size={36} color="white" />
         </button>
+      </div>
 
-        <button
-          className={`nav-btn ${isActive("/ranking") ? "active" : ""}`}
-          onClick={() => navigate("/ranking")}
-        >
-          <Trophy size={24} />
-        </button>
+      <button style={navButtonStyle} onClick={() => navigate("/ranking")}>
+        <Trophy size={28} color={getIconColor(isActive("/ranking"))} />
+      </button>
 
-        <button
-          className={`nav-btn ${isActive("/perfil") ? "active" : ""}`}
-          onClick={() => navigate("/perfil")}
-        >
-          <User size={24} />
-        </button>
+      <button style={navButtonStyle} onClick={() => navigate("/perfil")}>
+        <User size={28} color={getIconColor(isActive("/perfil"))} />
+      </button>
 
-      </nav>
     </div>
   );
 };

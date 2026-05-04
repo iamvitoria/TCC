@@ -43,6 +43,10 @@ const Login = () => {
         const perfilDoUsuario = dados.perfil || 'user'; 
         localStorage.setItem('perfilUsuario', perfilDoUsuario); 
 
+        if (dados.nome) {
+            localStorage.setItem('nomeUsuario', dados.nome);
+        }
+
         setAlerta({ visivel: true, texto: "Login feito com sucesso!", tipo: "sucesso" });
         
         setTimeout(() => {
