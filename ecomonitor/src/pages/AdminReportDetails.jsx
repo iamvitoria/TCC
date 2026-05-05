@@ -8,6 +8,7 @@ export default function AdminReportDetails() {
 
   const [denuncia, setDenuncia] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  const [endereco, setEndereco] = useState("Buscando endereço...");
   
   const [novoStatus, setNovoStatus] = useState(''); 
   const [atualizando, setAtualizando] = useState(false);
@@ -21,11 +22,9 @@ export default function AdminReportDetails() {
           const dados = await resposta.json();
           setDenuncia(dados);
           setNovoStatus(dados.status);
-        } else {
-          console.error("Erro ao buscar detalhes.");
         }
       } catch (erro) {
-        console.error("Falha na conexão com a API:", erro);
+        console.error(erro);
       } finally {
         setCarregando(false);
       }
@@ -33,6 +32,26 @@ export default function AdminReportDetails() {
 
     buscarDetalhesDenuncia();
   }, [id]); 
+
+  useEffect(() => {
+    if (denuncia?.latitude && denuncia?.longitude) {
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${denuncia.latitude}&lon=${denuncia.longitude}&zoom=18&addressdetails=1`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.address) {
+            const rua = data.address.road || data.address.pedestrian || "Rua não identificada";
+            const numero = data.address.house_number ? `, ${data.address.house_number}` : "";
+            const bairro = data.address.suburb || data.address.neighbourhood ? ` - ${data.address.suburb || data.address.neighbourhood}` : "";
+            setEndereco(`${rua}${numero}${bairro}`);
+          } else {
+            setEndereco("Endereço não encontrado");
+          }
+        })
+        .catch(() => setEndereco("Erro ao buscar endereço"));
+    } else {
+      setEndereco("Localização não informada");
+    }
+  }, [denuncia]);
 
   const confirmarAlteracao = async () => {
     setMensagem({ texto: '', tipo: '' });
@@ -49,7 +68,7 @@ export default function AdminReportDetails() {
       });
 
       if (resposta.ok) {
-        setMensagem({ texto: "Status atualizado com sucesso! Redirecionando...", tipo: 'sucesso' });
+        setMensagem({ texto: "Status atualizado com sucesso!", tipo: 'sucesso' });
         setDenuncia({ ...denuncia, status: novoStatus });
         
         setTimeout(() => {
@@ -58,8 +77,8 @@ export default function AdminReportDetails() {
       } else {
         setMensagem({ texto: "Erro ao atualizar o status.", tipo: 'erro' });
       }
+    // eslint-disable-next-line no-unused-vars
     } catch (erro) {
-      console.error("Erro na requisição:", erro);
       setMensagem({ texto: "Erro na conexão com o servidor.", tipo: 'erro' });
     } finally {
       setAtualizando(false);
@@ -69,197 +88,282 @@ export default function AdminReportDetails() {
   const formatarData = (dataIso) => {
     if (!dataIso) return '';
     const data = new Date(dataIso);
-    return data.toLocaleDateString('pt-BR');
+    return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
   };
 
-  // Função para definir a cor baseada no status
   const obterCorStatus = (status) => {
     switch (status) {
       case 'Em análise':
-        return '#F5B041'; // Amarelo/Laranja
+        return '#D59A53'; 
       case 'Validado':
-        return '#28A745'; // Verde
+        return '#7FB04B'; 
       case 'Resolvido':
-        return '#007BFF'; // Azul
+        return '#3B75A3'; 
       case 'Negado':
       case 'Cancelado':
-        return '#DC3545'; // Vermelho
+        return '#D9534F'; 
       default:
-        return '#6C757D'; // Cinza (caso venha algum status diferente)
+        return '#6C757D'; 
     }
   };
 
   if (carregando) {
-    return <p style={{ textAlign: 'center', marginTop: '50px' }}>Carregando detalhes...</p>;
+    return (
+      <PageLayout isAdmin={true}>
+        <div style={{ backgroundColor: "#F4F6F3", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <p style={{ color: "#1C3520" }}>Carregando detalhes...</p>
+        </div>
+      </PageLayout>
+    );
   }
 
   if (!denuncia) {
-    return <p style={{ textAlign: 'center', marginTop: '50px' }}>Denúncia não encontrada.</p>;
+    return (
+      <PageLayout isAdmin={true}>
+        <div style={{ backgroundColor: "#F4F6F3", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <p style={{ color: "#1C3520" }}>Denúncia não encontrada.</p>
+        </div>
+      </PageLayout>
+    );
   }
 
+  const containerStyle = {
+    backgroundColor: "#F4F6F3",
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    paddingBottom: "900px", 
+    fontFamily: "sans-serif"
+  };
+
+  const headerStyle = {
+    backgroundColor: "white",
+    display: "flex",
+    alignItems: "center",
+    padding: "20px",
+    borderBottom: "1px solid #EBEBEB"
+  };
+
+  const backButtonStyle = {
+    background: "none",
+    border: "none",
+    color: "#1C3520",
+    fontSize: "24px",
+    cursor: "pointer",
+    padding: "0",
+    display: "flex",
+    alignItems: "center"
+  };
+
+  const headerTitleStyle = {
+    margin: "0",
+    color: "#1C3520",
+    fontSize: "18px",
+    fontWeight: "bold",
+    textAlign: "center",
+    flex: 1
+  };
+
+  const contentContainerStyle = {
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "20px"
+  };
+
+  const sectionTitleStyle = {
+    color: "#1C3520",
+    fontSize: "16px",
+    fontWeight: "bold",
+    margin: "0 0 10px 0"
+  };
+
+  const greenCardStyle = {
+    backgroundColor: "#F0F5ED",
+    border: "1px solid #D3E0CD",
+    borderRadius: "12px",
+    padding: "15px"
+  };
+
+  const labelStyle = {
+    fontSize: "12px",
+    fontWeight: "bold",
+    color: "#1C3520",
+    display: "block",
+    marginBottom: "4px"
+  };
+
+  const valueStyle = {
+    fontSize: "13px",
+    color: "#444"
+  };
+
+  const selectStyle = {
+    width: "100%",
+    padding: "12px 15px",
+    borderRadius: "8px",
+    border: "none",
+    backgroundColor: "#CDE3B9",
+    color: "#1C3520",
+    fontSize: "15px",
+    fontWeight: "500",
+    appearance: "none",
+    outline: "none",
+    backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%231C3520\' stroke-width=\'2.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E")',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 15px center',
+    backgroundSize: '16px'
+  };
+
+  const buttonStyle = {
+    width: "100%",
+    backgroundColor: atualizando ? "#666" : "#2D4627",
+    color: "white",
+    padding: "15px",
+    borderRadius: "8px",
+    border: "none",
+    fontWeight: "bold",
+    fontSize: "16px",
+    cursor: atualizando ? "not-allowed" : "pointer",
+    marginTop: "15px"
+  };
+
   return (
-    <PageLayout title="Detalhes da denúncia (adm)" isAdmin="true">
-      <main style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '80px', fontFamily: 'sans-serif' }}>
-        
-        <section>
-          <h2 style={{ fontSize: '1.1rem', color: '#2C5E2E', marginBottom: '10px' }}>Informações da Denúncia</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
-            
-            <div style={{ backgroundColor: '#EAEAEA', padding: '10px', borderRadius: '8px' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block', color: '#4A7C59' }}>Categoria</span>
-              <span style={{ fontSize: '0.9rem' }}>{denuncia.categoria}</span>
-            </div>
-            
-            <div style={{ backgroundColor: '#EAEAEA', padding: '10px', borderRadius: '8px' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block', color: '#4A7C59' }}>Data</span>
-              <span style={{ fontSize: '0.9rem' }}>{formatarData(denuncia.data_criacao)}</span>
-            </div>
+    <PageLayout isAdmin={true}>
+      <div style={containerStyle}>
+        <div style={headerStyle}>
+          <button style={backButtonStyle} onClick={() => navigate(-1)}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 18L9 12L15 6" stroke="#1C3520" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <h2 style={headerTitleStyle}>Detalhes (adm)</h2>
+          <div style={{ width: "24px" }}></div>
+        </div>
 
-            <div style={{ backgroundColor: '#EAEAEA', padding: '10px', borderRadius: '8px', gridColumn: 'span 2' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 'bold', display: 'block', color: '#4A7C59' }}>Descrição</span>
-              <span style={{ fontSize: '0.9rem' }}>{denuncia.descricao || 'Nenhuma descrição informada'}</span>
-            </div>
-
-            <div style={{ 
-              width: '100%', 
-              height: '300px', 
-              borderRadius: '8px', 
-              overflow: 'hidden', 
-              marginTop: '16px',
-              gridColumn: 'span 2' 
-            }}>
-              <iframe
-                width="100%"
-                height="100%"
-                frameBorder="0"
-                style={{ border: 0 }}
-                src={`https://maps.google.com/maps?q=${denuncia.latitude},${denuncia.longitude}&z=16&output=embed`}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 style={{ fontSize: '1.1rem', color: '#2C5E2E', marginBottom: '10px' }}>Foto</h2>
-          {denuncia.foto_url ? (
-            <img 
-              src={`https://ecomonitor-api.onrender.com/${denuncia.foto_url}`} 
-              alt="Foto da denúncia" 
-              style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '15px' }}
-            />
-          ) : (
-            <div style={{ height: '150px', backgroundColor: '#EAEAEA', borderRadius: '15px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <span style={{ color: '#888' }}>Sem Foto</span>
-            </div>
-          )}
-        </section>
-
-        <section>
-          <h2 style={{ fontSize: '1.1rem', color: '#2C5E2E', marginBottom: '10px', fontWeight: 'bold' }}>
-            Informações do Usuário
-          </h2>
-          <div style={{ 
-            backgroundColor: '#EAEAEA', 
-            padding: '20px', 
-            borderRadius: '20px', 
-            display: 'grid', 
-            gridTemplateColumns: '1fr 1fr 1fr', 
-            gap: '15px' 
-          }}>
-            <div>
-              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#4A7C59', display: 'block' }}>Nome</span>
-              <span style={{ fontSize: '14px', color: '#555' }}>
-                {denuncia.usuario?.nome || 'Não identificado'}
-              </span>
-            </div>
-            <div>
-              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#4A7C59', display: 'block' }}>Região</span>
-              <span style={{ fontSize: '14px', color: '#555' }}>
-                {denuncia.usuario?.regiao || 'Santa Maria'}
-              </span>
-            </div>
-            <div>
-              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#4A7C59', display: 'block' }}>Contribuições</span>
-              <span style={{ fontSize: '14px', color: '#555' }}>
-                {denuncia.usuario?.contribuicoes ?? 0} denúncia(s)
-              </span>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 style={{ fontSize: '1.1rem', color: '#2C5E2E', marginBottom: '10px' }}>Ações Administrativas</h2>
-          <div style={{ backgroundColor: 'white', padding: '15px', borderRadius: '15px', border: '1px solid #ddd', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
-            <h3 style={{ fontSize: '1rem', margin: '0 0 10px 0' }}>Alterar Status</h3>
-            
-            <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem' }}>
-              Status atual: 
-              <span style={{ 
-                backgroundColor: obterCorStatus(denuncia.status), 
-                color: 'white', 
-                padding: '4px 10px', 
-                borderRadius: '12px', 
-                fontWeight: 'bold', 
-                fontSize: '0.8rem',
-                marginLeft: '8px',
-                textShadow: '0px 1px 2px rgba(0,0,0,0.3)' // Sombra para ajudar na leitura do texto branco
-              }}>
-                {denuncia.status}
-              </span>
-            </p>
-            
-            <label style={{ fontSize: '0.9rem', display: 'block', marginBottom: '5px', marginTop: '15px' }}>Selecione o novo status:</label>
-            <select 
-              value={novoStatus} 
-              onChange={(e) => setNovoStatus(e.target.value)}
-              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '15px', fontSize: '1rem', outline: 'none' }}
-            >
-              <option value="Em análise">Em análise</option>
-              <option value="Validado">Validado</option>
-              <option value="Resolvido">Resolvido</option>
-              <option value="Negado">Negado</option>
-            </select>
-
-            {mensagem.texto && (
-              <div style={{ 
-                padding: '10px', 
-                marginBottom: '15px', 
-                borderRadius: '8px', 
-                textAlign: 'center',
-                fontSize: '0.9rem',
-                fontWeight: 'bold',
-                backgroundColor: mensagem.tipo === 'sucesso' ? '#D4EDDA' : '#F8D7DA',
-                color: mensagem.tipo === 'sucesso' ? '#155724' : '#721C24',
-                border: `1px solid ${mensagem.tipo === 'sucesso' ? '#C3E6CB' : '#F5C6CB'}`
-              }}>
-                {mensagem.texto}
+        <div style={contentContainerStyle}>
+          
+          <div>
+            <h3 style={sectionTitleStyle}>Informações da Denúncia</h3>
+            <div style={greenCardStyle}>
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "15px", marginBottom: "15px" }}>
+                <div>
+                  <span style={labelStyle}>Categoria</span>
+                  <span style={valueStyle}>{denuncia.categoria}</span>
+                </div>
+                <div>
+                  <span style={labelStyle}>Data</span>
+                  <span style={valueStyle}>{formatarData(denuncia.data_criacao)}</span>
+                </div>
               </div>
-            )}
-
-            <button 
-              onClick={confirmarAlteracao}
-              disabled={atualizando}
-              style={{ 
-                width: '100%', 
-                backgroundColor: atualizando ? '#666' : '#2C5E2E', 
-                color: 'white', 
-                padding: '12px', 
-                borderRadius: '8px', 
-                border: 'none', 
-                fontWeight: 'bold', 
-                fontSize: '1rem',
-                cursor: atualizando ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {atualizando ? 'Salvando...' : 'Confirmar alteração'}
-            </button>
+              <div>
+                <span style={labelStyle}>Descrição</span>
+                <span style={valueStyle}>{denuncia.descricao || 'Nenhuma descrição informada'}</span>
+              </div>
+            </div>
           </div>
-        </section>
 
-      </main>
+          <div style={{ display: "flex", gap: "15px" }}>
+            <div style={{ flex: 1 }}>
+              <h3 style={sectionTitleStyle}>Foto</h3>
+              {denuncia.foto_url ? (
+                <img 
+                  src={`https://ecomonitor-api.onrender.com/${denuncia.foto_url}`} 
+                  alt="Foto" 
+                  style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "12px" }}
+                />
+              ) : (
+                <div style={{ width: "100%", height: "100px", backgroundColor: "#EBEBEB", borderRadius: "12px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                  <span style={{ color: "#888", fontSize: "12px" }}>Sem Foto</span>
+                </div>
+              )}
+            </div>
+            <div style={{ flex: 1 }}>
+              <h3 style={sectionTitleStyle}>Endereço</h3>
+              <div style={{ ...greenCardStyle, height: "100px", padding: "10px", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", boxSizing: "border-box", overflow: "hidden" }}>
+                <span style={{ fontSize: "12px", color: "#1C3520", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  {endereco}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 style={sectionTitleStyle}>Informações do Usuário</h3>
+            <div style={{ ...greenCardStyle, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+              <div>
+                <span style={labelStyle}>Usuário</span>
+                <span style={valueStyle}>{denuncia.usuario?.nome || 'Não identificado'}</span>
+              </div>
+              <div>
+                <span style={labelStyle}>Região</span>
+                <span style={valueStyle}>{denuncia.usuario?.regiao || 'Santa Maria'}</span>
+              </div>
+              <div>
+                <span style={labelStyle}>Contribuições</span>
+                <span style={valueStyle}>{denuncia.usuario?.contribuicoes ?? 0}</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 style={sectionTitleStyle}>Ações Administrativas</h3>
+            <div style={{ backgroundColor: "white", padding: "20px", borderRadius: "15px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+              <h4 style={{ fontSize: "16px", color: "#1C3520", margin: "0 0 15px 0", fontWeight: "bold" }}>Alterar Status</h4>
+              
+              <div style={{ display: "flex", alignItems: "center", marginBottom: "15px", gap: "10px" }}>
+                <span style={{ fontSize: "14px", color: "#444" }}>Status atual:</span>
+                <span style={{ 
+                  backgroundColor: obterCorStatus(denuncia.status), 
+                  color: "white", 
+                  padding: "4px 12px", 
+                  borderRadius: "12px", 
+                  fontWeight: "bold", 
+                  fontSize: "12px"
+                }}>
+                  {denuncia.status || 'Em análise'}
+                </span>
+              </div>
+              
+              <span style={{ fontSize: "14px", color: "#444", display: "block", marginBottom: "8px" }}>Selecione o novo status:</span>
+              <select 
+                value={novoStatus} 
+                onChange={(e) => setNovoStatus(e.target.value)}
+                style={selectStyle}
+              >
+                <option value="Em análise">Em análise</option>
+                <option value="Validado">Validado</option>
+                <option value="Resolvido">Resolvido</option>
+                <option value="Negado">Negado</option>
+              </select>
+
+              {mensagem.texto && (
+                <div style={{ 
+                  padding: "10px", 
+                  marginTop: "15px", 
+                  borderRadius: "8px", 
+                  textAlign: "center",
+                  fontSize: "13px",
+                  fontWeight: "bold",
+                  backgroundColor: mensagem.tipo === 'sucesso' ? '#E7F0DC' : '#FFF0F4',
+                  color: mensagem.tipo === 'sucesso' ? '#1C3520' : '#D8000C'
+                }}>
+                  {mensagem.texto}
+                </div>
+              )}
+
+              <button 
+                onClick={confirmarAlteracao}
+                disabled={atualizando}
+                style={buttonStyle}
+              >
+                {atualizando ? 'Salvando...' : 'Confirmar alteração'}
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </PageLayout>
   );
 }

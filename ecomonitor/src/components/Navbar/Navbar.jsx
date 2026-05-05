@@ -70,16 +70,10 @@ const Navbar = ({ isAdmin = false }) => {
 
   if (isAdmin) {
     return (
-      <div style={navbarContainerStyle}>
+      <div style={{ ...navbarContainerStyle, justifyContent: "center", gap: "80px" }}>
         <button style={navButtonStyle} onClick={() => navigate("/admin-dashboard")}>
-          <LayoutDashboard size={28} color={getIconColor(isActive("/admin-dashboard"))} />
+          <House size={28} color={getIconColor(isActive("/admin-dashboard"))} />
         </button>
-
-        <div style={centerButtonContainer}>
-          <button style={centerButtonStyle} onClick={() => navigate("/admin-home")}>
-            <House size={28} color="white" />
-          </button>
-        </div>
 
         <button style={navButtonStyle} onClick={() => navigate("/admin-perfil")}>
           <User size={28} color={getIconColor(isActive("/admin-perfil"))} />
