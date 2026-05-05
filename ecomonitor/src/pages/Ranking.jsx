@@ -1,42 +1,82 @@
-import React, { useState } from "react";
-import PageLayout from "../components/PageLayout/PageLayout";
+import React, { useState, useEffect } from "react";
+import Navbar from "../components/Navbar/Navbar.jsx"; 
 
 const Ranking = () => {
-  const [activeTab, setActiveTab] = useState("global");
+  const [activeTab, setActiveTab] = useState("local");
+  const [rankingLocal, setRankingLocal] = useState([]);
+  const [rankingGlobal, setRankingGlobal] = useState([]);
+  const [carregando, setCarregando] = useState(true);
 
-  const globalRanking = [
-    { id: 1, flag: "🇧🇷", name: "Santa Maria (BR)", points: 1500 },
-    { id: 2, flag: "🇩🇪", name: "Heidelberg (DE)", points: 1350 },
-    { id: 3, flag: "🇧🇷", name: "Porto Alegre (BR)", points: 1200 },
-    { id: 4, flag: "🇩🇪", name: "Kiel (DE)", points: 1100 },
-    { id: 5, flag: "🇧🇷", name: "Joinville (BR)", points: 950 },
-  ];
+  useEffect(() => {
+    const buscarRanking = async () => {
+      setCarregando(true);
+      try {
+        const token = localStorage.getItem("token"); 
+        const response = await fetch("https://ecomonitor-api.onrender.com/ranking", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        });
 
-  const localRanking = [
-    { id: 1, flag: "📍", name: "Centro", points: 800 },
-    { id: 2, flag: "📍", name: "Camobi", points: 650 },
-    { id: 3, flag: "📍", name: "Nossa Sra. de Lourdes", points: 500 },
-  ];
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data)) {
+            setRankingLocal(data);
+            setRankingGlobal(data);
+          } else {
+            setRankingLocal(data.local || []);
+            setRankingGlobal(data.global || []);
+          }
+        } else {
+          setRankingLocal([]);
+          setRankingGlobal([]);
+        }
+      // eslint-disable-next-line no-unused-vars
+      } catch (error) {
+        setRankingLocal([]);
+        setRankingGlobal([]);
+      } finally {
+        setCarregando(false);
+      }
+    };
+    
+    buscarRanking();
+  }, []);
 
-  const currentData = activeTab === "global" ? globalRanking : localRanking;
+  const currentData = activeTab === "global" ? rankingGlobal : rankingLocal;
 
   const containerStyle = {
     display: "flex",
     flexDirection: "column",
-    padding: "20px 5%",
-    gap: "15px",
-    flex: 1,
-    paddingBottom: "100px", 
-    overflowY: "auto",
+    minHeight: "100vh",
+    backgroundColor: "#F4F6F3",
+    paddingBottom: "120px", 
     boxSizing: "border-box",
+  };
+
+  const headerStyle = {
+    backgroundColor: "#1C3520",
+    padding: "25px 20px",
+    textAlign: "center",
+    color: "white",
+    fontSize: "20px",
+    fontWeight: "bold"
+  };
+
+  const contentStyle = {
+    padding: "20px 5%",
+    display: "flex",
+    flexDirection: "column",
+    gap: "15px"
   };
 
   const toggleWrapperStyle = {
     display: "flex",
-    backgroundColor: "#78A64B",
-    borderRadius: "10px",
+    backgroundColor: "#8DAF73",
+    borderRadius: "8px",
     overflow: "hidden",
-    marginBottom: "5px"
   };
 
   const getTabStyle = (tabName) => ({
@@ -46,74 +86,83 @@ const Ranking = () => {
     color: "white",
     fontWeight: "bold",
     cursor: "pointer",
-    backgroundColor: activeTab === tabName ? "#2D4627" : "#78A64B", 
-    transition: "background-color 0.3s"
+    backgroundColor: activeTab === tabName ? "#1C3520" : "#8DAF73",
+    border: "none",
+    outline: "none"
   });
 
-  const subtitleStyle = {
-    color: "#2D4627",
-    fontWeight: "bold",
-    fontSize: "15px",
-    textAlign: "center",
-    margin: "5px 0 10px 0"
-  };
-
   const cardStyle = {
-    backgroundColor: "#78A64B",
-    borderRadius: "10px",
-    padding: "15px",
+    backgroundColor: "white",
+    borderRadius: "12px",
+    padding: "15px 20px",
     display: "flex",
     alignItems: "center",
-    color: "white",
-    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-    gap: "15px"
+    gap: "15px",
+    boxShadow: "0px 2px 4px rgba(0,0,0,0.03)"
   };
 
   return (
-    <PageLayout title="Ranking">
-      <div style={containerStyle}>
-        
+    <div style={containerStyle}>
+      <div style={headerStyle}>
+        Ranking
+      </div>
+
+      <div style={contentStyle}>
         <div style={toggleWrapperStyle}>
-          <div 
-            style={getTabStyle("local")} 
-            onClick={() => setActiveTab("local")}
-          >
-            Ranking local
-          </div>
-          <div 
-            style={getTabStyle("global")} 
-            onClick={() => setActiveTab("global")}
-          >
-            Ranking global
-          </div>
+          <div style={getTabStyle("local")} onClick={() => setActiveTab("local")}>Ranking local</div>
+          <div style={getTabStyle("global")} onClick={() => setActiveTab("global")}>Ranking global</div>
         </div>
 
-        <p style={subtitleStyle}>
-          Ranking por {activeTab === "global" ? "cidade" : "bairro"} que mais participou
+        <p style={{ color: "#1C3520", fontWeight: "bold", textAlign: "center", margin: "10px 0" }}>
+          {activeTab === "global" ? "Ranking global de cidades" : "Ranking local de cidades"}
         </p>
 
-        {currentData.map((item, index) => (
-          <div key={item.id} style={cardStyle}>
-            <span style={{ fontWeight: "bold", fontSize: "18px", width: "25px" }}>
-              {index + 1}
-            </span>
-            
-            <span style={{ fontSize: "24px" }}>
-              {item.flag}
-            </span>
-            
-            <span style={{ flex: 1, fontWeight: "bold", fontSize: "14px" }}>
-              {item.name}
-            </span>
-            
-            <span style={{ fontSize: "11px", fontWeight: "bold" }}>
-              {item.points} pts
-            </span>
+        {carregando ? (
+          <p style={{ textAlign: "center", color: "#1C3520", marginTop: "20px" }}>Carregando...</p>
+        ) : (!currentData || currentData.length === 0) ? (
+          <div style={{ 
+            textAlign: "center", 
+            marginTop: "40px",
+            padding: "30px 20px",
+            backgroundColor: "#E7F0DC",
+            borderRadius: "15px",
+            border: "2px dashed #8DAF73"
+          }}>
+            <span style={{ fontSize: "50px" }}>🏆</span>
+            <h3 style={{ color: "#1C3520", margin: "15px 0 5px 0" }}>Ninguém no ranking ainda!</h3>
+            <p style={{ color: "#2D4627", fontSize: "14px", lineHeight: "1.4" }}>
+              Faça sua primeira denúncia e garanta o 1º lugar no ranking!
+            </p>
           </div>
-        ))}
-
+        ) : (
+          currentData.map((item, index) => (
+            <div key={index} style={cardStyle}>
+              <span style={{ fontWeight: "bold", fontSize: "18px", width: "25px", color: "#1C3520" }}>
+                {index + 1}
+              </span>
+              <div style={{ 
+                width: "45px", height: "45px", borderRadius: "50%", 
+                border: "2px solid #8DAF73", backgroundColor: "#E7F0DC", 
+                display: "flex", justifyContent: "center", alignItems: "center" 
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2D4627" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <span style={{ flex: 1, fontWeight: "bold", color: "#1C3520", fontSize: "16px" }}>
+                {item.nome || item.name || "Usuário"}
+              </span>
+              <span style={{ fontWeight: "bold", color: "#1C3520", fontSize: "14px" }}>
+                {item.pontos || item.points || 0} pts
+              </span>
+            </div>
+          ))
+        )}
       </div>
-    </PageLayout>
+
+      <Navbar isAdmin={false} />
+    </div>
   );
 };
 
