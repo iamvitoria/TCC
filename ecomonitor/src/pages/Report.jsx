@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import PageLayout from "../components/PageLayout/PageLayout";
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import { useNavigate } from "react-router-dom";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import Navbar from "../components/Navbar/Navbar.jsx"; 
 
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import icon from "leaflet/dist/images/marker-icon.png";
+import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
 let DefaultIcon = L.icon({
   iconUrl: icon,
@@ -24,68 +25,48 @@ const RecenterMap = ({ lat, lng }) => {
 };
 
 const Report = () => {
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  
+
   const [foto, setFoto] = useState(null);
   const [preview, setPreview] = useState(null);
   const [categoria, setCategoria] = useState("");
   const [descricao, setDescricao] = useState("");
-  
+
   const [enviando, setEnviando] = useState(false);
-  const [mensagem, setMensagem] = useState({ texto: "", tipo: "" }); 
+  const [mensagem, setMensagem] = useState({ texto: "", tipo: "" });
 
   const [localizacao, setLocalizacao] = useState({
     lat: null,
-    lng: null,
-    carregando: true,
-    erro: null
+    lng: null
   });
 
-  const handleFotoChange = (event) => {
-    const arquivo = event.target.files[0];
-    if (arquivo) {
-      setFoto(arquivo);
-      setPreview(URL.createObjectURL(arquivo));
-    }
-  };
-
-  const obterPosicao = () => {
-    setLocalizacao(prev => ({ ...prev, carregando: true, erro: null }));
-    
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (posicao) => {
-          setLocalizacao({
-            lat: posicao.coords.latitude,
-            lng: posicao.coords.longitude,
-            carregando: false,
-            erro: null
-          });
-        },
-        (erro) => {
-          console.error(erro);
-          setLocalizacao(prev => ({ ...prev, carregando: false, erro: "Erro ao obter GPS." }));
-        },
-        { enableHighAccuracy: true, timeout: 15000 }
-      );
-    } else {
-      setLocalizacao(prev => ({ ...prev, carregando: false, erro: "GPS não suportado." }));
-    }
-  };
-
   useEffect(() => {
-    obterPosicao();
+    navigator.geolocation.getCurrentPosition((pos) => {
+      setLocalizacao({
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+      });
+    });
   }, []);
+
+  const handleFotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFoto(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleSubmit = async () => {
     setMensagem({ texto: "", tipo: "" });
 
     if (!foto || !categoria || !localizacao.lat) {
-      setMensagem({ texto: "⚠️ Preencha: Foto, Categoria e aguarde o GPS!", tipo: "erro" });
+      setMensagem({ texto: "⚠️ Preencha a foto, categoria e aguarde o GPS!", tipo: "erro" });
       return;
     }
-    
-    const token = localStorage.getItem("meuToken");
+
+    const token = localStorage.getItem("token");
     if (!token) {
       setMensagem({ texto: "❌ Você precisa estar logado!", tipo: "erro" });
       return;
@@ -108,15 +89,10 @@ const Report = () => {
       });
 
       if (response.ok) {
-        setMensagem({ texto: `Denúncia enviada com sucesso!`, tipo: "sucesso" });
-        setFoto(null); setPreview(null); setCategoria(""); setDescricao("");
-        
-        setTimeout(() => {
-          setMensagem({ texto: "", tipo: "" });
-        }, 5000);
+        setMensagem({ texto: "Denúncia enviada com sucesso!", tipo: "sucesso" });
+        setTimeout(() => navigate("/home"), 2000);
       } else {
-        const erroData = await response.json();
-        setMensagem({ texto: `Erro: ${erroData.detail || "Tente novamente."}`, tipo: "erro" });
+        setMensagem({ texto: "Erro ao enviar denúncia. Tente novamente.", tipo: "erro" });
       }
     // eslint-disable-next-line no-unused-vars
     } catch (error) {
@@ -126,144 +102,256 @@ const Report = () => {
     }
   };
 
-  const containerStyle = { display: "flex", flexDirection: "column", padding: "20px 5%", gap: "15px", paddingBottom: "120px" };
-  const uploadBoxStyle = {
-    border: preview ? "none" : "2px dashed #78A64B", borderRadius: "15px", backgroundColor: preview ? "transparent" : "#F1F8E9",
-    height: "170px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", cursor: "pointer", overflow: "hidden"
-  };
-  const locationCardStyle = { display: "flex", backgroundColor: "#7FB04B", borderRadius: "10px", overflow: "hidden", height: "100px", width: "100%" };
-  const inputStyle = { width: "100%", backgroundColor: "#7FB04B", color: "white", border: "none", borderRadius: "10px", padding: "12px", appearance: "none" };
-
-  const mensagemStyle = {
-    padding: "10px",
-    borderRadius: "10px",
-    textAlign: "center",
-    fontWeight: "bold",
-    fontSize: "14px",
-    backgroundColor: mensagem.tipo === "sucesso" ? "#DFF2BF" : "#FFD2D2",
-    color: mensagem.tipo === "sucesso" ? "#2D4627" : "#D8000C",
-  };
-
   return (
-    <PageLayout title="Nova denúncia">
-      <div style={containerStyle}>
-        
-        <input 
-          type="file" accept="image/*" capture="environment" 
-          style={{ display: "none" }} ref={fileInputRef} onChange={handleFotoChange} 
-        />
-
-        <div style={uploadBoxStyle} onClick={() => fileInputRef.current.click()}>
-          {preview ? (
-            <img src={preview} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          ) : (
-            <>
-              <span style={{ fontSize: "50px" }}>📸</span>
-              <span style={{color: "#2D4627", fontWeight: "bold"}}>Tirar Foto do Local</span>
-            </>
-          )}
-        </div>
-
-        <select style={inputStyle} value={categoria} onChange={(e) => setCategoria(e.target.value)}>
-          <option value="" disabled>Escolha a Categoria</option>
-          <option value="lixo">Descarte Irregular de lixo</option>
-          <option value="desmatamento">Desmatamento</option>
-          <option value="poluicao_agua">Poluição da Água</option>
-          <option value="queimada">Queimada</option>
-          <option value="poluicao_ar">Poluição do Ar</option>
-          <option value="animais">Maus-tratos aos Animais</option>
-          <option value="foco_mosquito">Foco de Mosquito</option>
-          <option value="esgoto">Esgoto a Céu Aberto</option>
-        </select>
-
-        <div style={locationCardStyle}>
-          <div style={{ width: "40%", backgroundColor: "#ddd", position: "relative" }}>
-            {localizacao.lat ? (
-              <MapContainer 
-                center={[localizacao.lat, localizacao.lng]} 
-                zoom={15} zoomControl={false} dragging={false}
-                style={{ height: "100%", width: "100%" }}
-              >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={[localizacao.lat, localizacao.lng]} />
-                <RecenterMap lat={localizacao.lat} lng={localizacao.lng} />
-              </MapContainer>
-            ) : (
-              <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}>📍</div>
-            )}
-          </div>
-          
-          <div style={{ padding: "10px", color: "white", fontSize: "11px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            {localizacao.carregando ? <strong>🛰️ Buscando sinal...</strong> : (
-              <>
-                <strong>{localizacao.erro || "Localização Ativa"}</strong>
-                <span>Lat: {localizacao.lat?.toFixed(5)}</span>
-                <span>Lng: {localizacao.lng?.toFixed(5)}</span>
-                <span onClick={obterPosicao} style={{textDecoration: 'underline', marginTop: "5px", cursor: "pointer"}}>Atualizar GPS</span>
-              </>
-            )}
-          </div>
-        </div>
-
-        <textarea 
-          placeholder="Descrição opcional..." 
-          style={{ backgroundColor: "#89B65B", border: "none", borderRadius: "10px", padding: "12px", color: "white", height: "80px" }}
-          value={descricao} onChange={(e) => setDescricao(e.target.value)}
-        />
-
-        {mensagem.texto && (
-          <div style={mensagemStyle}>
-            {mensagem.texto}
-          </div>
-        )}
-
-        <button 
-          style={{ 
-            backgroundColor: enviando ? "#5c7556" : "#2D4627", 
-            color: "white", 
-            border: "none", 
-            borderRadius: "10px", 
-            padding: "15px", 
-            fontSize: "18px", 
-            fontWeight: "bold",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "10px",
-            cursor: enviando ? "not-allowed" : "pointer",
-            opacity: enviando ? 0.8 : 1
-          }}
-          onClick={handleSubmit}
-          disabled={enviando}
-        >
-          {enviando ? (
-            <>
-              <style>
-                {`
-                  @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                  }
-                `}
-              </style>
-              <div style={{
-                border: "3px solid rgba(255,255,255,0.3)",
-                borderTop: "3px solid white",
-                borderRadius: "50%",
-                width: "20px",
-                height: "20px",
-                animation: "spin 1s linear infinite"
-              }} />
-              Enviando...
-            </>
-          ) : (
-            "Enviar Denúncia"
-          )}
-        </button>
-
+    <div style={styles.container}>
+      
+      <div style={styles.header}>
+        <span style={styles.back} onClick={() => navigate(-1)}>‹</span>
+        <h2 style={styles.title}>Nova denúncia</h2>
       </div>
-    </PageLayout>
+
+      <label style={styles.label}>Foto da ocorrência</label>
+
+      <input
+        type="file"
+        accept="image/*"
+        capture="environment"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={handleFotoChange}
+      />
+
+      <div style={{...styles.uploadBox, border: preview ? "none" : styles.uploadBox.border}} onClick={() => fileInputRef.current.click()}>
+        {preview ? (
+          <img src={preview} alt="preview" style={styles.preview} />
+        ) : (
+          <>
+            <span style={{ fontSize: 40 }}>📷</span>
+            <span style={styles.uploadText}>Tirar foto ou importar</span>
+          </>
+        )}
+      </div>
+
+      <label style={styles.label}>Categoria</label>
+      <select
+        value={categoria}
+        onChange={(e) => setCategoria(e.target.value)}
+        style={styles.select}
+      >
+        <option value="" disabled>Escolha a Categoria</option>
+        <option value="lixo">Descarte Irregular de lixo</option>
+        <option value="desmatamento">Desmatamento</option>
+        <option value="poluicao_agua">Poluição da Água</option>
+        <option value="queimada">Queimada</option>
+        <option value="poluicao_ar">Poluição do Ar</option>
+        <option value="animais">Maus-tratos aos Animais</option>
+        <option value="foco_mosquito">Foco de Mosquito</option>
+        <option value="esgoto">Esgoto a Céu Aberto</option>
+      </select>
+
+      <label style={styles.label}>Localização</label>
+
+      <div style={styles.locationCard}>
+        <div style={styles.map}>
+          {localizacao.lat && (
+            <MapContainer
+              center={[localizacao.lat, localizacao.lng]}
+              zoom={15}
+              dragging={false}
+              zoomControl={false}
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <Marker position={[localizacao.lat, localizacao.lng]} />
+              <RecenterMap lat={localizacao.lat} lng={localizacao.lng} />
+            </MapContainer>
+          )}
+        </div>
+
+        <div style={styles.locationText}>
+          <strong>Confirmar local</strong>
+          <span>
+            {localizacao.lat
+              ? `${localizacao.lat.toFixed(4)}, ${localizacao.lng.toFixed(4)}`
+              : "Carregando..."}
+          </span>
+        </div>
+      </div>
+
+      <label style={styles.label}>Descrição Opcional</label>
+      <textarea
+        placeholder="Descreva o problema em detalhes..."
+        style={styles.textarea}
+        value={descricao}
+        onChange={(e) => setDescricao(e.target.value)}
+      />
+
+      {mensagem.texto && (
+        <div style={{
+          padding: "10px",
+          borderRadius: "8px",
+          textAlign: "center",
+          fontWeight: "bold",
+          fontSize: "14px",
+          backgroundColor: mensagem.tipo === "sucesso" ? "#DFF2BF" : "#FFD2D2",
+          color: mensagem.tipo === "sucesso" ? "#2D4627" : "#D8000C"
+        }}>
+          {mensagem.texto}
+        </div>
+      )}
+
+      <button 
+        onClick={handleSubmit} 
+        disabled={enviando}
+        style={{
+          ...styles.button,
+          opacity: enviando ? 0.7 : 1,
+          cursor: enviando ? "not-allowed" : "pointer",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "10px"
+        }}
+      >
+        {enviando ? (
+          <>
+            <style>
+              {`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}
+            </style>
+            <div style={{
+              border: "3px solid rgba(255,255,255,0.3)",
+              borderTop: "3px solid white",
+              borderRadius: "50%",
+              width: "20px",
+              height: "20px",
+              animation: "spin 1s linear infinite"
+            }} />
+            Enviando...
+          </>
+        ) : (
+          "Enviar Denúncia"
+        )}
+      </button>
+
+      <Navbar isAdmin={false} />
+    </div>
   );
+};
+
+const styles = {
+  container: {
+    padding: "20px",
+    paddingBottom: "120px", 
+    backgroundColor: "#F4F6F3",
+    height: "100vh", 
+    overflowY: "scroll", 
+    overflowX: "hidden",
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
+    boxSizing: "border-box" 
+  },
+
+  header: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    flexShrink: 0 
+  },
+
+  back: {
+    fontSize: 28,
+    color: "#2D4627",
+    cursor: "pointer"
+  },
+
+  title: {
+    margin: 0,
+    color: "#2D4627"
+  },
+
+  label: {
+    fontWeight: "600",
+    color: "#2D4627",
+    flexShrink: 0
+  },
+
+  uploadBox: {
+    border: "2px dashed #8DAF73",
+    backgroundColor: "#E7F0DC",
+    borderRadius: 15,
+    height: 140, 
+    overflow: "hidden", 
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    flexShrink: 0
+  },
+
+  uploadText: {
+    fontWeight: "600",
+    color: "#2D4627"
+  },
+
+  preview: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover", 
+  },
+
+  select: {
+    padding: 12,
+    borderRadius: 10,
+    border: "1px solid #ddd",
+    backgroundColor: "#fff",
+    flexShrink: 0
+  },
+
+  locationCard: {
+    display: "flex",
+    borderRadius: 12,
+    overflow: "hidden",
+    border: "1px solid #ddd",
+    backgroundColor: "#fff",
+    flexShrink: 0
+  },
+
+  map: {
+    width: "35%",
+    height: 70
+  },
+
+  locationText: {
+    padding: 10,
+    fontSize: 12,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    color: "#333"
+  },
+
+  textarea: {
+    borderRadius: 10,
+    border: "1px solid #ddd",
+    padding: 12,
+    height: 90,
+    fontFamily: "inherit",
+    flexShrink: 0
+  },
+
+  button: {
+    marginTop: 10,
+    backgroundColor: "#2D4627",
+    color: "white",
+    padding: 16,
+    borderRadius: 12,
+    border: "none",
+    fontSize: 16,
+    fontWeight: "bold",
+    flexShrink: 0 
+  }
 };
 
 export default Report;
