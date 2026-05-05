@@ -10,8 +10,6 @@ const PageLayout = ({ title, children, isAdmin = false }) => {
         <div style={{ 
             flex: 1, 
             backgroundColor: "white", 
-            borderTopLeftRadius: "30px", 
-            borderTopRightRadius: "30px", 
             overflowY: "auto", 
             display: "flex",
             flexDirection: "column",

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import PageLayout from "../components/PageLayout/PageLayout";
-
+import Navbar from "../components/Navbar/Navbar.jsx";
+import API_URL from "../config";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
@@ -20,79 +20,84 @@ L.Marker.prototype.options.icon = DefaultIcon;
 const ReportDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
   const denuncia = location.state?.denunciaSelecionada;
-  
   const [historicoReal, setHistoricoReal] = useState([]);
   const [carregandoHistorico, setCarregandoHistorico] = useState(true);
+  const [endereco, setEndereco] = useState("Buscando endereço...");
 
   useEffect(() => {
     const buscarHistorico = async () => {
       if (!denuncia?.id) return;
-
       try {
-        const response = await fetch(`https://ecomonitor-api.onrender.com/denuncias/${denuncia.id}/historico`);
+        const response = await fetch(`${API_URL}/denuncias/${denuncia.id}/historico`);
         if (response.ok) {
           const data = await response.json();
           setHistoricoReal(data);
         }
       } catch (error) {
-        console.error("Erro ao buscar histórico:", error);
+        console.error(error);
       } finally {
         setCarregandoHistorico(false);
       }
     };
-
     buscarHistorico();
   }, [denuncia?.id]);
 
+  useEffect(() => {
+    if (denuncia?.latitude && denuncia?.longitude) {
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${denuncia.latitude}&lon=${denuncia.longitude}&zoom=18&addressdetails=1`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.address) {
+            const rua = data.address.road || data.address.pedestrian || "Rua não identificada";
+            const numero = data.address.house_number ? `, ${data.address.house_number}` : "";
+            const bairro = data.address.suburb || data.address.neighbourhood ? ` - ${data.address.suburb || data.address.neighbourhood}` : "";
+            setEndereco(`${rua}${numero}${bairro}`);
+          } else {
+            setEndereco("Endereço não encontrado");
+          }
+        })
+        .catch(() => setEndereco("Erro ao buscar endereço"));
+    } else {
+      setEndereco("Localização não informada no mapa");
+    }
+  }, [denuncia]);
+
   if (!denuncia) {
     return (
-      <PageLayout title="Detalhes da Denúncia">
-        <div style={{ padding: "20px", textAlign: "center", color: "white" }}>
-            <p>Denúncia não encontrada.</p>
-            <button onClick={() => navigate(-1)}>Voltar</button>
+      <PageLayout>
+        <div style={styles.statusBarPlaceholder}></div>
+        <div style={styles.headerContainer}>
+          <button style={styles.backButton} onClick={() => navigate(-1)}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 18L9 12L15 6" stroke="#2D4627" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <h2 style={styles.headerTitle}>Detalhes da denúncia</h2>
+          <div style={{ width: "24px" }}></div>
         </div>
+        <div style={styles.whiteCardContainer}>
+          <div style={{ padding: "20px", textAlign: "center", color: "#2D4627" }}>
+              <p>Denúncia não encontrada.</p>
+              <button onClick={() => navigate(-1)} style={styles.btnGeneric}>Voltar</button>
+          </div>
+        </div>
+        <Navbar isAdmin={false} />
       </PageLayout>
     );
   }
 
-  const whiteCardStyle = {
-    backgroundColor: "white",
-    borderTopLeftRadius: "25px",
-    borderTopRightRadius: "25px",
-    padding: "25px 20px 40px 20px", 
-    minHeight: "80vh",
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
-    marginTop: "20px",
-  };
-
-  const sectionTitleStyle = {
-    color: "#2D4627",
-    fontSize: "16px",
-    fontWeight: "bold",
-    margin: "0 0 10px 0"
-  };
-
-  const grayBoxStyle = {
-    backgroundColor: "#F0F0F0",
-    borderRadius: "10px",
-    padding: "15px",
-  };
-
   const formatarNomeCategoria = (slug) => {
     if (!slug) return "Desconhecida";
     const nomes = {
-      lixo: "Descarte Irregular de Lixo",
+      lixo: "Descarte irregular de lixo",
       desmatamento: "Desmatamento",
-      poluicao_agua: "Poluição da Água",
+      poluicao_agua: "Poluição da água",
       queimada: "Queimada",
-      poluicao_ar: "Poluição do Ar",
-      animais: "Maus-tratos Animais",
-      foco_mosquito: "Foco de Mosquito",
-      esgoto: "Esgoto Aberto"
+      poluicao_ar: "Poluição do ar",
+      animais: "Maus-tratos animais",
+      foco_mosquito: "Foco de mosquito",
+      esgoto: "Esgoto aberto"
     };
     return nomes[slug] || slug.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase());
   };
@@ -105,10 +110,10 @@ const ReportDetails = () => {
     if (s === "validado") { bgColor = "#7FB04B"; texto = "Validado"; }
     else if (s === "resolvido" || s === "resolvida") { bgColor = "#3B75A3"; texto = "Resolvido"; }
     else if (s === "cancelado" || s === "rejeitado") { bgColor = "#D9534F"; texto = "Cancelado"; }
-    else if (s === "pendente" || s === "em analise" || s === "em análise") { bgColor = "#D59A53"; texto = "Em Análise"; }
+    else if (s === "pendente" || s === "em analise" || s === "em análise") { bgColor = "#D59A53"; texto = "Em análise"; }
 
     return (
-      <span style={{ backgroundColor: bgColor, color: "white", padding: "4px 10px", borderRadius: "15px", fontSize: "12px", fontWeight: "bold" }}>
+      <span style={{ ...styles.statusBadge, backgroundColor: bgColor }}>
         {texto}
       </span>
     );
@@ -126,111 +131,287 @@ const ReportDetails = () => {
     return isNaN(date.getTime()) ? "--:--" : date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   };
 
+  const styles = {
+    statusBarPlaceholder: {
+      backgroundColor: "#1C3520",
+      height: "30px",
+      width: "100%",
+    },
+    headerContainer: {
+      backgroundColor: "#fff",
+      display: "flex",
+      alignItems: "center",
+      padding: "20px 20px 10px 20px",
+    },
+    backButton: {
+      background: "none",
+      border: "none",
+      color: "#2D4627",
+      fontSize: "24px",
+      cursor: "pointer",
+      padding: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    headerTitle: {
+      margin: 0,
+      color: "#2D4627",
+      fontSize: "20px",
+      fontWeight: "bold",
+      textAlign: "center",
+      flex: 1,
+    },
+    whiteCardContainer: {
+      backgroundColor: "#fff",
+      borderTopLeftRadius: "25px",
+      borderTopRightRadius: "25px",
+      padding: "30px 20px 40px 20px",
+      flex: 1,
+      display: "flex",
+      flexDirection: "column",
+      gap: "25px",
+      marginTop: "10px",
+      paddingBottom: "150px",
+    },
+    sectionTitle: {
+      color: "#2D4627",
+      fontSize: "18px",
+      fontWeight: "bold",
+      margin: "0 0 12px 0",
+    },
+    grayCardBox: {
+      backgroundColor: "#F0F0F0",
+      borderRadius: "15px",
+      padding: "15px",
+    },
+    dataGeneralRow: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    dataColumn: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "5px",
+    },
+    dataLabel: {
+      fontSize: "13px",
+      fontWeight: "bold",
+      color: "#2D4627",
+    },
+    dataValue: {
+      fontSize: "13px",
+      color: "#444",
+    },
+    statusBadge: {
+      color: "white",
+      padding: "6px 12px",
+      borderRadius: "15px",
+      fontSize: "12px",
+      fontWeight: "bold",
+    },
+    imageRow: {
+      display: "flex",
+      gap: "10px",
+      overflowX: "auto",
+      paddingBottom: "5px",
+    },
+    imageItem: {
+      width: "120px",
+      height: "100px",
+      objectFit: "cover",
+      borderRadius: "15px",
+      flexShrink: 0,
+    },
+    locationRow: {
+      backgroundColor: "#F0F0F0",
+      borderRadius: "15px",
+      padding: "0",
+      overflow: "hidden",
+      display: "flex",
+      height: "90px",
+    },
+    mapContainerWrapper: {
+      height: "100%",
+      width: "35%",
+      zIndex: 0,
+    },
+    addressColumn: {
+      flex: 1,
+      padding: "0 15px",
+      fontSize: "13px",
+      color: "#444",
+      display: "flex",
+      alignItems: "center",
+    },
+    timelineContainer: {
+      display: "flex",
+      flexDirection: "column",
+      marginTop: "15px",
+    },
+    timelineItemRow: {
+      display: "flex",
+      gap: "15px",
+      minHeight: "60px",
+    },
+    timelineDateColumn: {
+      width: "80px",
+      textAlign: "right",
+      fontSize: "12px",
+      color: "#444",
+      paddingTop: "2px",
+    },
+    timelineGraphicColumn: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      width: "20px",
+    },
+    timelineDot: {
+      width: "12px",
+      height: "12px",
+      borderRadius: "50%",
+      backgroundColor: "#2D4627",
+      zIndex: 2,
+    },
+    timelineLine: {
+      width: "2px",
+      height: "100%",
+      backgroundColor: "#2D4627",
+      marginTop: "-2px",
+      marginBottom: "-2px",
+    },
+    timelineTextColumn: {
+      flex: 1,
+      fontSize: "13px",
+      color: "#2D4627",
+      paddingBottom: "25px",
+      whiteSpace: "pre-line",
+    },
+    btnGeneric: {
+      marginTop: "10px",
+      backgroundColor: "#1C3520",
+      color: "white",
+      padding: "10px 20px",
+      borderRadius: "8px",
+      border: "none",
+      cursor: "pointer",
+    },
+  };
+
   const posicaoMapa = denuncia.latitude && denuncia.longitude ? [denuncia.latitude, denuncia.longitude] : null;
 
   return (
-    <PageLayout title="Detalhes da denúncia">
-      <div style={{ paddingBottom: "150px" }}>
-        <div style={{ padding: "0 5%" }}>
-          <button 
-            style={{ background: "none", border: "none", color: "white", fontSize: "16px", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", fontWeight: "bold" }} 
-            onClick={() => navigate(-1)}
-          >
-            ← Voltar
-          </button>
-        </div>
-
-        <div style={whiteCardStyle}>
-          <div>
-            <h3 style={sectionTitleStyle}>Dados gerais</h3>
-            <div style={{ ...grayBoxStyle, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                <span style={{ fontSize: "12px", fontWeight: "bold", color: "#2D4627" }}>Categoria</span>
-                <span style={{ fontSize: "12px", color: "#444" }}>{formatarNomeCategoria(denuncia.categoria)}</span>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-                <span style={{ fontSize: "12px", fontWeight: "bold", color: "#2D4627" }}>Data</span>
-                <span style={{ fontSize: "12px", color: "#444" }}>{formatarData(denuncia.data_criacao)}</span>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "5px", alignItems: "center" }}>
-                <span style={{ fontSize: "12px", fontWeight: "bold", color: "#2D4627" }}>Status</span>
-                {getStatusBadge(denuncia.status)}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h3 style={sectionTitleStyle}>Descrição completa</h3>
-            <div style={grayBoxStyle}>
-              <p style={{ margin: 0, fontSize: "13px", color: "#444", lineHeight: "1.4" }}>
-                {denuncia.descricao || "Nenhuma descrição detalhada fornecida pelo usuário."}
-              </p>
-            </div>
-          </div>
-
-          <div>
-            <h3 style={sectionTitleStyle}>Imagens</h3>
-            <div style={{ display: "flex", gap: "10px", overflowX: "auto" }}>
-              <img 
-                src={denuncia.foto_url ? `https://ecomonitor-api.onrender.com/${denuncia.foto_url}` : "https://placehold.co/100x100?text=Sem+Foto"} 
-                alt="Denúncia" 
-                style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "15px" }}
-                onError={(e) => { e.target.src = "https://placehold.co/100x100?text=Sem+Foto" }}
-              />
-            </div>
-          </div>
-
-          <div>
-            <h3 style={sectionTitleStyle}>Localização capturada</h3>
-            <div style={{ ...grayBoxStyle, padding: "0", overflow: "hidden", display: "flex", height: "90px" }}>
-              {posicaoMapa ? (
-                <div style={{ height: "100%", width: "40%", zIndex: 0 }}>
-                  <MapContainer center={posicaoMapa} zoom={16} style={{ height: "100%", width: "100%" }} zoomControl={false}>
-                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                    <Marker position={posicaoMapa} />
-                  </MapContainer>
-                </div>
-              ) : (
-                <div style={{ width: "40%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#e8f2db", fontSize: "11px" }}>Sem mapa</div>
-              )}
-              <div style={{ flex: 1, padding: "0 15px", fontSize: "12px", color: "#444", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <span><strong>Lat:</strong> {denuncia.latitude?.toFixed(6)}</span>
-                <span><strong>Lng:</strong> {denuncia.longitude?.toFixed(6)}</span>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h3 style={sectionTitleStyle}>Histórico</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0", marginTop: "10px" }}>
-              {carregandoHistorico ? (
-                <p style={{ fontSize: "12px", color: "#666" }}>Carregando histórico...</p>
-              ) : historicoReal.length > 0 ? (
-                historicoReal.map((item, index) => (
-                  <div key={item.id || index} style={{ display: "flex", gap: "15px", minHeight: "50px" }}>
-                    <div style={{ width: "70px", textAlign: "right", fontSize: "11px", color: "#444", paddingTop: "2px" }}>
-                      <div>{formatarData(item.data_registro)}</div>
-                      <div>{formatarHora(item.data_registro)}</div>
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "20px" }}>
-                      <div style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#2D4627", zIndex: 2 }}></div>
-                      {index !== historicoReal.length - 1 && (
-                        <div style={{ width: "2px", flex: 1, backgroundColor: "#2D4627", marginTop: "-2px", marginBottom: "-2px" }}></div>
-                      )}
-                    </div>
-                    <div style={{ flex: 1, fontSize: "12px", color: "#444", paddingBottom: "20px", whiteSpace: "pre-line" }}>
-                      {item.texto}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p style={{ fontSize: "12px", color: "#666" }}>Nenhum registro no histórico.</p>
-              )}
-            </div>
-          </div>
-
-        </div>
+    <PageLayout>
+      <div style={styles.statusBarPlaceholder}></div>
+      
+      <div style={styles.headerContainer}>
+        <button style={styles.backButton} onClick={() => navigate(-1)}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 18L9 12L15 6" stroke="#2D4627" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+        <h2 style={styles.headerTitle}>Detalhes da denúncia</h2>
+        <div style={{ width: "24px" }}></div>
       </div>
+
+      <div style={styles.whiteCardContainer}>
+        
+        <div>
+          <h3 style={styles.sectionTitle}>Dados gerais</h3>
+          <div style={{ ...styles.grayCardBox, ...styles.dataGeneralRow }}>
+            <div style={styles.dataColumn}>
+              <span style={styles.dataLabel}>Categoria</span>
+              <span style={styles.dataValue}>{formatarNomeCategoria(denuncia.categoria)}</span>
+            </div>
+            <div style={styles.dataColumn}>
+              <span style={styles.dataLabel}>Data</span>
+              <span style={styles.dataValue}>{formatarData(denuncia.data_criacao)}</span>
+            </div>
+            <div style={{ ...styles.dataColumn, alignItems: "center" }}>
+              <span style={styles.dataLabel}>Status</span>
+              {getStatusBadge(denuncia.status)}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 style={styles.sectionTitle}>Descrição completa</h3>
+          <div style={styles.grayCardBox}>
+            <p style={{ margin: 0, fontSize: "14px", color: "#444", lineHeight: "1.5" }}>
+              {denuncia.descricao || "Nenhuma descrição detalhada fornecida pelo usuário."}
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h3 style={styles.sectionTitle}>Imagens</h3>
+          <div style={styles.imageRow}>
+            <img 
+              src={denuncia.foto_url ? `${API_URL}/${denuncia.foto_url}` : "https://placehold.co/120x100?text=Sem+Foto"} 
+              alt="Denúncia" 
+              style={styles.imageItem}
+              onError={(e) => { e.target.src = "https://placehold.co/120x100?text=Sem+Foto" }}
+            />
+            {!denuncia.foto_url && (
+               <img src="https://placehold.co/120x100?text=Sem+Foto" alt="Placeholder" style={styles.imageItem} />
+            )}
+          </div>
+        </div>
+
+        <div>
+          <h3 style={styles.sectionTitle}>Localização capturada</h3>
+          <div style={styles.locationRow}>
+            {posicaoMapa ? (
+              <div style={styles.mapContainerWrapper}>
+                <MapContainer center={posicaoMapa} zoom={16} style={{ height: "100%", width: "100%" }} zoomControl={false} dragging={false}>
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <Marker position={posicaoMapa} />
+                </MapContainer>
+              </div>
+            ) : (
+              <div style={{ width: "35%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#e8f2db", fontSize: "11px", color: "#1C3520" }}>Sem mapa</div>
+            )}
+            <div style={styles.addressColumn}>
+              <span>{endereco}</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 style={styles.sectionTitle}>Histórico</h3>
+          <div style={styles.timelineContainer}>
+            {carregandoHistorico ? (
+              <p style={{ fontSize: "13px", color: "#666" }}>Carregando histórico...</p>
+            ) : historicoReal.length > 0 ? (
+              historicoReal.map((item, index) => (
+                <div key={item.id || index} style={styles.timelineItemRow}>
+                  <div style={styles.timelineDateColumn}>
+                    <div>{formatarData(item.data_registro)}</div>
+                    <div style={{ marginTop: "2px" }}>{formatarHora(item.data_registro)}</div>
+                  </div>
+                  
+                  <div style={styles.timelineGraphicColumn}>
+                    <div style={styles.timelineDot}></div>
+                    {index !== historicoReal.length - 1 && (
+                      <div style={styles.timelineLine}></div>
+                    )}
+                  </div>
+
+                  <div style={styles.timelineTextColumn}>
+                    {item.texto}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p style={{ fontSize: "13px", color: "#666" }}>Nenhum registro no histórico.</p>
+            )}
+          </div>
+        </div>
+
+      </div>
+      <Navbar isAdmin={false} />
     </PageLayout>
   );
 };

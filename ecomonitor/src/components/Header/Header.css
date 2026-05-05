@@ -1,39 +1,20 @@
 .custom-header {
-  height: 80px; /* Um pouco mais alto para as decorações aparecerem */
-  background-color: #2D4627; /* O verde escuro do seu protótipo */
+  background-color: #1a361e; 
+  width: 100%;
+  padding: 40px 20px 20px 20px;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
-  overflow: hidden;
-  width: 100%;
+  margin: 0;
+  
+  border-radius: 0; 
+  box-shadow: none;
 }
 
 .header-text {
-  color: white;
+  color: #FFFFFF;
   font-size: 20px;
-  font-weight: 700;
-  z-index: 2; /* Garante que o texto fique acima dos círculos */
+  font-weight: 600;
   margin: 0;
-}
-
-/* Círculos decorativos que imitam o design do Figma */
-.circle-deco {
-  position: absolute;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 50%;
-}
-
-.top-left {
-  width: 100px;
-  height: 100px;
-  top: -40px;
-  left: -30px;
-}
-
-.top-right {
-  width: 60px;
-  height: 60px;
-  top: 10px;
-  right: -20px;
+  text-align: center;
 }

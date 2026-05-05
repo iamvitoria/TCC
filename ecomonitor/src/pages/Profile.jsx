@@ -1,27 +1,28 @@
 import React, { useState, useEffect, useRef } from "react"; 
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../components/PageLayout/PageLayout";
+import Navbar from "../components/Navbar/Navbar.jsx";
 import API_URL from "../config";
 
 const Profile = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null); 
 
+  const [carregando, setCarregando] = useState(true);
   const [perfil, setPerfil] = useState({
-    nome: "Carregando...",
+    nome: "",
     pontuacao: 0,
     foto_perfil: null,
-    posicao_ranking: null,
-    cidade_ranking: "Carregando...",
+    posicao_ranking: "-",
+    cidade_ranking: "",
+    denuncias: 0,
     conquistas: []
   });
 
   useEffect(() => {
     const buscarPerfil = async () => {
-      const token = localStorage.getItem("meuToken"); 
+      const token = localStorage.getItem("token") || localStorage.getItem("meuToken"); 
       
       if (!token) {
-        console.error("Token não encontrado no localStorage");
         navigate("/"); 
         return;
       }
@@ -35,21 +36,23 @@ const Profile = () => {
 
         if (resposta.ok) {
           const dados = await resposta.json();
+          
           setPerfil({
-            nome: dados.nome || "Sem Nome",
+            nome: dados.nome || "Usuário",
             pontuacao: dados.pontuacao || 0,
             foto_perfil: dados.foto_perfil || null,
-            posicao_ranking: dados.posicao_ranking || null,
-            cidade_ranking: dados.cidade_ranking || "Brasil",
+            posicao_ranking: dados.posicao_ranking || "-",
+            cidade_ranking: dados.cidade || dados.cidade_ranking || "Sua região",
+            denuncias: dados.denuncias ?? dados.total_denuncias ?? 0,
             conquistas: dados.conquistas || []
           });
         } else {
-          const erroApi = await resposta.text();
-          console.error(`Erro na API (${resposta.status}):`, erroApi);
           if(resposta.status === 401) navigate("/");
         }
       } catch (erro) {
-        console.error("Erro de conexão no fetch:", erro);
+        console.error("Erro ao buscar dados reais do banco:", erro);
+      } finally {
+        setCarregando(false);
       }
     };
 
@@ -63,7 +66,7 @@ const Profile = () => {
     const formData = new FormData();
     formData.append("foto", arquivo);
 
-    const token = localStorage.getItem("meuToken");
+    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
 
     try {
       const resposta = await fetch(`${API_URL}/perfil/foto`,{
@@ -79,131 +82,243 @@ const Profile = () => {
         setPerfil(prev => ({ ...prev, foto_perfil: dados.foto_perfil }));
       }
     } catch (erro) {
-      console.error("Erro ao fazer upload:", erro);
+      console.error("Erro ao enviar foto:", erro);
     }
   };
 
   const fazerLogout = () => {
+    localStorage.removeItem("token"); 
     localStorage.removeItem("meuToken"); 
     navigate("/");
   };
 
   const containerStyle = {
-    display: "flex", flexDirection: "column", alignItems: "center",
-    padding: "20px 5%", gap: "20px", flex: 1, paddingBottom: "100px", 
-    overflowY: "auto", boxSizing: "border-box",
+    display: "flex",
+    flexDirection: "column",
+    height: "100vh", 
+    overflowY: "auto", 
+    backgroundColor: "#1C3520", 
+    boxSizing: "border-box",
   };
 
-  const blobBackgroundStyle = {
-    width: "140px", height: "140px", backgroundColor: "#7FB04B", 
-    borderRadius: "40% 60% 70% 30% / 40% 50% 60% 50%", 
-    display: "flex", justifyContent: "center", alignItems: "center",
-    position: "relative", marginTop: "10px", cursor: "pointer" 
+  const topSectionStyle = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    padding: "50px 20px 30px 20px",
+    width: "100%",
+    boxSizing: "border-box"
+  };
+
+  const blobStyle = {
+    width: "140px", 
+    height: "140px",
+    backgroundColor: "#7FB04B",
+    borderRadius: "40% 60% 70% 30% / 40% 50% 60% 50%",
+    display: "flex", 
+    justifyContent: "center", 
+    alignItems: "center",
+    marginBottom: "15px", 
+    position: "relative",
+    cursor: "pointer"
   };
 
   const profilePicStyle = {
-    width: "100px", height: "100px", borderRadius: "50%",
-    objectFit: "cover", border: "3px solid white",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+    width: "120px", 
+    height: "120px",
+    borderRadius: "50%", 
+    objectFit: "cover"
   };
 
-  const nameStyle = { color: "#2D4627", fontWeight: "bold", fontSize: "20px", margin: "-5px 0 0 0" };
-
-  const progressBarContainer = {
-    width: "100%", backgroundColor: "#78A64B", borderRadius: "20px",
-    height: "40px", position: "relative", overflow: "hidden",
+  const nameStyle = { 
+    color: "white", 
+    fontSize: "22px", 
+    fontWeight: "bold", 
+    margin: "0 0 5px 0",
+    textAlign: "center"
   };
 
-  const progressBarFill = {
-    width: `${Math.min((perfil.pontuacao / 1000) * 100, 100)}%`, 
-    backgroundColor: "#2D4627", height: "100%", borderRadius: "20px",
-    display: "flex", alignItems: "center", paddingLeft: "20px", boxSizing: "border-box",
+  const locationStyle = { 
+    color: "#7FB04B", 
+    fontSize: "18px", 
+    margin: "0 0 20px 0", 
+    fontWeight: "normal",
+    textAlign: "center"
+  };
+
+  const progressBgStyle = {
+    width: "100%", 
+    maxWidth: "320px", 
+    height: "8px",
+    backgroundColor: "rgba(255,255,255,0.2)", 
+    borderRadius: "4px",
+    marginBottom: "25px",
+    overflow: "hidden"
+  };
+
+  const progressFillStyle = {
+    width: `${Math.min((perfil.pontuacao / 1000) * 100, 100)}%`,
+    height: "100%",
+    backgroundColor: "#7FB04B", 
+    borderRadius: "4px",
     transition: "width 0.5s ease-in-out"
   };
 
-  const progressTextStyle = { color: "white", fontWeight: "bold", fontSize: "16px", zIndex: 2 };
-
-  const rankingCardStyle = { 
-    backgroundColor: "#78A64B", borderRadius: "15px", padding: "20px", 
-    width: "100%", display: "flex", alignItems: "center", color: "white", 
-    boxSizing: "border-box", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" 
+  const statsRowStyle = {
+    display: "flex", 
+    gap: "10px", 
+    width: "100%", 
+    maxWidth: "320px"
   };
 
-  const achievementsRowStyle = { display: "flex", width: "100%", gap: "10px", flexWrap: "wrap" };
-
-  const achievementMiniCardStyle = { 
-    backgroundColor: "#78A64B", borderRadius: "10px", padding: "15px 10px", 
-    flex: "1 1 120px", textAlign: "center", color: "white", 
-    fontWeight: "bold", fontSize: "14px", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" 
+  const statCardStyle = {
+    backgroundColor: "#2D4627", 
+    borderRadius: "10px", 
+    padding: "15px 5px",
+    flex: 1, 
+    display: "flex", 
+    flexDirection: "column", 
+    alignItems: "center",
+    justifyContent: "center"
   };
 
-  const logoutBtnStyle = { 
-    backgroundColor: "#78A64B", color: "white", border: "none", 
-    borderRadius: "10px", padding: "15px", fontSize: "18px", 
-    fontWeight: "bold", width: "100%", cursor: "pointer", marginTop: "10px"
+  const statValueStyle = { 
+    color: "white", 
+    fontSize: "20px", 
+    fontWeight: "bold", 
+    marginBottom: "5px" 
+  };
+
+  const statLabelStyle = { 
+    color: "white", 
+    fontSize: "10px", 
+    fontWeight: "300", 
+    textAlign: "center" 
+  };
+
+  const bottomSectionStyle = {
+    backgroundColor: "white", 
+    flex: 1, 
+    width: "100%",
+    padding: "25px 20px 140px 20px", 
+    boxSizing: "border-box",
+    display: "flex", 
+    flexDirection: "column", 
+    gap: "15px"
+  };
+
+  const achievementsRowStyle = { 
+    display: "flex", 
+    gap: "15px", 
+    marginBottom: "5px" 
+  };
+
+  const achievementCardStyle = {
+    backgroundColor: "#E7F0DC", 
+    borderRadius: "10px", 
+    padding: "15px",
+    flex: 1, 
+    textAlign: "center", 
+    color: "#1C3520", 
+    fontSize: "16px",
+    display: "flex", 
+    alignItems: "center", 
+    justifyContent: "center",
+    minHeight: "70px",
+    boxSizing: "border-box"
+  };
+
+  const btnBaseStyle = {
+    width: "100%", 
+    padding: "15px", 
+    borderRadius: "10px",
+    fontSize: "18px", 
+    fontWeight: "normal", 
+    border: "none", 
+    cursor: "pointer",
+    textAlign: "center"
+  };
+
+  const btnEditStyle = { ...btnBaseStyle, backgroundColor: "#1C3520", color: "white" };
+  const btnPassStyle = { ...btnBaseStyle, backgroundColor: "#E7F0DC", color: "#1C3520" };
+  const btnLogoutStyle = { ...btnBaseStyle, backgroundColor: "#FFF0F4", color: "#D8000C" };
+
+  const renderizarConquista = (conquista) => {
+    if (typeof conquista === 'string') return conquista;
+    return conquista.nome || conquista.titulo || "Conquista";
   };
 
   return (
-    <PageLayout title="Perfil">
-      <div style={containerStyle}>
-        
-        <input 
-          type="file" 
-          accept="image/*" 
-          style={{ display: "none" }} 
-          ref={fileInputRef} 
-          onChange={handleTrocarFoto} 
-        />
+    <div style={containerStyle}>
+      <input 
+        type="file" 
+        accept="image/*" 
+        style={{ display: "none" }} 
+        ref={fileInputRef} 
+        onChange={handleTrocarFoto} 
+      />
 
-        <div style={blobBackgroundStyle} onClick={() => fileInputRef.current.click()}>
+      <div style={topSectionStyle}>
+        <div style={blobStyle} onClick={() => fileInputRef.current.click()}>
           {perfil.foto_perfil ? (
             <img src={perfil.foto_perfil} alt="Perfil" style={profilePicStyle} />
           ) : (
-            <div style={{color: "white", fontSize: "40px"}}>👤</div>
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#1C3520" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
           )}
         </div>
 
-        <h2 style={nameStyle}>{perfil.nome}</h2>
+        <h2 style={nameStyle}>{carregando ? "Carregando..." : perfil.nome}</h2>
+        <h3 style={locationStyle}>{carregando ? "..." : perfil.cidade_ranking}</h3>
 
-        <div style={progressBarContainer}>
-          <div style={progressBarFill}>
-            <span style={progressTextStyle}>{perfil.pontuacao}/1000</span>
-          </div>
+        <div style={progressBgStyle}>
+          <div style={progressFillStyle}></div>
         </div>
 
-        <div style={rankingCardStyle}>
-          <div style={{ display: "flex", alignItems: "flex-start", marginRight: "25px" }}>
-            <span style={{ fontSize: "55px", fontWeight: "bold", lineHeight: "1" }}>
-              {perfil.posicao_ranking || "-"}
-            </span>
-            <span style={{ fontSize: "20px", fontWeight: "bold", marginTop: "5px" }}>º</span>
+        <div style={statsRowStyle}>
+          <div style={statCardStyle}>
+            <span style={statValueStyle}>{carregando ? "-" : perfil.denuncias}</span>
+            <span style={statLabelStyle}>Denúncias</span>
           </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontWeight: "bold", fontSize: "18px" }}>Sua posição</span>
-            <span style={{ fontSize: "13px", opacity: 0.9 }}>Ranking {perfil.cidade_ranking}</span>
+          <div style={statCardStyle}>
+            <span style={statValueStyle}>{carregando ? "-" : `${perfil.posicao_ranking}º`}</span>
+            <span style={statLabelStyle}>Ranking local</span>
+          </div>
+          <div style={statCardStyle}>
+            <span style={statValueStyle}>{carregando ? "-" : perfil.pontuacao}</span>
+            <span style={statLabelStyle}>Pontos</span>
           </div>
         </div>
+      </div>
 
+      <div style={bottomSectionStyle}>
         <div style={achievementsRowStyle}>
-          {perfil.conquistas && perfil.conquistas.length > 0 ? (
-            [...new Set(perfil.conquistas)].map((conquista, index) => (
-              <div key={index} style={achievementMiniCardStyle}>
-                {conquista}
+          {carregando ? (
+            <div style={{...achievementCardStyle, color: "#666", backgroundColor: "#F4F6F3"}}>
+              Carregando conquistas...
+            </div>
+          ) : perfil.conquistas && perfil.conquistas.length > 0 ? (
+            perfil.conquistas.slice(-2).map((conquista, index) => (
+              <div key={index} style={achievementCardStyle}>
+                {renderizarConquista(conquista)}
               </div>
             ))
           ) : (
-            <div style={{...achievementMiniCardStyle, opacity: 0.7, backgroundColor: "#E0E0E0", color: "#666"}}>
+            <div style={{...achievementCardStyle, color: "#666", backgroundColor: "#F4F6F3"}}>
               Nenhuma conquista ainda
             </div>
           )}
         </div>
 
-        <button style={logoutBtnStyle} onClick={fazerLogout}>
-          Sair
-        </button>
-
+        <button style={btnEditStyle}>Editar perfil</button>
+        <button style={btnPassStyle}>Mudar senha</button>
+        <button style={btnLogoutStyle} onClick={fazerLogout}>Sair</button>
       </div>
-    </PageLayout>
+
+      <Navbar isAdmin={false} />
+    </div>
   );
 };
 
