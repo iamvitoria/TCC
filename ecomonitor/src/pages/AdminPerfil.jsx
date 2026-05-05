@@ -1,195 +1,297 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Settings, Key, Edit3, LogOut, ShieldCheck, MapPin, CheckCircle2, Clock } from 'lucide-react';
-import PageLayout from '../components/PageLayout/PageLayout'; 
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar/Navbar.jsx";
+import API_URL from "../config";
 
 export default function AdminPerfil() {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null); 
 
-  // Dados provisórios mais completos
-  const adminData = {
-    nome: "Vitória Luiza Camara",
-    cargo: "Analista Ambiental",
-    regiao: "Santa Maria",
-    foto: "https://i.pravatar.cc/150?img=47",
+  const [carregando, setCarregando] = useState(true);
+  const [adminData, setAdminData] = useState({
+    nome: "",
+    cargo: "",
+    regiao: "",
+    foto_perfil: null,
     estatisticas: {
-      resolvidas: 142,
-      pendentes: 18
+      resolvidas: 0,
+      pendentes: 0
+    }
+  });
+
+  const buscarPerfil = async () => {
+    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+    
+    if (!token) {
+      navigate("/");
+      return;
+    }
+
+    try {
+      const resposta = await fetch(`${API_URL}/perfil`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (resposta.ok) {
+        const dados = await resposta.json();
+        
+        setAdminData({
+          nome: dados.nome || "Administrador",
+          cargo: dados.cargo || "Analista Ambiental",
+          regiao: dados.regiao || dados.cidade || "Santa Maria",
+          foto_perfil: dados.foto_perfil 
+            ? (dados.foto_perfil.startsWith('http') ? dados.foto_perfil : `${API_URL}/${dados.foto_perfil}`)
+            : null,
+          estatisticas: {
+            resolvidas: dados.estatisticas?.resolvidas || 0,
+            pendentes: dados.estatisticas?.pendentes || 0
+          }
+        });
+      }
+    } catch (erro) {
+      console.error("Erro ao buscar perfil do admin:", erro);
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  useEffect(() => {
+    buscarPerfil();
+  }, [navigate]);
+
+  const handleFotoClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = async (event) => {
+    const arquivo = event.target.files[0];
+    if (!arquivo) return;
+
+    const formData = new FormData();
+    formData.append("foto", arquivo);
+
+    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+
+    try {
+      const resposta = await fetch(`${API_URL}/perfil/foto`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (resposta.ok) {
+        alert("Foto atualizada com sucesso!");
+        buscarPerfil();
+      } else {
+        alert("Erro ao enviar a foto.");
+      }
+    } catch (erro) {
+      console.error("Erro no upload:", erro);
     }
   };
 
   const handleSair = () => {
-    navigate('/'); 
+    localStorage.clear();
+    navigate("/");
   };
 
+  if (carregando) {
+    return (
+      <div style={{ ...styles.container, justifyContent: 'center', alignItems: 'center', color: 'white' }}>
+        <p>Carregando perfil do administrador...</p>
+      </div>
+    );
+  }
+
   return (
-    <PageLayout title="Perfil Admin" isAdmin={true}>
+    <div style={styles.container}>
       
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '30px 20px',
-        paddingBottom: '90px', // Espaço para a navbar
-        fontFamily: 'sans-serif'
-      }}>
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        accept="image/*"
+        onChange={handleFileChange}
+      />
 
-        {/* --- SEÇÃO DA FOTO COM FUNDO ORGÂNICO (BLOB) --- */}
-        <div style={{ position: 'relative', marginBottom: '15px' }}>
-          <div style={{
-            position: 'absolute',
-            top: '-15px', 
-            left: '-20px', 
-            right: '-20px', 
-            bottom: '-15px',
-            backgroundColor: '#7BA45A', 
-            borderRadius: '40% 60% 70% 30% / 40% 50% 60% 50%',
-            zIndex: 0
-          }}></div>
+      <div style={styles.topSection}>
+        <span style={styles.role}>Administrador</span>
 
-          <img
-            src={adminData.foto}
-            alt="Foto de Perfil"
-            style={{
-              width: '120px',
-              height: '120px',
-              borderRadius: '50%',
-              objectFit: 'cover',
-              position: 'relative',
-              zIndex: 1,
-              boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-              border: '4px solid white'
-            }}
-          />
+        <div style={styles.blob} onClick={handleFotoClick} title="Clique para mudar a foto">
+          {adminData.foto_perfil ? (
+            <img src={adminData.foto_perfil} alt="perfil" style={styles.foto} />
+          ) : (
+            <div style={styles.fotoPlaceholder}>+</div>
+          )}
         </div>
 
-        {/* --- NOME E INFORMAÇÕES BÁSICAS --- */}
-        <h2 style={{ color: '#1B3B22', fontSize: '22px', fontWeight: 'bold', margin: '10px 0 5px 0', textAlign: 'center' }}>
-          {adminData.nome}
-        </h2>
+        <h2 style={styles.nome}>{adminData.nome}</h2>
+
+        <div style={styles.infoRow}>
+          <span>{adminData.cargo}</span>
+          <span>{adminData.regiao}</span>
+        </div>
+      </div>
+
+      <div style={styles.bottomSection}>
         
-        <div style={{ display: 'flex', gap: '15px', color: '#555', fontSize: '14px', marginBottom: '25px' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <ShieldCheck size={16} color="#7BA45A" /> {adminData.cargo}
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <MapPin size={16} color="#7BA45A" /> {adminData.regiao}
-          </span>
-        </div>
+        <h3 style={styles.sectionTitle}>Denúncias</h3>
 
-        {/* --- ESTATÍSTICAS (NOVO) --- */}
-        <div style={{ 
-          display: 'flex', 
-          width: '100%', 
-          gap: '15px', 
-          marginBottom: '30px' 
-        }}>
-          <div style={statsCardStyle}>
-            <CheckCircle2 size={24} color="#28A745" style={{ marginBottom: '8px' }} />
-            <span style={statsNumberStyle}>{adminData.estatisticas.resolvidas}</span>
-            <span style={statsLabelStyle}>Resolvidas</span>
+        <div style={styles.statsRow}>
+          <div style={styles.card}>
+            <strong style={styles.cardNumber}>{adminData.estatisticas.resolvidas}</strong>
+            <span style={styles.cardLabel}>Resolvidas</span>
           </div>
-          <div style={statsCardStyle}>
-            <Clock size={24} color="#F5B041" style={{ marginBottom: '8px' }} />
-            <span style={statsNumberStyle}>{adminData.estatisticas.pendentes}</span>
-            <span style={statsLabelStyle}>Pendentes</span>
+
+          <div style={styles.card}>
+            <strong style={styles.cardNumber}>{adminData.estatisticas.pendentes}</strong>
+            <span style={styles.cardLabel}>Pendentes</span>
           </div>
         </div>
 
-        {/* --- MENU DE OPÇÕES (NOVO) --- */}
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          
-          <button style={actionButtonStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <Edit3 size={20} />
-              <span style={actionButtonText}>Editar Perfil</span>
-            </div>
-          </button>
-
-          <button style={actionButtonStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <Key size={20} />
-              <span style={actionButtonText}>Mudar Senha</span>
-            </div>
-          </button>
-
-          <button style={actionButtonStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <Settings size={20} />
-              <span style={actionButtonText}>Configurações do Sistema</span>
-            </div>
-          </button>
-
-        </div>
-
-        {/* --- BOTÃO DE SAIR --- */}
-        <div style={{ width: '100%', marginTop: '30px' }}>
-          <button onClick={handleSair} style={logoutButtonStyle}>
-            <LogOut size={20} />
-            <span style={{ fontSize: '16px', fontWeight: 'bold' }}>Sair da Conta</span>
-          </button>
-        </div>
+        <button style={styles.btnPrimary} onClick={() => navigate('/editar-perfil-admin')}>Editar perfil</button>
+        <button style={styles.btnSecondary}>Mudar senha</button>
+        <button style={styles.btnLogout} onClick={handleSair}>Sair</button>
 
       </div>
-    </PageLayout>
+
+      <Navbar isAdmin={true} />
+    </div>
   );
 }
 
-// --- ESTILOS ---
-
-const statsCardStyle = {
-  flex: 1,
-  backgroundColor: '#EAEAEA',
-  borderRadius: '16px',
-  padding: '15px',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-};
-
-const statsNumberStyle = {
-  fontSize: '24px',
-  fontWeight: 'bold',
-  color: '#1B3B22'
-};
-
-const statsLabelStyle = {
-  fontSize: '12px',
-  color: '#666',
-  fontWeight: 'bold',
-  textTransform: 'uppercase'
-};
-
-const actionButtonStyle = {
-  backgroundColor: '#7BA45A', 
-  color: 'white',
-  borderRadius: '12px',
-  padding: '16px 20px',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  border: 'none',
-  cursor: 'pointer',
-  boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-  width: '100%'
-};
-
-const actionButtonText = {
-  fontSize: '16px',
-  fontWeight: '500'
-};
-
-const logoutButtonStyle = {
-  backgroundColor: '#FFEBEE', 
-  color: '#DC3545',
-  borderRadius: '12px',
-  padding: '16px 20px',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  gap: '10px',
-  border: '2px solid #FFCDD2',
-  cursor: 'pointer',
-  width: '100%'
+const styles = {
+  container: {
+    display: "flex",
+    flexDirection: "column",
+    height: "100vh",
+    overflowY: "auto",
+    backgroundColor: "#1C3520"
+  },
+  topSection: {
+    padding: "40px 20px 30px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    color: "#7FB04B"
+  },
+  role: {
+    fontSize: 18,
+    marginBottom: 15,
+    fontWeight: '500'
+  },
+  blob: {
+    width: 140,
+    height: 140,
+    backgroundColor: "#7FB04B",
+    borderRadius: "40% 60% 70% 30% / 40% 50% 60% 50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 15,
+    cursor: "pointer",
+    overflow: "hidden",
+    border: "4px solid #7FB04B"
+  },
+  foto: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover"
+  },
+  fotoPlaceholder: {
+    fontSize: "40px",
+    color: "white",
+    fontWeight: "bold"
+  },
+  nome: {
+    color: "white",
+    fontSize: 22,
+    margin: "5px 0",
+    fontWeight: "bold"
+  },
+  infoRow: {
+    display: "flex",
+    gap: 30,
+    color: "#7FB04B",
+    fontSize: 16
+  },
+  bottomSection: {
+    backgroundColor: "#F4F6F3",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: "30px 25px 120px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 15,
+    flex: 1
+  },
+  sectionTitle: {
+    color: "#2D4627",
+    fontWeight: "bold",
+    fontSize: "18px",
+    marginBottom: "5px"
+  },
+  statsRow: {
+    display: "flex",
+    gap: 15
+  },
+  card: {
+    flex: 1,
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: "20px 15px",
+    textAlign: "center",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.03)"
+  },
+  cardNumber: {
+    fontSize: "26px",
+    color: "#2D4627",
+    fontWeight: "bold",
+    display: "block"
+  },
+  cardLabel: {
+    fontSize: "11px",
+    color: "#888",
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    marginTop: "4px"
+  },
+  btnPrimary: {
+    backgroundColor: "#2D4627",
+    color: "white",
+    border: "none",
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    fontWeight: "bold",
+    cursor: "pointer",
+    marginTop: "10px"
+  },
+  btnSecondary: {
+    backgroundColor: "#DCE8D5",
+    color: "#2D4627",
+    border: "none",
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    fontWeight: "bold",
+    cursor: "pointer"
+  },
+  btnLogout: {
+    backgroundColor: "#F2DADA",
+    color: "#A80000",
+    border: "none",
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    fontWeight: "bold",
+    cursor: "pointer"
+  }
 };
