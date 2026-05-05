@@ -32,7 +32,7 @@ const Navbar = ({ isAdmin = false }) => {
     zIndex: 1000
   };
 
-  const getIconColor = (active) => active ? "#4E9A51" : "#A0AEC0"; // Verde se ativo, cinza se inativo
+  const getIconColor = (active) => active ? "#4E9A51" : "#A0AEC0"; 
 
   const navButtonStyle = {
     background: "none",

@@ -4,7 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home"; 
 import Profile from "./pages/Profile"; 
-import Contributions from "./pages/Contributions"; 
+import Map from "./pages/Map";
 import Achievements from "./pages/Achievements"; 
 import Ranking from './pages/Ranking';
 import Report from './pages/Report';
@@ -23,7 +23,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/home" element={<Home />} /> 
         <Route path="/perfil" element={<Profile />} />
-        <Route path="/contribuicoes" element={<Contributions />} />
+        <Route path="/mapa" element={<Map />} />
         <Route path="/conquistas" element={<Achievements />} />
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/denuncia" element={<Report />} />
