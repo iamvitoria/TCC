@@ -152,7 +152,7 @@ const Home = () => {
         <div style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}>
           <div style={cardStatStyle}>
             <h2 style={{ margin: 0, fontSize: "24px", color: "#1C3520" }}>{estatisticas.abertas}</h2>
-            <p style={{ margin: 0, fontSize: "12px", color: "#1C3520", fontWeight: "bold" }}>Abertas</p>
+            <p style={{ margin: 0, fontSize: "12px", color: "#1C3520", fontWeight: "bold" }}>Aberta(s)</p>
           </div>
           <div style={cardStatStyle}>
             <h2 style={{ margin: 0, fontSize: "24px", color: "#1C3520" }}>{estatisticas.emAnalise}</h2>
