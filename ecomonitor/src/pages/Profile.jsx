@@ -50,7 +50,7 @@ const Profile = () => {
           if(resposta.status === 401) navigate("/");
         }
       } catch (erro) {
-        console.error("Erro ao buscar dados reais do banco:", erro);
+        console.error(erro);
       } finally {
         setCarregando(false);
       }
@@ -82,7 +82,7 @@ const Profile = () => {
         setPerfil(prev => ({ ...prev, foto_perfil: dados.foto_perfil }));
       }
     } catch (erro) {
-      console.error("Erro ao enviar foto:", erro);
+      console.error(erro);
     }
   };
 
@@ -198,6 +198,8 @@ const Profile = () => {
 
   const bottomSectionStyle = {
     backgroundColor: "white", 
+    borderTopLeftRadius: "25px",
+    borderTopRightRadius: "25px",
     flex: 1, 
     width: "100%",
     padding: "25px 20px 140px 20px", 
@@ -205,6 +207,21 @@ const Profile = () => {
     display: "flex", 
     flexDirection: "column", 
     gap: "15px"
+  };
+
+  const achievementsTitleContainerStyle = {
+    display: "flex", 
+    alignItems: "center", 
+    gap: "8px", 
+    cursor: "pointer",
+    marginBottom: "5px"
+  };
+
+  const achievementsTitleStyle = {
+    margin: 0, 
+    fontSize: "16px", 
+    color: "#1C3520", 
+    fontWeight: "bold" 
   };
 
   const achievementsRowStyle = { 
@@ -294,6 +311,19 @@ const Profile = () => {
       </div>
 
       <div style={bottomSectionStyle}>
+        
+        <div 
+          onClick={() => navigate('/conquistas')} 
+          style={achievementsTitleContainerStyle}
+        >
+          <h3 style={achievementsTitleStyle}>
+            Últimas conquistas
+          </h3>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 18L15 12L9 6" stroke="#1C3520" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+
         <div style={achievementsRowStyle}>
           {carregando ? (
             <div style={{...achievementCardStyle, color: "#666", backgroundColor: "#F4F6F3"}}>
