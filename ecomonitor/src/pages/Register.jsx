@@ -38,7 +38,7 @@ const Register = () => {
           nome: nome,
           email: email,
           senha: senha,
-          perfil: "user"
+          cidade: "Não informada"
         }),
       });
 
