@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import API_URL from "./config"; 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login"; 
 import Register from "./pages/Register";
@@ -15,6 +16,13 @@ import AdminPerfil from './pages/AdminPerfil';
 import "./App.css";
 
 function App() {
+
+  useEffect(() => {
+    fetch(`${API_URL}/`)
+      .then(() => console.log("Servidor aquecido"))
+      .catch(() => console.log("Servidor ainda acordando"));
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
