@@ -55,7 +55,7 @@ const Register = () => {
       }
       
     } catch (erro) {
-      console.error(erro);
+      console.error("ERRO REAL QUE ESTÁ ACONTECENDO:", erro);
       setAlerta({ visivel: true, texto: "Erro de conexão com o servidor.", tipo: "erro" });
     } finally {
       setCarregando(false);
