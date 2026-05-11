@@ -29,10 +29,13 @@ const Register = () => {
     fecharAlerta();
 
     try {
+      console.log("Tentando conectar em:", `${API_URL}/cadastro`);
+      
       const resposta = await fetch(`${API_URL}/cadastro`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json', // Adicione isso
         },
         body: JSON.stringify({
           nome: nome,
@@ -44,19 +47,25 @@ const Register = () => {
 
       if (resposta.ok) {
         setAlerta({ visivel: true, texto: "Cadastro realizado com sucesso!", tipo: "sucesso" });
-        
-        setTimeout(() => {
-          navigate("/login"); 
-        }, 2000);
-        
+        setTimeout(() => { navigate("/login"); }, 2000);
       } else {
-        const erroData = await resposta.json();
-        setAlerta({ visivel: true, texto: erroData.detail || "Erro ao realizar o cadastro.", tipo: "erro" });
+        const erroData = await resposta.json().catch(() => ({ detail: "Erro desconhecido no servidor" }));
+        setAlerta({ visivel: true, texto: erroData.detail || "Erro ao realizar cadastro", tipo: "erro" });
       }
       
     } catch (erro) {
-      console.error("ERRO REAL QUE ESTÁ ACONTECENDO:", erro);
-      setAlerta({ visivel: true, texto: "Erro de conexão com o servidor.", tipo: "erro" });
+      // Se o erro for "Failed to fetch", veja se o seu navegador não está bloqueando por HTTPS
+      console.error("DETALHE DO ERRO:", erro.name, erro.message);
+      
+      if (erro.name === 'TypeError' && erro.message === 'Failed to fetch') {
+         setAlerta({ 
+           visivel: true, 
+           texto: "O servidor demorou a responder, mas verifique o login, pois o usuário pode ter sido criado.", 
+           tipo: "erro" 
+         });
+      } else {
+         setAlerta({ visivel: true, texto: "Erro de conexão com o servidor.", tipo: "erro" });
+      }
     } finally {
       setCarregando(false);
     }

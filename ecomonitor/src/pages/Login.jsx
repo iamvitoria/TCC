@@ -62,8 +62,13 @@ const Login = () => {
       }
       
     } catch (erro) {
-      console.error(erro);
-      setAlerta({ visivel: true, texto: "Erro de conexão. O servidor está ligado?", tipo: "erro" });
+      console.error("ERRO DETALHADO:", erro);
+      // Se o erro for 'TypeError: Failed to fetch', é quase certeza que é CORS ou Timeout do Render
+      setAlerta({ 
+        visivel: true, 
+        texto: "O servidor demorou muito ou bloqueou a resposta. Verifique se o usuário foi criado.", 
+        tipo: "erro" 
+      });
     } finally {
       setCarregando(false);
     }
