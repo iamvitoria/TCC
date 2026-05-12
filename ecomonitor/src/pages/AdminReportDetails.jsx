@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PageLayout from "../components/PageLayout/PageLayout";
+import API_URL from "../config";
 
 export default function AdminReportDetails() {
   const { id } = useParams(); 
@@ -17,7 +18,7 @@ export default function AdminReportDetails() {
   useEffect(() => {
     const buscarDetalhesDenuncia = async () => {
       try {
-        const resposta = await fetch(`https://ecomonitor-api.onrender.com/denuncias/${id}`);
+        const resposta = await fetch(`${API_URL}/denuncias/${id}`);
         if (resposta.ok) {
           const dados = await resposta.json();
           setDenuncia(dados);
@@ -63,8 +64,7 @@ export default function AdminReportDetails() {
 
     setAtualizando(true);
     try {
-      const resposta = await fetch(`https://ecomonitor-api.onrender.com/denuncias/${id}/status?novo_status=${novoStatus}`, {
-        method: 'PUT',
+      const resposta = await fetch(`${API_URL}/denuncias/${id}/status?novo_status=${novoStatus}`, {        method: 'PUT',
       });
 
       if (resposta.ok) {
@@ -268,9 +268,17 @@ export default function AdminReportDetails() {
               <h3 style={sectionTitleStyle}>Foto</h3>
               {denuncia.foto_url ? (
                 <img 
-                  src={`https://ecomonitor-api.onrender.com/${denuncia.foto_url}`} 
+                  src={
+                    denuncia.foto_url.startsWith('http') 
+                      ? denuncia.foto_url 
+                      : `${API_URL}/${denuncia.foto_url}`
+                  } 
                   alt="Foto" 
                   style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "12px" }}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "https://placehold.co/120x100?text=Erro+na+Foto";
+                  }}
                 />
               ) : (
                 <div style={{ width: "100%", height: "100px", backgroundColor: "#EBEBEB", borderRadius: "12px", display: "flex", justifyContent: "center", alignItems: "center" }}>

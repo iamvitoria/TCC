@@ -7,6 +7,7 @@ import Navbar from "../components/Navbar/Navbar.jsx";
 
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
+import API_URL from "../config";
 
 let DefaultIcon = L.icon({
   iconUrl: icon,
@@ -82,7 +83,7 @@ const Report = () => {
     formData.append("foto", foto);
 
     try {
-      const response = await fetch("https://ecomonitor-api.onrender.com/denuncias", {
+      const response = await fetch(`${API_URL}/denuncias`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: formData,

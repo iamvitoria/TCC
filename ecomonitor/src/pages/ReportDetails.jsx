@@ -349,14 +349,18 @@ const ReportDetails = () => {
           <h3 style={styles.sectionTitle}>Imagens</h3>
           <div style={styles.imageRow}>
             <img 
-              src={denuncia.foto_url ? `${API_URL}/${denuncia.foto_url}` : "https://placehold.co/120x100?text=Sem+Foto"} 
+              src={
+                denuncia.foto_url 
+                  ? (denuncia.foto_url.startsWith('http') ? denuncia.foto_url : `${API_URL}/${denuncia.foto_url}`)
+                  : "https://placehold.co/120x100?text=Sem+Foto"
+              } 
               alt="Denúncia" 
               style={styles.imageItem}
-              onError={(e) => { e.target.src = "https://placehold.co/120x100?text=Sem+Foto" }}
+              onError={(e) => { 
+                e.target.onerror = null; 
+                e.target.src = "https://placehold.co/120x100?text=Sem+Foto"; 
+              }}
             />
-            {!denuncia.foto_url && (
-               <img src="https://placehold.co/120x100?text=Sem+Foto" alt="Placeholder" style={styles.imageItem} />
-            )}
           </div>
         </div>
 

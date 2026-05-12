@@ -84,7 +84,6 @@ export default function AdminPerfil() {
       });
 
       if (resposta.ok) {
-        alert("Foto atualizada com sucesso!");
         buscarPerfil();
       } else {
         alert("Erro ao enviar a foto.");
