@@ -63,7 +63,6 @@ const Login = () => {
       
     } catch (erro) {
       console.error("ERRO DETALHADO:", erro);
-      // Se o erro for 'TypeError: Failed to fetch', é quase certeza que é CORS ou Timeout do Render
       setAlerta({ 
         visivel: true, 
         texto: "O servidor demorou muito ou bloqueou a resposta. Verifique se o usuário foi criado.", 

@@ -170,7 +170,7 @@ const Report = () => {
         </div>
 
         <div style={styles.locationText}>
-          <strong>Confirmar local</strong>
+          <strong>Localização capturada</strong>
           <span>
             {localizacao.lat
               ? `${localizacao.lat.toFixed(4)}, ${localizacao.lng.toFixed(4)}`
@@ -241,17 +241,17 @@ const Report = () => {
 
 const styles = {
   container: {
-    padding: "20px",
-    paddingBottom: "120px", 
-    backgroundColor: "#F4F6F3",
-    height: "100vh", 
-    overflowY: "scroll", 
-    overflowX: "hidden",
-    display: "flex",
-    flexDirection: "column",
-    gap: 14,
-    boxSizing: "border-box" 
-  },
+  padding: "20px",
+  paddingBottom: "100px", 
+  backgroundColor: "#F4F6F3",
+  minHeight: "100vh",     
+  overflowY: "auto",      
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  boxSizing: "border-box",
+  WebkitOverflowScrolling: "touch" 
+},
 
   header: {
     display: "flex",
