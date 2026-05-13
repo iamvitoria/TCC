@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar/Navbar.jsx"; 
+import API_URL from "../config"; 
 
 const Ranking = () => {
   const [activeTab, setActiveTab] = useState("local");
@@ -12,7 +13,8 @@ const Ranking = () => {
       setCarregando(true);
       try {
         const token = localStorage.getItem("token"); 
-        const response = await fetch("https://ecomonitor-api.onrender.com/ranking", {
+        
+        const response = await fetch(`${API_URL}/ranking`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -33,8 +35,8 @@ const Ranking = () => {
           setRankingLocal([]);
           setRankingGlobal([]);
         }
-      // eslint-disable-next-line no-unused-vars
       } catch (error) {
+        console.error("Erro ao buscar ranking:", error);
         setRankingLocal([]);
         setRankingGlobal([]);
       } finally {
@@ -47,6 +49,7 @@ const Ranking = () => {
 
   const currentData = activeTab === "global" ? rankingGlobal : rankingLocal;
 
+  // Estilos
   const containerStyle = {
     display: "flex",
     flexDirection: "column",
@@ -104,17 +107,17 @@ const Ranking = () => {
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        Ranking
+        Ranking {window.location.hostname === "localhost" ? "(Local)" : ""}
       </div>
 
       <div style={contentStyle}>
         <div style={toggleWrapperStyle}>
-          <div style={getTabStyle("local")} onClick={() => setActiveTab("local")}>Ranking local</div>
-          <div style={getTabStyle("global")} onClick={() => setActiveTab("global")}>Ranking global</div>
+          <button style={getTabStyle("local")} onClick={() => setActiveTab("local")}>Ranking local</button>
+          <button style={getTabStyle("global")} onClick={() => setActiveTab("global")}>Ranking global</button>
         </div>
 
         <p style={{ color: "#1C3520", fontWeight: "bold", textAlign: "center", margin: "10px 0" }}>
-          {activeTab === "global" ? "Ranking global de cidades" : "Ranking local de cidades"}
+          {activeTab === "global" ? "Ranking global de cidades" : "Ranking local"}
         </p>
 
         {carregando ? (
@@ -151,7 +154,7 @@ const Ranking = () => {
                 </svg>
               </div>
               <span style={{ flex: 1, fontWeight: "bold", color: "#1C3520", fontSize: "16px" }}>
-                {item.nome || item.name || "Usuário"}
+                {item.nome || item.name || item.usuario_nome || "Usuário"}
               </span>
               <span style={{ fontWeight: "bold", color: "#1C3520", fontSize: "14px" }}>
                 {item.pontos || item.points || 0} pts
