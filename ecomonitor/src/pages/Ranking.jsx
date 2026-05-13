@@ -1,19 +1,39 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar/Navbar.jsx"; 
-import API_URL from "../config"; 
+import API_URL from "../config";
 
 const Ranking = () => {
   const [activeTab, setActiveTab] = useState("local");
   const [rankingLocal, setRankingLocal] = useState([]);
   const [rankingGlobal, setRankingGlobal] = useState([]);
   const [carregando, setCarregando] = useState(true);
+  const [cidadeUser, setCidadeUser] = useState("EcoMonitor"); // Nome padrão enquanto carrega
 
   useEffect(() => {
+    // 1. Função para obter a cidade do utilizador via GPS
+    const obterCidadeAtual = () => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`
+            );
+            const data = await response.json();
+            // Tenta extrair a cidade, vila ou povoação
+            const cidade = data.address.city || data.address.town || data.address.village || "Local";
+            setCidadeUser(cidade);
+          } catch (error) {
+            console.error("Erro ao obter nome da cidade:", error);
+          }
+        });
+      }
+    };
+
+    // 2. Função para buscar os dados do ranking
     const buscarRanking = async () => {
       setCarregando(true);
       try {
         const token = localStorage.getItem("token"); 
-        
         const response = await fetch(`${API_URL}/ranking`, {
           method: "GET",
           headers: {
@@ -24,32 +44,23 @@ const Ranking = () => {
 
         if (response.ok) {
           const data = await response.json();
-          if (Array.isArray(data)) {
-            setRankingLocal(data);
-            setRankingGlobal(data);
-          } else {
-            setRankingLocal(data.local || []);
-            setRankingGlobal(data.global || []);
-          }
-        } else {
-          setRankingLocal([]);
-          setRankingGlobal([]);
+          setRankingLocal(data.local || []);
+          setRankingGlobal(data.global || []);
         }
       } catch (error) {
-        console.error("Erro ao buscar ranking:", error);
-        setRankingLocal([]);
-        setRankingGlobal([]);
+        console.error("Erro ao procurar ranking:", error);
       } finally {
         setCarregando(false);
       }
     };
     
+    obterCidadeAtual();
     buscarRanking();
   }, []);
 
   const currentData = activeTab === "global" ? rankingGlobal : rankingLocal;
 
-  // Estilos
+  // --- Estilos ---
   const containerStyle = {
     display: "flex",
     flexDirection: "column",
@@ -65,7 +76,8 @@ const Ranking = () => {
     textAlign: "center",
     color: "white",
     fontSize: "20px",
-    fontWeight: "bold"
+    fontWeight: "bold",
+    textTransform: "capitalize" // Garante que o nome da cidade fique bonito
   };
 
   const contentStyle = {
@@ -91,7 +103,8 @@ const Ranking = () => {
     cursor: "pointer",
     backgroundColor: activeTab === tabName ? "#1C3520" : "#8DAF73",
     border: "none",
-    outline: "none"
+    outline: "none",
+    transition: "0.3s"
   });
 
   const cardStyle = {
@@ -106,22 +119,27 @@ const Ranking = () => {
 
   return (
     <div style={containerStyle}>
+      {/* Título Dinâmico aqui */}
       <div style={headerStyle}>
-        Ranking {window.location.hostname === "localhost" ? "(Local)" : ""}
+        Ranking {cidadeUser}
       </div>
 
       <div style={contentStyle}>
         <div style={toggleWrapperStyle}>
-          <button style={getTabStyle("local")} onClick={() => setActiveTab("local")}>Ranking local</button>
-          <button style={getTabStyle("global")} onClick={() => setActiveTab("global")}>Ranking global</button>
+          <button style={getTabStyle("local")} onClick={() => setActiveTab("local")}>
+            Ranking local
+          </button>
+          <button style={getTabStyle("global")} onClick={() => setActiveTab("global")}>
+            Ranking global
+          </button>
         </div>
 
         <p style={{ color: "#1C3520", fontWeight: "bold", textAlign: "center", margin: "10px 0" }}>
-          {activeTab === "global" ? "Ranking global de cidades" : "Ranking local"}
+          {activeTab === "global" ? "Cidades que mais contribuíram" : "Moradores mais ativos"}
         </p>
 
         {carregando ? (
-          <p style={{ textAlign: "center", color: "#1C3520", marginTop: "20px" }}>Carregando...</p>
+          <p style={{ textAlign: "center", color: "#1C3520", marginTop: "20px" }}>A carregar...</p>
         ) : (!currentData || currentData.length === 0) ? (
           <div style={{ 
             textAlign: "center", 
@@ -133,8 +151,8 @@ const Ranking = () => {
           }}>
             <span style={{ fontSize: "50px" }}>🏆</span>
             <h3 style={{ color: "#1C3520", margin: "15px 0 5px 0" }}>Ninguém no ranking ainda!</h3>
-            <p style={{ color: "#2D4627", fontSize: "14px", lineHeight: "1.4" }}>
-              Faça sua primeira denúncia e garanta o 1º lugar no ranking!
+            <p style={{ color: "#2D4627", fontSize: "14px" }}>
+              Seja o primeiro a denunciar em {cidadeUser}!
             </p>
           </div>
         ) : (
@@ -143,21 +161,36 @@ const Ranking = () => {
               <span style={{ fontWeight: "bold", fontSize: "18px", width: "25px", color: "#1C3520" }}>
                 {index + 1}
               </span>
+
               <div style={{ 
                 width: "45px", height: "45px", borderRadius: "50%", 
                 border: "2px solid #8DAF73", backgroundColor: "#E7F0DC", 
                 display: "flex", justifyContent: "center", alignItems: "center" 
               }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2D4627" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
+                {activeTab === "global" ? (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2D4627" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 21h18"></path>
+                    <path d="M3 7v14"></path>
+                    <path d="M13 21V3H3"></path>
+                    <path d="M13 7h8v14"></path>
+                  </svg>
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2D4627" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                )}
               </div>
+
               <span style={{ flex: 1, fontWeight: "bold", color: "#1C3520", fontSize: "16px" }}>
-                {item.nome || item.name || item.usuario_nome || "Usuário"}
+                {item.nome || "Não identificado"}
               </span>
+
               <span style={{ fontWeight: "bold", color: "#1C3520", fontSize: "14px" }}>
-                {item.pontos || item.points || 0} pts
+                {item.pontos || 0} 
+                <span style={{ marginLeft: "4px", fontSize: "12px", fontWeight: "normal" }}>
+                  {activeTab === "global" ? "denúncias" : "pts"}
+                </span>
               </span>
             </div>
           ))

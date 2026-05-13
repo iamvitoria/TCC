@@ -75,14 +75,26 @@ const Report = () => {
 
     setEnviando(true);
 
-    const formData = new FormData();
-    formData.append("categoria", categoria);
-    formData.append("descricao", descricao);
-    formData.append("latitude", localizacao.lat);
-    formData.append("longitude", localizacao.lng);
-    formData.append("foto", foto);
-
     try {
+      let enderecoTexto = "Endereço não identificado";
+      try {
+        const responseGeo = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${localizacao.lat}&lon=${localizacao.lng}`
+        );
+        const dataGeo = await responseGeo.json();
+        enderecoTexto = dataGeo.address.city || dataGeo.address.town || dataGeo.address.village || dataGeo.display_name;
+      } catch (geoError) {
+        console.error("Erro ao buscar endereço:", geoError);
+      }
+
+      const formData = new FormData();
+      formData.append("categoria", categoria);
+      formData.append("descricao", descricao);
+      formData.append("latitude", localizacao.lat);
+      formData.append("longitude", localizacao.lng);
+      formData.append("endereco", enderecoTexto); 
+      formData.append("foto", foto);
+
       const response = await fetch(`${API_URL}/denuncias`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
@@ -90,14 +102,14 @@ const Report = () => {
       });
 
       if (response.ok) {
-        setMensagem({ texto: "Denúncia enviada com sucesso!", tipo: "sucesso" });
+        setMensagem({ texto: "✅ Denúncia enviada com sucesso!", tipo: "sucesso" });
         setTimeout(() => navigate("/home"), 2000);
       } else {
-        setMensagem({ texto: "Erro ao enviar denúncia. Tente novamente.", tipo: "erro" });
+        setMensagem({ texto: "❌ Erro ao enviar denúncia.", tipo: "erro" });
       }
     // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      setMensagem({ texto: "Erro de conexão com o servidor.", tipo: "erro" });
+      setMensagem({ texto: "❌ Erro de conexão com o servidor.", tipo: "erro" });
     } finally {
       setEnviando(false);
     }
