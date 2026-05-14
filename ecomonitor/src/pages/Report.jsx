@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Navbar from "../components/Navbar/Navbar.jsx"; 
+import PageLayout from "../components/PageLayout/PageLayout";
 
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
@@ -102,10 +103,10 @@ const Report = () => {
       });
 
       if (response.ok) {
-        setMensagem({ texto: "✅ Denúncia enviada com sucesso!", tipo: "sucesso" });
+        setMensagem({ texto: "Denúncia enviada com sucesso!", tipo: "sucesso" });
         setTimeout(() => navigate("/home"), 2000);
       } else {
-        setMensagem({ texto: "❌ Erro ao enviar denúncia.", tipo: "erro" });
+        setMensagem({ texto: "Erro ao enviar denúncia.", tipo: "erro" });
       }
     // eslint-disable-next-line no-unused-vars
     } catch (error) {
@@ -116,177 +117,130 @@ const Report = () => {
   };
 
   return (
-    <div style={styles.container}>
-      
-      <div style={styles.header}>
-        <span style={styles.back} onClick={() => navigate(-1)}>‹</span>
-        <h2 style={styles.title}>Novo registro</h2>
-      </div>
+    <PageLayout title="Novo registro">
+      <div style={styles.container}>
+        <label style={styles.label}>Foto da ocorrência</label>
 
-      <label style={styles.label}>Foto da ocorrência</label>
+        <input
+          type="file"
+          accept="image/*"
+          capture="environment"
+          ref={fileInputRef}
+          style={{ display: "none" }}
+          onChange={handleFotoChange}
+        />
 
-      <input
-        type="file"
-        accept="image/*"
-        capture="environment"
-        ref={fileInputRef}
-        style={{ display: "none" }}
-        onChange={handleFotoChange}
-      />
-
-      <div style={{...styles.uploadBox, border: preview ? "none" : styles.uploadBox.border}} onClick={() => fileInputRef.current.click()}>
-        {preview ? (
-          <img src={preview} alt="preview" style={styles.preview} />
-        ) : (
-          <>
-            <span style={{ fontSize: 40 }}>📷</span>
-            <span style={styles.uploadText}>Tirar foto ou importar</span>
-          </>
-        )}
-      </div>
-
-      <label style={styles.label}>Categoria</label>
-      <select
-        value={categoria}
-        onChange={(e) => setCategoria(e.target.value)}
-        style={styles.select}
-      >
-        <option value="" disabled>Escolha a Categoria</option>
-        <option value="lixo">Descarte Irregular de lixo</option>
-        <option value="desmatamento">Desmatamento</option>
-        <option value="poluicao_agua">Poluição da Água</option>
-        <option value="queimada">Queimada</option>
-        <option value="poluicao_ar">Poluição do Ar</option>
-        <option value="animais">Maus-tratos aos Animais</option>
-        <option value="foco_mosquito">Foco de Mosquito</option>
-        <option value="esgoto">Esgoto a Céu Aberto</option>
-      </select>
-
-      <label style={styles.label}>Localização</label>
-
-      <div style={styles.locationCard}>
-        <div style={styles.map}>
-          {localizacao.lat && (
-            <MapContainer
-              center={[localizacao.lat, localizacao.lng]}
-              zoom={15}
-              dragging={false}
-              zoomControl={false}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              <Marker position={[localizacao.lat, localizacao.lng]} />
-              <RecenterMap lat={localizacao.lat} lng={localizacao.lng} />
-            </MapContainer>
+        <div style={{...styles.uploadBox, border: preview ? "none" : styles.uploadBox.border}} onClick={() => fileInputRef.current.click()}>
+          {preview ? (
+            <img src={preview} alt="preview" style={styles.preview} />
+          ) : (
+            <>
+              <span style={{ fontSize: 40 }}>📷</span>
+              <span style={styles.uploadText}>Tirar foto ou importar</span>
+            </>
           )}
         </div>
 
-        <div style={styles.locationText}>
-          <strong>Localização capturada</strong>
-          <span>
-            {localizacao.lat
-              ? `${localizacao.lat.toFixed(4)}, ${localizacao.lng.toFixed(4)}`
-              : "Carregando..."}
-          </span>
+        <label style={styles.label}>Categoria</label>
+        <select
+          value={categoria}
+          onChange={(e) => setCategoria(e.target.value)}
+          style={styles.select}
+        >
+          <option value="" disabled>Escolha a Categoria</option>
+          <option value="lixo">Descarte Irregular de lixo</option>
+          <option value="desmatamento">Desmatamento</option>
+          <option value="poluicao_agua">Poluição da Água</option>
+          <option value="queimada">Queimada</option>
+          <option value="poluicao_ar">Poluição do Ar</option>
+          <option value="animais">Maus-tratos aos Animais</option>
+          <option value="foco_mosquito">Foco de Mosquito</option>
+          <option value="esgoto">Esgoto a Céu Aberto</option>
+        </select>
+
+        <label style={styles.label}>Localização</label>
+
+        <div style={styles.locationCard}>
+          <div style={styles.map}>
+            {localizacao.lat && (
+              <MapContainer
+                center={[localizacao.lat, localizacao.lng]}
+                zoom={15}
+                dragging={false}
+                zoomControl={false}
+                style={{ height: "100%", width: "100%" }}
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <Marker position={[localizacao.lat, localizacao.lng]} />
+                <RecenterMap lat={localizacao.lat} lng={localizacao.lng} />
+              </MapContainer>
+            )}
+          </div>
+
+          <div style={styles.locationText}>
+            <strong>Localização capturada</strong>
+            <span>
+              {localizacao.lat
+                ? `${localizacao.lat.toFixed(4)}, ${localizacao.lng.toFixed(4)}`
+                : "Carregando..."}
+            </span>
+          </div>
         </div>
-      </div>
 
-      <label style={styles.label}>Descrição Opcional</label>
-      <textarea
-        placeholder="Descreva o problema em detalhes..."
-        style={styles.textarea}
-        value={descricao}
-        onChange={(e) => setDescricao(e.target.value)}
-      />
+        <label style={styles.label}>Descrição Opcional</label>
+        <textarea
+          placeholder="Descreva o problema em detalhes..."
+          style={styles.textarea}
+          value={descricao}
+          onChange={(e) => setDescricao(e.target.value)}
+        />
 
-      {mensagem.texto && (
-        <div style={{
-          padding: "10px",
-          borderRadius: "8px",
-          textAlign: "center",
-          fontWeight: "bold",
-          fontSize: "14px",
-          backgroundColor: mensagem.tipo === "sucesso" ? "#DFF2BF" : "#FFD2D2",
-          color: mensagem.tipo === "sucesso" ? "#2D4627" : "#D8000C"
-        }}>
-          {mensagem.texto}
-        </div>
-      )}
-
-      <button 
-        onClick={handleSubmit} 
-        disabled={enviando}
-        style={{
-          ...styles.button,
-          opacity: enviando ? 0.7 : 1,
-          cursor: enviando ? "not-allowed" : "pointer",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: "10px"
-        }}
-      >
-        {enviando ? (
-          <>
-            <style>
-              {`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}
-            </style>
-            <div style={{
-              border: "3px solid rgba(255,255,255,0.3)",
-              borderTop: "3px solid white",
-              borderRadius: "50%",
-              width: "20px",
-              height: "20px",
-              animation: "spin 1s linear infinite"
-            }} />
-            Enviando...
-          </>
-        ) : (
-          "Enviar Registro"
+        {mensagem.texto && (
+          <div style={{
+            padding: "10px",
+            borderRadius: "8px",
+            textAlign: "center",
+            fontWeight: "bold",
+            fontSize: "14px",
+            backgroundColor: mensagem.tipo === "sucesso" ? "#DFF2BF" : "#FFD2D2",
+            color: mensagem.tipo === "sucesso" ? "#2D4627" : "#D8000C"
+          }}>
+            {mensagem.texto}
+          </div>
         )}
-      </button>
 
+        <button 
+          onClick={handleSubmit} 
+          disabled={enviando}
+          style={{
+            ...styles.button,
+            opacity: enviando ? 0.7 : 1,
+            cursor: enviando ? "not-allowed" : "pointer"
+          }}
+        >
+          {enviando ? "Enviando..." : "Enviar Registro"}
+        </button>
+      </div>
       <Navbar isAdmin={false} />
-    </div>
+    </PageLayout>
   );
 };
 
 const styles = {
   container: {
-  padding: "20px",
-  paddingBottom: "100px", 
-  backgroundColor: "#F4F6F3",
-  minHeight: "100vh",     
-  overflowY: "auto",      
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  boxSizing: "border-box",
-  WebkitOverflowScrolling: "touch" 
-},
-
-  header: {
+    padding: "20px",
+    paddingBottom: "120px", 
+    backgroundColor: "#F4F6F3",
     display: "flex",
-    alignItems: "center",
-    gap: 10,
-    flexShrink: 0 
-  },
-
-  back: {
-    fontSize: 28,
-    color: "#2D4627",
-    cursor: "pointer"
-  },
-
-  title: {
-    margin: 0,
-    color: "#2D4627"
+    flexDirection: "column",
+    gap: 14,
+    boxSizing: "border-box",
+    width: "100%",
   },
 
   label: {
     fontWeight: "600",
     color: "#2D4627",
-    flexShrink: 0
   },
 
   uploadBox: {
@@ -300,7 +254,6 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
-    flexShrink: 0
   },
 
   uploadText: {
@@ -319,7 +272,6 @@ const styles = {
     borderRadius: 10,
     border: "1px solid #ddd",
     backgroundColor: "#fff",
-    flexShrink: 0
   },
 
   locationCard: {
@@ -328,7 +280,6 @@ const styles = {
     overflow: "hidden",
     border: "1px solid #ddd",
     backgroundColor: "#fff",
-    flexShrink: 0
   },
 
   map: {
@@ -351,7 +302,6 @@ const styles = {
     padding: 12,
     height: 90,
     fontFamily: "inherit",
-    flexShrink: 0
   },
 
   button: {
@@ -363,7 +313,10 @@ const styles = {
     border: "none",
     fontSize: 16,
     fontWeight: "bold",
-    flexShrink: 0 
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "10px"
   }
 };
 
