@@ -117,7 +117,7 @@ const ReportDetails = () => {
             <path d="M15 18L9 12L15 6" stroke="#2D4627" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
-        <h2 style={styles.headerTitle}>Detalhes da denúncia</h2>
+        <h2 style={styles.headerTitle}>Detalhes do registro</h2>
         <div style={{ width: "24px" }}></div>
       </div>
 

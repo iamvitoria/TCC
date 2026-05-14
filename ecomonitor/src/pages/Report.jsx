@@ -120,7 +120,7 @@ const Report = () => {
       
       <div style={styles.header}>
         <span style={styles.back} onClick={() => navigate(-1)}>‹</span>
-        <h2 style={styles.title}>Nova denúncia</h2>
+        <h2 style={styles.title}>Novo registro</h2>
       </div>
 
       <label style={styles.label}>Foto da ocorrência</label>
@@ -242,7 +242,7 @@ const Report = () => {
             Enviando...
           </>
         ) : (
-          "Enviar Denúncia"
+          "Enviar Registro"
         )}
       </button>
 

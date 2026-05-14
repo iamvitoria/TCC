@@ -95,7 +95,7 @@ const Map = () => {
           }
         }
       } catch (error) {
-        console.error("Erro ao buscar denúncias:", error);
+        console.error("Erro ao buscar registros:", error);
       } finally {
         setCarregandoDados(false);
       }
@@ -160,7 +160,7 @@ const Map = () => {
       </div>
 
       <div style={styles.bottomSection}>
-        <h3 style={{ margin: "0 0 15px 0", color: "#1C3520", fontSize: "16px" }}>Denúncias próximas</h3>
+        <h3 style={{ margin: "0 0 15px 0", color: "#1C3520", fontSize: "16px" }}>Registros próximos</h3>
         {carregandoLocalizacao || carregandoDados ? (
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{ width: "16px", height: "16px", border: "2px solid #ccc", borderTop: "2px solid #1C3520", borderRadius: "50%", animation: "spin 1s linear infinite" }} />

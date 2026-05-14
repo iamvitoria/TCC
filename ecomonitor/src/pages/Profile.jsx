@@ -297,7 +297,7 @@ const Profile = () => {
         <div style={statsRowStyle}>
           <div style={statCardStyle}>
             <span style={statValueStyle}>{carregando ? "-" : perfil.denuncias}</span>
-            <span style={statLabelStyle}>Denúncias</span>
+            <span style={statLabelStyle}>Registro(s)</span>
           </div>
           <div style={statCardStyle}>
             <span style={statValueStyle}>{carregando ? "-" : `${perfil.posicao_ranking}º`}</span>

@@ -175,7 +175,7 @@ const Home = () => {
         <div style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}>
           <div style={cardStatStyle}>
             <h2 style={{ margin: 0, fontSize: "24px", color: "#1C3520" }}>{estatisticas.abertas}</h2>
-            <p style={{ margin: 0, fontSize: "12px", color: "#1C3520", fontWeight: "bold" }}>Validada(s)</p>
+            <p style={{ margin: 0, fontSize: "12px", color: "#1C3520", fontWeight: "bold" }}>Validado(s)</p>
           </div>
           <div style={cardStatStyle}>
             <h2 style={{ margin: 0, fontSize: "24px", color: "#1C3520" }}>{estatisticas.emAnalise}</h2>
@@ -183,15 +183,15 @@ const Home = () => {
           </div>
           <div style={cardStatStyle}>
             <h2 style={{ margin: 0, fontSize: "24px", color: "#1C3520" }}>{estatisticas.resolvidas}</h2>
-            <p style={{ margin: 0, fontSize: "12px", color: "#1C3520", fontWeight: "bold" }}>Resolvidas</p>
+            <p style={{ margin: 0, fontSize: "12px", color: "#1C3520", fontWeight: "bold" }}>Resolvidos</p>
           </div>
         </div>
 
         <h3 style={{ marginTop: "30px", marginBottom: "15px", color: "#1C3520", fontSize: "18px" }}>
-          Suas denúncias
+          Seus Registros
         </h3>
 
-        {carregando && <p style={{ textAlign: "center", color: "#2D4627" }}>Carregando suas denúncias... </p>}
+        {carregando && <p style={{ textAlign: "center", color: "#2D4627" }}>Carregando seus registros... </p>}
         {erro && <p style={{ color: "#E74C3C", textAlign: "center", fontWeight: "bold" }}>{erro}</p>}
         
         {!carregando && !erro && denuncias.length === 0 && (

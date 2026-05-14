@@ -7,10 +7,9 @@ const Ranking = () => {
   const [rankingLocal, setRankingLocal] = useState([]);
   const [rankingGlobal, setRankingGlobal] = useState([]);
   const [carregando, setCarregando] = useState(true);
-  const [cidadeUser, setCidadeUser] = useState("EcoMonitor"); // Nome padrão enquanto carrega
+  const [cidadeUser, setCidadeUser] = useState("EcoMonitor"); 
 
   useEffect(() => {
-    // 1. Função para obter a cidade do utilizador via GPS
     const obterCidadeAtual = () => {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -19,7 +18,6 @@ const Ranking = () => {
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`
             );
             const data = await response.json();
-            // Tenta extrair a cidade, vila ou povoação
             const cidade = data.address.city || data.address.town || data.address.village || "Local";
             setCidadeUser(cidade);
           } catch (error) {
@@ -29,7 +27,6 @@ const Ranking = () => {
       }
     };
 
-    // 2. Função para buscar os dados do ranking
     const buscarRanking = async () => {
       setCarregando(true);
       try {
@@ -60,7 +57,6 @@ const Ranking = () => {
 
   const currentData = activeTab === "global" ? rankingGlobal : rankingLocal;
 
-  // --- Estilos ---
   const containerStyle = {
     display: "flex",
     flexDirection: "column",
@@ -77,7 +73,7 @@ const Ranking = () => {
     color: "white",
     fontSize: "20px",
     fontWeight: "bold",
-    textTransform: "capitalize" // Garante que o nome da cidade fique bonito
+    textTransform: "capitalize" 
   };
 
   const contentStyle = {
@@ -119,7 +115,6 @@ const Ranking = () => {
 
   return (
     <div style={containerStyle}>
-      {/* Título Dinâmico aqui */}
       <div style={headerStyle}>
         Ranking {cidadeUser}
       </div>
