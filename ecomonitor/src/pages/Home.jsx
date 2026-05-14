@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar/Navbar.jsx";
+import API_URL from "../config"; // Importando a configuração centralizada
 
 const Home = () => {
   const navigate = useNavigate();
@@ -19,14 +20,29 @@ const Home = () => {
   });
 
   useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        () => setLocalizacao("Santa Maria - RS"),
-        () => setLocalizacao("Localização não permitida")
-      );
-    } else {
-      setLocalizacao("Santa Maria - RS");
-    }
+    // 1. Lógica para obter o nome da cidade real via GPS
+    const obterCidadeReal = () => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`
+            );
+            const data = await response.json();
+            const cidade = data.address.city || data.address.town || data.address.village || "Localização identificada";
+            const estado = data.address.state_code || data.address.state || "";
+            setLocalizacao(`${cidade}${estado ? " - " + estado : ""}`);
+          // eslint-disable-next-line no-unused-vars
+          } catch (error) {
+            setLocalizacao("Santa Maria - RS"); // Fallback caso a API de mapa falhe
+          }
+        }, () => {
+          setLocalizacao("Localização não permitida");
+        });
+      } else {
+        setLocalizacao("GPS não suportado");
+      }
+    };
 
     const carregarDadosDaTela = async () => {
       const token = localStorage.getItem("token"); 
@@ -38,15 +54,18 @@ const Home = () => {
       }
 
       try {
-        const responsePerfil = await fetch("https://ecomonitor-api.onrender.com/perfil", {
+        // Chamada para Perfil usando API_URL do config.js
+        const responsePerfil = await fetch(`${API_URL}/perfil`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
+        
         if (responsePerfil.ok) {
           const dadosPerfil = await responsePerfil.json();
           setNomeUsuario(dadosPerfil.nome || "Usuário");
         }
 
-        const responseDenuncias = await fetch("https://ecomonitor-api.onrender.com/minhas-denuncias", {
+        // Chamada para Minhas Denúncias usando API_URL do config.js
+        const responseDenuncias = await fetch(`${API_URL}/minhas-denuncias`, {
           method: "GET",
           headers: { "Authorization": `Bearer ${token}` }
         });
@@ -66,6 +85,7 @@ const Home = () => {
       }
     };
 
+    obterCidadeReal();
     carregarDadosDaTela();
   }, []);
 
@@ -127,6 +147,7 @@ const Home = () => {
     return { backgroundColor: "#9E9E9E", color: "white", text: status || "Desconhecido" };
   };
 
+  // Estilos permanecem iguais aos seus originais
   return (
     <div style={{ backgroundColor: "#F5F7F5", minHeight: "100vh", paddingBottom: "120px", fontFamily: "Arial, sans-serif" }}>
       
@@ -143,7 +164,7 @@ const Home = () => {
           Painel ambiental
         </h1>
         <p style={{ color: "#6AA85B", margin: 0, fontSize: "14px", display: "flex", alignItems: "center", gap: "5px" }}>
-          {localizacao}
+          📍 {localizacao}
         </p>
       </div>
 
@@ -152,7 +173,7 @@ const Home = () => {
         <div style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}>
           <div style={cardStatStyle}>
             <h2 style={{ margin: 0, fontSize: "24px", color: "#1C3520" }}>{estatisticas.abertas}</h2>
-            <p style={{ margin: 0, fontSize: "12px", color: "#1C3520", fontWeight: "bold" }}>Aberta(s)</p>
+            <p style={{ margin: 0, fontSize: "12px", color: "#1C3520", fontWeight: "bold" }}>Validada(s)</p>
           </div>
           <div style={cardStatStyle}>
             <h2 style={{ margin: 0, fontSize: "24px", color: "#1C3520" }}>{estatisticas.emAnalise}</h2>
