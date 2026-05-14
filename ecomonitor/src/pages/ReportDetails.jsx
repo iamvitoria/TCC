@@ -9,7 +9,6 @@ import L from "leaflet";
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
-// Configuração do ícone do Leaflet
 let DefaultIcon = L.icon({
   iconUrl: icon,
   shadowUrl: iconShadow,
@@ -25,9 +24,9 @@ const ReportDetails = () => {
   
   const [historicoReal, setHistoricoReal] = useState([]);
   const [carregandoHistorico, setCarregandoHistorico] = useState(true);
-  const [enderecoFormatado, setEnderecoFormatado] = useState("Buscando endereço...");
+  
+  const [enderecoExibido, setEnderecoExibido] = useState(denuncia?.endereco || "Buscando localização...");
 
-  // Busca o histórico do backend usando API_URL
   useEffect(() => {
     const buscarHistorico = async () => {
       if (!denuncia?.id) return;
@@ -46,9 +45,8 @@ const ReportDetails = () => {
     buscarHistorico();
   }, [denuncia?.id]);
 
-  // Geocodificação reversa para o endereço detalhado
   useEffect(() => {
-    if (denuncia?.latitude && denuncia?.longitude) {
+    if (!denuncia?.endereco && denuncia?.latitude && denuncia?.longitude) {
       fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${denuncia.latitude}&lon=${denuncia.longitude}&zoom=18&addressdetails=1`)
         .then(res => res.json())
         .then(data => {
@@ -56,36 +54,15 @@ const ReportDetails = () => {
             const rua = data.address.road || data.address.pedestrian || "Rua não identificada";
             const numero = data.address.house_number ? `, ${data.address.house_number}` : "";
             const bairro = data.address.suburb || data.address.neighbourhood ? ` - ${data.address.suburb || data.address.neighbourhood}` : "";
-            setEnderecoFormatado(`${rua}${numero}${bairro}`);
-          } else {
-            setEnderecoFormatado(denuncia.endereco || "Endereço não encontrado");
+            setEnderecoExibido(`${rua}${numero}${bairro}`);
           }
         })
-        .catch(() => setEnderecoFormatado(denuncia.endereco || "Erro ao buscar endereço"));
+        .catch(() => setEnderecoExibido("Endereço indisponível"));
     }
   }, [denuncia]);
 
-  if (!denuncia) {
-    return (
-      <PageLayout>
-        <div style={styles.statusBarPlaceholder}></div>
-        <div style={styles.headerContainer}>
-          <button style={styles.backButton} onClick={() => navigate(-1)}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M15 18L9 12L15 6" stroke="#2D4627" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          <h2 style={styles.headerTitle}>Detalhes</h2>
-        </div>
-        <div style={styles.whiteCardContainer}>
-          <p style={{ textAlign: "center" }}>Denúncia não encontrada.</p>
-        </div>
-        <Navbar isAdmin={false} />
-      </PageLayout>
-    );
-  }
+  if (!denuncia) return null;
 
-  // Funções de Formatação
   const formatarNomeCategoria = (slug) => {
     const nomes = {
       lixo: "Descarte irregular de lixo",
@@ -97,7 +74,9 @@ const ReportDetails = () => {
       foco_mosquito: "Foco de mosquito",
       esgoto: "Esgoto aberto"
     };
-    return nomes[slug] || slug?.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase());
+    if (nomes[slug]) return nomes[slug];
+    const texto = slug?.replace(/_/g, " ") || "";
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
   };
 
   const getStatusBadge = (status) => {
@@ -115,44 +94,18 @@ const ReportDetails = () => {
     );
   };
 
-  // 1. Adicione esse log logo no início do componente para debug:
-  console.log("Dados da denúncia recebidos:", denuncia);
-
-  // 2. Função de formatação atualizada
-  const formatarData = () => {
-    // Tenta todas as possibilidades de nome de campo
-    const dataAlvo = denuncia?.data_criacao || denuncia?.created_at || denuncia?.data;
-    
-    if (!dataAlvo) {
-        return "Data não enviada"; 
-    }
-
+  const formatarData = (dataIso) => {
+    const dataAlvo = dataIso || denuncia?.data_criacao;
+    if (!dataAlvo) return "Data indisponível";
     const date = new Date(dataAlvo);
-    
-    // Se o Date falhar (comum com formatos específicos de DB), tenta extrair via String
-    if (isNaN(date.getTime())) {
-      try {
-        // Pega os primeiros 10 caracteres (YYYY-MM-DD) e inverte
-        const apenasData = dataAlvo.split('T')[0];
-        const [ano, mes, dia] = apenasData.split('-');
-        return `${dia}/${mes}/${ano}`;
-      // eslint-disable-next-line no-unused-vars
-      } catch (e) {
-        return "Erro no formato";
-      }
-    }
-    
-    return date.toLocaleDateString("pt-BR");
+    return isNaN(date.getTime()) ? "Data indisponível" : date.toLocaleDateString("pt-BR");
   };
 
   const formatarHora = (dataIso) => {
-    const dataAlvo = dataIso || denuncia.data_criacao || denuncia.created_at;
-    if (!dataAlvo) return "--:--";
+    const dataAlvo = dataIso || denuncia.data_criacao;
     const date = new Date(dataAlvo);
     return isNaN(date.getTime()) ? "--:--" : date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   };
-
-  const posicaoMapa = [denuncia.latitude, denuncia.longitude];
 
   return (
     <PageLayout>
@@ -160,7 +113,7 @@ const ReportDetails = () => {
       
       <div style={styles.headerContainer}>
         <button style={styles.backButton} onClick={() => navigate(-1)}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M15 18L9 12L15 6" stroke="#2D4627" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
@@ -169,7 +122,7 @@ const ReportDetails = () => {
       </div>
 
       <div style={styles.whiteCardContainer}>
-        <div>
+        <section>
           <h3 style={styles.sectionTitle}>Dados gerais</h3>
           <div style={{ ...styles.grayCardBox, ...styles.dataGeneralRow }}>
             <div style={styles.dataColumn}>
@@ -185,18 +138,18 @@ const ReportDetails = () => {
               {getStatusBadge(denuncia.status)}
             </div>
           </div>
-        </div>
+        </section>
 
-        <div>
+        <section>
           <h3 style={styles.sectionTitle}>Descrição completa</h3>
           <div style={styles.grayCardBox}>
             <p style={{ margin: 0, fontSize: "14px", color: "#444", lineHeight: "1.5" }}>
               {denuncia.descricao || "Nenhuma descrição fornecida."}
             </p>
           </div>
-        </div>
+        </section>
 
-        <div>
+        <section>
           <h3 style={styles.sectionTitle}>Imagens</h3>
           <div style={styles.imageRow}>
             <img 
@@ -206,24 +159,24 @@ const ReportDetails = () => {
               onError={(e) => { e.target.src = "https://placehold.co/120x100?text=Sem+Foto"; }}
             />
           </div>
-        </div>
+        </section>
 
-        <div>
+        <section>
           <h3 style={styles.sectionTitle}>Localização capturada</h3>
           <div style={styles.locationRow}>
             <div style={styles.mapContainerWrapper}>
-              <MapContainer center={posicaoMapa} zoom={16} style={{ height: "100%", width: "100%" }} zoomControl={false} dragging={false}>
+              <MapContainer center={[denuncia.latitude, denuncia.longitude]} zoom={16} style={{ height: "100%", width: "100%" }} zoomControl={false} dragging={false}>
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={posicaoMapa} />
+                <Marker position={[denuncia.latitude, denuncia.longitude]} />
               </MapContainer>
             </div>
             <div style={styles.addressColumn}>
-              <span>{enderecoFormatado}</span>
+              <span>{enderecoExibido}</span>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div>
+        <section style={{paddingBottom: "100px"}}>
           <h3 style={styles.sectionTitle}>Histórico</h3>
           <div style={styles.timelineContainer}>
             {carregandoHistorico ? (
@@ -246,7 +199,7 @@ const ReportDetails = () => {
               <p style={{ fontSize: "13px", color: "#666" }}>Aguardando análise da prefeitura.</p>
             )}
           </div>
-        </div>
+        </section>
       </div>
       <Navbar isAdmin={false} />
     </PageLayout>
@@ -258,7 +211,7 @@ const styles = {
   headerContainer: { backgroundColor: "#fff", display: "flex", alignItems: "center", padding: "20px" },
   backButton: { background: "none", border: "none", cursor: "pointer" },
   headerTitle: { margin: 0, color: "#2D4627", fontSize: "20px", fontWeight: "bold", textAlign: "center", flex: 1 },
-  whiteCardContainer: { backgroundColor: "#fff", borderTopLeftRadius: "25px", borderTopRightRadius: "25px", padding: "30px 20px 150px 20px", flex: 1, display: "flex", flexDirection: "column", gap: "25px" },
+  whiteCardContainer: { backgroundColor: "#fff", borderTopLeftRadius: "25px", borderTopRightRadius: "25px", padding: "30px 20px 20px 20px", flex: 1, display: "flex", flexDirection: "column", gap: "25px" },
   sectionTitle: { color: "#2D4627", fontSize: "18px", fontWeight: "bold", margin: "0 0 12px 0" },
   grayCardBox: { backgroundColor: "#F0F0F0", borderRadius: "15px", padding: "15px" },
   dataGeneralRow: { display: "flex", justifyContent: "space-between", alignItems: "center" },
