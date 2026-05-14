@@ -9,6 +9,7 @@ import L from "leaflet";
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
+// Configuração do ícone do Leaflet
 let DefaultIcon = L.icon({
   iconUrl: icon,
   shadowUrl: iconShadow,
@@ -21,10 +22,12 @@ const ReportDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const denuncia = location.state?.denunciaSelecionada;
+  
   const [historicoReal, setHistoricoReal] = useState([]);
   const [carregandoHistorico, setCarregandoHistorico] = useState(true);
-  const [endereco, setEndereco] = useState("Buscando endereço...");
+  const [enderecoFormatado, setEnderecoFormatado] = useState("Buscando endereço...");
 
+  // Busca o histórico do backend usando API_URL
   useEffect(() => {
     const buscarHistorico = async () => {
       if (!denuncia?.id) return;
@@ -35,7 +38,7 @@ const ReportDetails = () => {
           setHistoricoReal(data);
         }
       } catch (error) {
-        console.error(error);
+        console.error("Erro ao buscar histórico:", error);
       } finally {
         setCarregandoHistorico(false);
       }
@@ -43,6 +46,7 @@ const ReportDetails = () => {
     buscarHistorico();
   }, [denuncia?.id]);
 
+  // Geocodificação reversa para o endereço detalhado
   useEffect(() => {
     if (denuncia?.latitude && denuncia?.longitude) {
       fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${denuncia.latitude}&lon=${denuncia.longitude}&zoom=18&addressdetails=1`)
@@ -52,14 +56,12 @@ const ReportDetails = () => {
             const rua = data.address.road || data.address.pedestrian || "Rua não identificada";
             const numero = data.address.house_number ? `, ${data.address.house_number}` : "";
             const bairro = data.address.suburb || data.address.neighbourhood ? ` - ${data.address.suburb || data.address.neighbourhood}` : "";
-            setEndereco(`${rua}${numero}${bairro}`);
+            setEnderecoFormatado(`${rua}${numero}${bairro}`);
           } else {
-            setEndereco("Endereço não encontrado");
+            setEnderecoFormatado(denuncia.endereco || "Endereço não encontrado");
           }
         })
-        .catch(() => setEndereco("Erro ao buscar endereço"));
-    } else {
-      setEndereco("Localização não informada no mapa");
+        .catch(() => setEnderecoFormatado(denuncia.endereco || "Erro ao buscar endereço"));
     }
   }, [denuncia]);
 
@@ -73,22 +75,18 @@ const ReportDetails = () => {
               <path d="M15 18L9 12L15 6" stroke="#2D4627" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
-          <h2 style={styles.headerTitle}>Detalhes da denúncia</h2>
-          <div style={{ width: "24px" }}></div>
+          <h2 style={styles.headerTitle}>Detalhes</h2>
         </div>
         <div style={styles.whiteCardContainer}>
-          <div style={{ padding: "20px", textAlign: "center", color: "#2D4627" }}>
-              <p>Denúncia não encontrada.</p>
-              <button onClick={() => navigate(-1)} style={styles.btnGeneric}>Voltar</button>
-          </div>
+          <p style={{ textAlign: "center" }}>Denúncia não encontrada.</p>
         </div>
         <Navbar isAdmin={false} />
       </PageLayout>
     );
   }
 
+  // Funções de Formatação
   const formatarNomeCategoria = (slug) => {
-    if (!slug) return "Desconhecida";
     const nomes = {
       lixo: "Descarte irregular de lixo",
       desmatamento: "Desmatamento",
@@ -99,208 +97,62 @@ const ReportDetails = () => {
       foco_mosquito: "Foco de mosquito",
       esgoto: "Esgoto aberto"
     };
-    return nomes[slug] || slug.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase());
+    return nomes[slug] || slug?.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase());
   };
 
   const getStatusBadge = (status) => {
     const s = status ? status.toLowerCase() : "pendente";
-    let bgColor = "#888888"; 
-    let texto = status || "Desconhecido";
-
-    if (s === "validado") { bgColor = "#7FB04B"; texto = "Validado"; }
-    else if (s === "resolvido" || s === "resolvida") { bgColor = "#3B75A3"; texto = "Resolvido"; }
-    else if (s === "cancelado" || s === "rejeitado") { bgColor = "#D9534F"; texto = "Cancelado"; }
-    else if (s === "pendente" || s === "em analise" || s === "em análise") { bgColor = "#D59A53"; texto = "Em análise"; }
+    let bgColor = "#888888";
+    if (s === "validado" || s === "aceito") bgColor = "#7FB04B";
+    else if (s === "resolvido" || s === "resolvida") bgColor = "#3B75A3";
+    else if (s === "cancelado" || s === "rejeitado") bgColor = "#D9534F";
+    else if (s === "pendente" || s.includes("análise")) bgColor = "#D59A53";
 
     return (
       <span style={{ ...styles.statusBadge, backgroundColor: bgColor }}>
-        {texto}
+        {status || "Pendente"}
       </span>
     );
   };
 
-  const formatarData = (dataIso) => {
-    if (!dataIso) return "Data indisponível";
-    const date = new Date(dataIso);
-    return isNaN(date.getTime()) ? "Data indisponível" : date.toLocaleDateString("pt-BR");
+  // 1. Adicione esse log logo no início do componente para debug:
+  console.log("Dados da denúncia recebidos:", denuncia);
+
+  // 2. Função de formatação atualizada
+  const formatarData = () => {
+    // Tenta todas as possibilidades de nome de campo
+    const dataAlvo = denuncia?.data_criacao || denuncia?.created_at || denuncia?.data;
+    
+    if (!dataAlvo) {
+        return "Data não enviada"; 
+    }
+
+    const date = new Date(dataAlvo);
+    
+    // Se o Date falhar (comum com formatos específicos de DB), tenta extrair via String
+    if (isNaN(date.getTime())) {
+      try {
+        // Pega os primeiros 10 caracteres (YYYY-MM-DD) e inverte
+        const apenasData = dataAlvo.split('T')[0];
+        const [ano, mes, dia] = apenasData.split('-');
+        return `${dia}/${mes}/${ano}`;
+      // eslint-disable-next-line no-unused-vars
+      } catch (e) {
+        return "Erro no formato";
+      }
+    }
+    
+    return date.toLocaleDateString("pt-BR");
   };
 
   const formatarHora = (dataIso) => {
-    if (!dataIso) return "--:--";
-    const date = new Date(dataIso);
+    const dataAlvo = dataIso || denuncia.data_criacao || denuncia.created_at;
+    if (!dataAlvo) return "--:--";
+    const date = new Date(dataAlvo);
     return isNaN(date.getTime()) ? "--:--" : date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   };
 
-  const styles = {
-    statusBarPlaceholder: {
-      backgroundColor: "#1C3520",
-      height: "30px",
-      width: "100%",
-    },
-    headerContainer: {
-      backgroundColor: "#fff",
-      display: "flex",
-      alignItems: "center",
-      padding: "20px 20px 10px 20px",
-    },
-    backButton: {
-      background: "none",
-      border: "none",
-      color: "#2D4627",
-      fontSize: "24px",
-      cursor: "pointer",
-      padding: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    headerTitle: {
-      margin: 0,
-      color: "#2D4627",
-      fontSize: "20px",
-      fontWeight: "bold",
-      textAlign: "center",
-      flex: 1,
-    },
-    whiteCardContainer: {
-      backgroundColor: "#fff",
-      borderTopLeftRadius: "25px",
-      borderTopRightRadius: "25px",
-      padding: "30px 20px 40px 20px",
-      flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      gap: "25px",
-      marginTop: "10px",
-      paddingBottom: "150px",
-    },
-    sectionTitle: {
-      color: "#2D4627",
-      fontSize: "18px",
-      fontWeight: "bold",
-      margin: "0 0 12px 0",
-    },
-    grayCardBox: {
-      backgroundColor: "#F0F0F0",
-      borderRadius: "15px",
-      padding: "15px",
-    },
-    dataGeneralRow: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-    },
-    dataColumn: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "5px",
-    },
-    dataLabel: {
-      fontSize: "13px",
-      fontWeight: "bold",
-      color: "#2D4627",
-    },
-    dataValue: {
-      fontSize: "13px",
-      color: "#444",
-    },
-    statusBadge: {
-      color: "white",
-      padding: "6px 12px",
-      borderRadius: "15px",
-      fontSize: "12px",
-      fontWeight: "bold",
-    },
-    imageRow: {
-      display: "flex",
-      gap: "10px",
-      overflowX: "auto",
-      paddingBottom: "5px",
-    },
-    imageItem: {
-      width: "120px",
-      height: "100px",
-      objectFit: "cover",
-      borderRadius: "15px",
-      flexShrink: 0,
-    },
-    locationRow: {
-      backgroundColor: "#F0F0F0",
-      borderRadius: "15px",
-      padding: "0",
-      overflow: "hidden",
-      display: "flex",
-      height: "90px",
-    },
-    mapContainerWrapper: {
-      height: "100%",
-      width: "35%",
-      zIndex: 0,
-    },
-    addressColumn: {
-      flex: 1,
-      padding: "0 15px",
-      fontSize: "13px",
-      color: "#444",
-      display: "flex",
-      alignItems: "center",
-    },
-    timelineContainer: {
-      display: "flex",
-      flexDirection: "column",
-      marginTop: "15px",
-    },
-    timelineItemRow: {
-      display: "flex",
-      gap: "15px",
-      minHeight: "60px",
-    },
-    timelineDateColumn: {
-      width: "80px",
-      textAlign: "right",
-      fontSize: "12px",
-      color: "#444",
-      paddingTop: "2px",
-    },
-    timelineGraphicColumn: {
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      width: "20px",
-    },
-    timelineDot: {
-      width: "12px",
-      height: "12px",
-      borderRadius: "50%",
-      backgroundColor: "#2D4627",
-      zIndex: 2,
-    },
-    timelineLine: {
-      width: "2px",
-      height: "100%",
-      backgroundColor: "#2D4627",
-      marginTop: "-2px",
-      marginBottom: "-2px",
-    },
-    timelineTextColumn: {
-      flex: 1,
-      fontSize: "13px",
-      color: "#2D4627",
-      paddingBottom: "25px",
-      whiteSpace: "pre-line",
-    },
-    btnGeneric: {
-      marginTop: "10px",
-      backgroundColor: "#1C3520",
-      color: "white",
-      padding: "10px 20px",
-      borderRadius: "8px",
-      border: "none",
-      cursor: "pointer",
-    },
-  };
-
-  const posicaoMapa = denuncia.latitude && denuncia.longitude ? [denuncia.latitude, denuncia.longitude] : null;
+  const posicaoMapa = [denuncia.latitude, denuncia.longitude];
 
   return (
     <PageLayout>
@@ -317,7 +169,6 @@ const ReportDetails = () => {
       </div>
 
       <div style={styles.whiteCardContainer}>
-        
         <div>
           <h3 style={styles.sectionTitle}>Dados gerais</h3>
           <div style={{ ...styles.grayCardBox, ...styles.dataGeneralRow }}>
@@ -327,7 +178,7 @@ const ReportDetails = () => {
             </div>
             <div style={styles.dataColumn}>
               <span style={styles.dataLabel}>Data</span>
-              <span style={styles.dataValue}>{formatarData(denuncia.data_criacao)}</span>
+              <span style={styles.dataValue}>{formatarData()}</span>
             </div>
             <div style={{ ...styles.dataColumn, alignItems: "center" }}>
               <span style={styles.dataLabel}>Status</span>
@@ -340,7 +191,7 @@ const ReportDetails = () => {
           <h3 style={styles.sectionTitle}>Descrição completa</h3>
           <div style={styles.grayCardBox}>
             <p style={{ margin: 0, fontSize: "14px", color: "#444", lineHeight: "1.5" }}>
-              {denuncia.descricao || "Nenhuma descrição detalhada fornecida pelo usuário."}
+              {denuncia.descricao || "Nenhuma descrição fornecida."}
             </p>
           </div>
         </div>
@@ -349,17 +200,10 @@ const ReportDetails = () => {
           <h3 style={styles.sectionTitle}>Imagens</h3>
           <div style={styles.imageRow}>
             <img 
-              src={
-                denuncia.foto_url 
-                  ? (denuncia.foto_url.startsWith('http') ? denuncia.foto_url : `${API_URL}/${denuncia.foto_url}`)
-                  : "https://placehold.co/120x100?text=Sem+Foto"
-              } 
+              src={denuncia.foto_url} 
               alt="Denúncia" 
               style={styles.imageItem}
-              onError={(e) => { 
-                e.target.onerror = null; 
-                e.target.src = "https://placehold.co/120x100?text=Sem+Foto"; 
-              }}
+              onError={(e) => { e.target.src = "https://placehold.co/120x100?text=Sem+Foto"; }}
             />
           </div>
         </div>
@@ -367,18 +211,14 @@ const ReportDetails = () => {
         <div>
           <h3 style={styles.sectionTitle}>Localização capturada</h3>
           <div style={styles.locationRow}>
-            {posicaoMapa ? (
-              <div style={styles.mapContainerWrapper}>
-                <MapContainer center={posicaoMapa} zoom={16} style={{ height: "100%", width: "100%" }} zoomControl={false} dragging={false}>
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                  <Marker position={posicaoMapa} />
-                </MapContainer>
-              </div>
-            ) : (
-              <div style={{ width: "35%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#e8f2db", fontSize: "11px", color: "#1C3520" }}>Sem mapa</div>
-            )}
+            <div style={styles.mapContainerWrapper}>
+              <MapContainer center={posicaoMapa} zoom={16} style={{ height: "100%", width: "100%" }} zoomControl={false} dragging={false}>
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <Marker position={posicaoMapa} />
+              </MapContainer>
+            </div>
             <div style={styles.addressColumn}>
-              <span>{endereco}</span>
+              <span>{enderecoFormatado}</span>
             </div>
           </div>
         </div>
@@ -387,37 +227,57 @@ const ReportDetails = () => {
           <h3 style={styles.sectionTitle}>Histórico</h3>
           <div style={styles.timelineContainer}>
             {carregandoHistorico ? (
-              <p style={{ fontSize: "13px", color: "#666" }}>Carregando histórico...</p>
+              <p>Carregando...</p>
             ) : historicoReal.length > 0 ? (
               historicoReal.map((item, index) => (
-                <div key={item.id || index} style={styles.timelineItemRow}>
+                <div key={index} style={styles.timelineItemRow}>
                   <div style={styles.timelineDateColumn}>
                     <div>{formatarData(item.data_registro)}</div>
-                    <div style={{ marginTop: "2px" }}>{formatarHora(item.data_registro)}</div>
+                    <div style={{ fontSize: "11px" }}>{formatarHora(item.data_registro)}</div>
                   </div>
-                  
                   <div style={styles.timelineGraphicColumn}>
                     <div style={styles.timelineDot}></div>
-                    {index !== historicoReal.length - 1 && (
-                      <div style={styles.timelineLine}></div>
-                    )}
+                    {index !== historicoReal.length - 1 && <div style={styles.timelineLine}></div>}
                   </div>
-
-                  <div style={styles.timelineTextColumn}>
-                    {item.texto}
-                  </div>
+                  <div style={styles.timelineTextColumn}>{item.texto}</div>
                 </div>
               ))
             ) : (
-              <p style={{ fontSize: "13px", color: "#666" }}>Nenhum registro no histórico.</p>
+              <p style={{ fontSize: "13px", color: "#666" }}>Aguardando análise da prefeitura.</p>
             )}
           </div>
         </div>
-
       </div>
       <Navbar isAdmin={false} />
     </PageLayout>
   );
+};
+
+const styles = {
+  statusBarPlaceholder: { backgroundColor: "#1C3520", height: "30px", width: "100%" },
+  headerContainer: { backgroundColor: "#fff", display: "flex", alignItems: "center", padding: "20px" },
+  backButton: { background: "none", border: "none", cursor: "pointer" },
+  headerTitle: { margin: 0, color: "#2D4627", fontSize: "20px", fontWeight: "bold", textAlign: "center", flex: 1 },
+  whiteCardContainer: { backgroundColor: "#fff", borderTopLeftRadius: "25px", borderTopRightRadius: "25px", padding: "30px 20px 150px 20px", flex: 1, display: "flex", flexDirection: "column", gap: "25px" },
+  sectionTitle: { color: "#2D4627", fontSize: "18px", fontWeight: "bold", margin: "0 0 12px 0" },
+  grayCardBox: { backgroundColor: "#F0F0F0", borderRadius: "15px", padding: "15px" },
+  dataGeneralRow: { display: "flex", justifyContent: "space-between", alignItems: "center" },
+  dataColumn: { display: "flex", flexDirection: "column", gap: "5px" },
+  dataLabel: { fontSize: "12px", fontWeight: "bold", color: "#2D4627" },
+  dataValue: { fontSize: "13px", color: "#444" },
+  statusBadge: { color: "white", padding: "5px 10px", borderRadius: "12px", fontSize: "11px", fontWeight: "bold" },
+  imageRow: { display: "flex", gap: "10px" },
+  imageItem: { width: "120px", height: "100px", objectFit: "cover", borderRadius: "15px" },
+  locationRow: { backgroundColor: "#F0F0F0", borderRadius: "15px", display: "flex", height: "90px", overflow: "hidden" },
+  mapContainerWrapper: { width: "35%", height: "100%" },
+  addressColumn: { flex: 1, padding: "10px", fontSize: "12px", color: "#444", display: "flex", alignItems: "center" },
+  timelineContainer: { display: "flex", flexDirection: "column" },
+  timelineItemRow: { display: "flex", gap: "10px" },
+  timelineDateColumn: { width: "70px", textAlign: "right", fontSize: "12px", color: "#444" },
+  timelineGraphicColumn: { display: "flex", flexDirection: "column", alignItems: "center" },
+  timelineDot: { width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#2D4627" },
+  timelineLine: { width: "2px", flex: 1, backgroundColor: "#2D4627" },
+  timelineTextColumn: { flex: 1, fontSize: "13px", color: "#2D4627", paddingBottom: "20px" }
 };
 
 export default ReportDetails;

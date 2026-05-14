@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar/Navbar.jsx";
-import API_URL from "../config"; // Importando a configuração centralizada
+import API_URL from "../config"; 
 
 const Home = () => {
   const navigate = useNavigate();
@@ -20,7 +20,6 @@ const Home = () => {
   });
 
   useEffect(() => {
-    // 1. Lógica para obter o nome da cidade real via GPS
     const obterCidadeReal = () => {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -34,7 +33,7 @@ const Home = () => {
             setLocalizacao(`${cidade}${estado ? " - " + estado : ""}`);
           // eslint-disable-next-line no-unused-vars
           } catch (error) {
-            setLocalizacao("Santa Maria - RS"); // Fallback caso a API de mapa falhe
+            setLocalizacao("Santa Maria - RS"); 
           }
         }, () => {
           setLocalizacao("Localização não permitida");
@@ -54,7 +53,6 @@ const Home = () => {
       }
 
       try {
-        // Chamada para Perfil usando API_URL do config.js
         const responsePerfil = await fetch(`${API_URL}/perfil`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
@@ -64,7 +62,6 @@ const Home = () => {
           setNomeUsuario(dadosPerfil.nome || "Usuário");
         }
 
-        // Chamada para Minhas Denúncias usando API_URL do config.js
         const responseDenuncias = await fetch(`${API_URL}/minhas-denuncias`, {
           method: "GET",
           headers: { "Authorization": `Bearer ${token}` }
@@ -105,17 +102,23 @@ const Home = () => {
   };
 
   const formatarNomeCategoria = (slug) => {
+    if (!slug) return "Desconhecida";
+
     const nomes = {
-      lixo: "Descarte Irregular de Lixo",
+      lixo: "Descarte irregular de lixo",
       desmatamento: "Desmatamento",
-      poluicao_agua: "Poluição da Água",
+      poluicao_agua: "Poluição da água",
       queimada: "Queimada",
-      poluicao_ar: "Poluição do Ar",
-      animais: "Maus-tratos Animais",
-      foco_mosquito: "Foco de Mosquito",
-      esgoto: "Esgoto Aberto"
+      poluicao_ar: "Poluição do ar",
+      animais: "Maus-tratos animais",
+      foco_mosquito: "Foco de mosquito",
+      esgoto: "Esgoto aberto"
     };
-    return nomes[slug] || slug.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase());
+
+    if (nomes[slug]) return nomes[slug];
+
+    const texto = slug.replace(/_/g, " ");
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
   };
 
   const formatarData = (dataIso) => {
@@ -147,7 +150,6 @@ const Home = () => {
     return { backgroundColor: "#9E9E9E", color: "white", text: status || "Desconhecido" };
   };
 
-  // Estilos permanecem iguais aos seus originais
   return (
     <div style={{ backgroundColor: "#F5F7F5", minHeight: "100vh", paddingBottom: "120px", fontFamily: "Arial, sans-serif" }}>
       
@@ -164,7 +166,7 @@ const Home = () => {
           Painel ambiental
         </h1>
         <p style={{ color: "#6AA85B", margin: 0, fontSize: "14px", display: "flex", alignItems: "center", gap: "5px" }}>
-          📍 {localizacao}
+          {localizacao}
         </p>
       </div>
 
@@ -189,7 +191,7 @@ const Home = () => {
           Suas denúncias
         </h3>
 
-        {carregando && <p style={{ textAlign: "center", color: "#2D4627" }}>Carregando suas denúncias... ⏳</p>}
+        {carregando && <p style={{ textAlign: "center", color: "#2D4627" }}>Carregando suas denúncias... </p>}
         {erro && <p style={{ color: "#E74C3C", textAlign: "center", fontWeight: "bold" }}>{erro}</p>}
         
         {!carregando && !erro && denuncias.length === 0 && (
