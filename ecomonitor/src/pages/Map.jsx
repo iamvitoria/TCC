@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Navbar from "../components/Navbar/Navbar.jsx"; 
+import API_URL from "../config";
 
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
@@ -14,12 +15,6 @@ L.Icon.Default.mergeOptions({
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
 });
-
-// Configuração dinâmica da URL da API
-const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-const API_BASE_URL = isLocalhost 
-    ? "http://127.0.0.1:8000" 
-    : "https://ecomonitor-api.onrender.com";
 
 const redIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
@@ -44,7 +39,6 @@ const calcularDistancia = (lat1, lon1, lat2, lon2) => {
 };
 
 const Map = () => {
-  
   const [denuncias, setDenuncias] = useState([]);
   const [denunciasProximas, setDenunciasProximas] = useState([]);
   const [localizacaoUser, setLocalizacaoUser] = useState(null);
@@ -75,8 +69,8 @@ const Map = () => {
       setCarregandoDados(true);
       const token = localStorage.getItem("token");
       try {
-        // AGORA USA A URL DINÂMICA
-        const response = await fetch(`${API_BASE_URL}/denuncias`, {
+        // UTILIZANDO API_URL DO CONFIG.JS
+        const response = await fetch(`${API_URL}/denuncias`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -126,7 +120,7 @@ const Map = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>Mapa ({isLocalhost ? "Local" : "Produção"})</div>
+      <div style={styles.header}>Mapa</div>
 
       <div style={styles.mapWrapper}>
         {!carregandoLocalizacao && localizacaoUser && (
