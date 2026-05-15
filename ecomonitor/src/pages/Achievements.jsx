@@ -60,9 +60,6 @@ const Achievements = () => {
   const subtitleStyle = { margin: "4px 0 0 0", color: "#8FB090", fontSize: "12px", fontWeight: "500" };
   const pointsStyle = { color: "#1C3520", fontSize: "14px", fontWeight: "bold", whiteSpace: "nowrap" };
 
-  const obterNome = (c) => (typeof c === 'string' ? c : c.nome || "Conquista");
-  const obterPontos = (c) => (typeof c === 'object' && c.pontos ? `+${c.pontos} pts` : "+0 pts");
-
   return (
     <PageLayout title="Conquistas">
       <div style={containerStyle}>
@@ -87,10 +84,14 @@ const Achievements = () => {
                     </svg>
                   </div>
                   <div style={textContainerStyle}>
-                    <h3 style={titleStyle}>{obterNome(conquista)}</h3>
-                    <p style={subtitleStyle}>Conquista desbloqueada</p>
+                    <h3 style={titleStyle}>
+                      {typeof conquista.nome === 'object' ? conquista.nome.nome : conquista.nome}
+                    </h3>
+                    <p style={subtitleStyle}>
+                      {(conquista.descricao || "Conquista desbloqueada!").replace(/denúncia/g, "registro")}
+                    </p>
                   </div>
-                  <div style={pointsStyle}>{obterPontos(conquista)}</div>
+                  <div style={pointsStyle}>+{conquista.pontos || 0} pts</div>
                 </div>
               ))
             ) : (

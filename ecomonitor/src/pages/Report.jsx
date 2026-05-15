@@ -10,6 +10,21 @@ import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 import API_URL from "../config";
 
+const spinnerStyle = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+  }
+`;
+
 let DefaultIcon = L.icon({
   iconUrl: icon,
   shadowUrl: iconShadow,
@@ -34,14 +49,9 @@ const Report = () => {
   const [preview, setPreview] = useState(null);
   const [categoria, setCategoria] = useState("");
   const [descricao, setDescricao] = useState("");
-
   const [enviando, setEnviando] = useState(false);
   const [mensagem, setMensagem] = useState({ texto: "", tipo: "" });
-
-  const [localizacao, setLocalizacao] = useState({
-    lat: null,
-    lng: null
-  });
+  const [localizacao, setLocalizacao] = useState({ lat: null, lng: null });
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((pos) => {
@@ -78,12 +88,17 @@ const Report = () => {
 
     try {
       let enderecoTexto = "Endereço não identificado";
+      let cidadeTexto = "Cidade não identificada";
+
       try {
         const responseGeo = await fetch(
           `https://nominatim.openstreetmap.org/reverse?format=json&lat=${localizacao.lat}&lon=${localizacao.lng}`
         );
         const dataGeo = await responseGeo.json();
-        enderecoTexto = dataGeo.address.city || dataGeo.address.town || dataGeo.address.village || dataGeo.display_name;
+        
+        cidadeTexto = dataGeo.address.city || dataGeo.address.town || dataGeo.address.village || "Desconhecida";
+        
+        enderecoTexto = dataGeo.display_name;
       } catch (geoError) {
         console.error("Erro ao buscar endereço:", geoError);
       }
@@ -94,6 +109,7 @@ const Report = () => {
       formData.append("latitude", localizacao.lat);
       formData.append("longitude", localizacao.lng);
       formData.append("endereco", enderecoTexto); 
+      formData.append("cidade", cidadeTexto); 
       formData.append("foto", foto);
 
       const response = await fetch(`${API_URL}/denuncias`, {
@@ -118,9 +134,11 @@ const Report = () => {
 
   return (
     <PageLayout title="Novo registro">
-      <div style={styles.container}>
-        <label style={styles.label}>Foto da ocorrência</label>
+      <style>{spinnerStyle}</style>
 
+      <div style={styles.container}>
+        
+        <label style={styles.label}>Foto da ocorrência</label>
         <input
           type="file"
           accept="image/*"
@@ -159,7 +177,6 @@ const Report = () => {
         </select>
 
         <label style={styles.label}>Localização</label>
-
         <div style={styles.locationCard}>
           <div style={styles.map}>
             {localizacao.lat && (
@@ -176,7 +193,6 @@ const Report = () => {
               </MapContainer>
             )}
           </div>
-
           <div style={styles.locationText}>
             <strong>Localização capturada</strong>
             <span>
@@ -218,7 +234,7 @@ const Report = () => {
             cursor: enviando ? "not-allowed" : "pointer"
           }}
         >
-          {enviando ? "Enviando..." : "Enviar Registro"}
+          {enviando ? <div className="spinner"></div> : "Enviar Registro"}
         </button>
       </div>
       <Navbar isAdmin={false} />
@@ -237,12 +253,10 @@ const styles = {
     boxSizing: "border-box",
     width: "100%",
   },
-
   label: {
     fontWeight: "600",
     color: "#2D4627",
   },
-
   uploadBox: {
     border: "2px dashed #8DAF73",
     backgroundColor: "#E7F0DC",
@@ -255,25 +269,21 @@ const styles = {
     justifyContent: "center",
     cursor: "pointer",
   },
-
   uploadText: {
     fontWeight: "600",
     color: "#2D4627"
   },
-
   preview: {
     width: "100%",
     height: "100%",
     objectFit: "cover", 
   },
-
   select: {
     padding: 12,
     borderRadius: 10,
     border: "1px solid #ddd",
     backgroundColor: "#fff",
   },
-
   locationCard: {
     display: "flex",
     borderRadius: 12,
@@ -281,12 +291,10 @@ const styles = {
     border: "1px solid #ddd",
     backgroundColor: "#fff",
   },
-
   map: {
     width: "35%",
     height: 70
   },
-
   locationText: {
     padding: 10,
     fontSize: 12,
@@ -295,7 +303,6 @@ const styles = {
     justifyContent: "center",
     color: "#333"
   },
-
   textarea: {
     borderRadius: 10,
     border: "1px solid #ddd",
@@ -303,7 +310,6 @@ const styles = {
     height: 90,
     fontFamily: "inherit",
   },
-
   button: {
     marginTop: 10,
     backgroundColor: "#2D4627",
@@ -316,7 +322,8 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    gap: "10px"
+    gap: "10px",
+    minHeight: "55px" 
   }
 };
 

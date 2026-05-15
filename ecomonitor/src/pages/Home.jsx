@@ -72,7 +72,7 @@ const Home = () => {
           setDenuncias(data);
           calcularEstatisticas(data);
         } else {
-          setErro("Não foi possível carregar as denúncias.");
+          setErro("Não foi possível carregar os registros.");
         }
       } catch (error) {
         console.error("Erro de conexão:", error);
@@ -196,7 +196,7 @@ const Home = () => {
         
         {!carregando && !erro && denuncias.length === 0 && (
           <div style={{ textAlign: "center", color: "#2D4627", marginTop: "20px" }}>
-            <p>Nenhuma denúncia relatada ainda.</p>
+            <p>Nenhum registro relatado.</p>
           </div>
         )}
 

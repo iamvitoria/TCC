@@ -153,9 +153,15 @@ const Profile = () => {
 
         <div style={{display: 'flex', gap: '15px'}}>
           {perfil.conquistas.length > 0 ? (
-            perfil.conquistas.slice(-2).map((c, i) => <div key={i} style={styles.achievementCard}>{c}</div>)
+            perfil.conquistas.slice(-2).map((c, i) => (
+              <div key={i} style={styles.achievementCard}>
+                {typeof c === 'string' ? c : c.nome}
+              </div>
+            ))
           ) : (
-            <div style={{...styles.achievementCard, backgroundColor: "#F4F6F3", color: "#666"}}>Nenhuma conquista</div>
+            <div style={{...styles.achievementCard, backgroundColor: "#F4F6F3", color: "#666"}}>
+              Nenhuma conquista
+            </div>
           )}
         </div>
 
