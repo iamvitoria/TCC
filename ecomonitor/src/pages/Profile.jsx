@@ -10,13 +10,29 @@ const Profile = () => {
   const [carregando, setCarregando] = useState(true);
   const [perfil, setPerfil] = useState({
     nome: "",
+    email: "",
     pontuacao: 0,
     foto_perfil: null,
     posicao_ranking: "-",
-    cidade_ranking: "Sua região", // Valor padrão
+    cidade_ranking: "Sua região", 
     denuncias: 0,
     conquistas: []
   });
+
+  // --- Estados de Controle dos Pop-ups (Modais) ---
+  const [modalEditAberto, setModalEditAberto] = useState(false);
+  const [modalSenhaAberto, setModalSenhaAberto] = useState(false);
+
+  // --- Estados dos Inputs dentro do Pop-up (Carregados do Banco) ---
+  const [editNome, setEditNome] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editCidade, setEditCidade] = useState(""); // Alterado para input text normal
+
+  // --- Estados de Feedback e Envio ---
+  const [senhaAtual, setSenhaAtual] = useState("");
+  const [novaSenha, setNovaSenha] = useState("");
+  const [enviandoForm, setEnviandoForm] = useState(false);
+  const [statusMsg, setStatusMsg] = useState({ texto: "", tipo: "" });
 
   useEffect(() => {
     const buscarPerfil = async () => {
@@ -29,23 +45,29 @@ const Profile = () => {
 
       try {
         const resposta = await fetch(`${API_URL}/perfil`, {
-          headers: {
-            "Authorization": `Bearer ${token}` 
-          }
+          headers: { "Authorization": `Bearer ${token}` }
         });
 
         if (resposta.ok) {
           const dados = await resposta.json();
           
-          setPerfil({
+          const dadosCarregados = {
             nome: dados.nome || "Usuário",
+            email: dados.email || "",
             pontuacao: dados.pontuacao || 0,
             foto_perfil: dados.foto_perfil || null,
             posicao_ranking: dados.posicao_ranking || "-",
-            cidade_ranking: dados.regiao || dados.cidade || "Sua cidade", 
+            cidade_ranking: dados.cidade || dados.regiao || "Sua cidade", 
             denuncias: dados.total_denuncias ?? dados.denuncias ?? 0,
             conquistas: dados.conquistas || []
-          });
+          };
+
+          setPerfil(dadosCarregados);
+
+          // Puxa as informações que estão no banco para os inputs do pop-up
+          setEditNome(dadosCarregados.nome);
+          setEditEmail(dadosCarregados.email);
+          setEditCidade(dadosCarregados.cidade_ranking);
         } else {
           if(resposta.status === 401) navigate("/");
         }
@@ -78,6 +100,114 @@ const Profile = () => {
     } catch (erro) { console.error(erro); }
   };
 
+  // --- Salva os dados editados do pop-up direto na função do banco ---
+  const handleSalvarPerfil = async () => {
+    if (!editNome.trim() || !editEmail.trim() || !editCidade.trim()) {
+      setStatusMsg({ texto: "Todos os campos são obrigatórios.", tipo: "erro" });
+      return;
+    }
+
+    setEnviandoForm(true);
+    setStatusMsg({ texto: "", tipo: "" });
+    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+
+    try {
+      const resposta = await fetch(`${API_URL}/perfil/editar`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ 
+          nome: editNome,
+          email: editEmail,
+          cidade: editCidade 
+        })
+      });
+
+      if (resposta.ok) {
+        // Altera visualmente os labels na tela de perfil imediatamente
+        setPerfil(prev => ({ 
+          ...prev, 
+          nome: editNome, 
+          email: editEmail, 
+          cidade_ranking: editCidade 
+        }));
+        setStatusMsg({ texto: "Perfil atualizado com sucesso!", tipo: "sucesso" });
+        
+        // Fecha o pop-up
+        setTimeout(() => {
+          setModalEditAberto(false);
+          setStatusMsg({ texto: "", tipo: "" });
+        }, 1500);
+      } else {
+        const dadosErro = await resposta.json();
+        setStatusMsg({ texto: dadosErro.detail || "Erro ao atualizar perfil.", tipo: "erro" });
+      }
+    // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      setStatusMsg({ texto: "Erro na conexão com o servidor.", tipo: "erro" });
+    } finally {
+      setEnviandoForm(false);
+    }
+  };
+
+  const handleMudarSenha = async () => {
+    if (!senhaAtual || !novaSenha) {
+      setStatusMsg({ texto: "Preencha todos os campos de senha.", tipo: "erro" });
+      return;
+    }
+
+    setEnviandoForm(true);
+    setStatusMsg({ texto: "", tipo: "" });
+    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+
+    try {
+      const resposta = await fetch(`${API_URL}/perfil/senha`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ senha_atual: senhaAtual, nova_senha: novaSenha })
+      });
+
+      if (resposta.ok) {
+        setStatusMsg({ texto: "Senha alterada com sucesso!", tipo: "sucesso" });
+        setSenhaAtual("");
+        setNovaSenha("");
+        setTimeout(() => {
+          setModalSenhaAberto(false);
+          setStatusMsg({ texto: "", tipo: "" });
+        }, 1500);
+      } else {
+        const dadosErro = await resposta.json();
+        setStatusMsg({ texto: dadosErro.detail || "Erro ao alterar senha.", tipo: "erro" });
+      }
+    // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      setStatusMsg({ texto: "Erro na conexão com o servidor.", tipo: "erro" });
+    } finally {
+      setEnviandoForm(false);
+    }
+  };
+
+  const abrirModalEdit = () => {
+    setStatusMsg({ texto: "", tipo: "" });
+    // Carrega o que está gravado atualmente no estado para os campos editáveis
+    setEditNome(perfil.nome);
+    setEditEmail(perfil.email);
+    setEditCidade(perfil.cidade_ranking);
+    setModalEditAberto(true);
+  };
+
+  const abrirModalSenha = () => {
+    setStatusMsg({ texto: "", tipo: "" });
+    setSenhaAtual("");
+    setNovaSenha("");
+    setModalSenhaAberto(true);
+  };
+
   const fazerLogout = () => {
     localStorage.removeItem("token"); 
     localStorage.removeItem("meuToken"); 
@@ -103,13 +233,30 @@ const Profile = () => {
     achievementCard: { backgroundColor: "#E7F0DC", borderRadius: "10px", padding: "15px", flex: 1, textAlign: "center", color: "#1C3520", fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "70px" },
     btnEdit: { width: "100%", padding: "15px", borderRadius: "10px", fontSize: "18px", backgroundColor: "#1C3520", color: "white", border: "none", cursor: "pointer" },
     btnPass: { width: "100%", padding: "15px", borderRadius: "10px", fontSize: "18px", backgroundColor: "#E7F0DC", color: "#1C3520", border: "none", cursor: "pointer" },
-    btnLogout: { width: "100%", padding: "15px", borderRadius: "10px", fontSize: "18px", backgroundColor: "#FFF0F4", color: "#D8000C", border: "none", cursor: "pointer" }
+    btnLogout: { width: "100%", padding: "15px", borderRadius: "10px", fontSize: "18px", backgroundColor: "#FFF0F4", color: "#D8000C", border: "none", cursor: "pointer" },
+    
+    // Estilos estruturais das Janelas Pop-up (Modais)
+    overlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000, padding: "20px" },
+    modal: { backgroundColor: "white", borderRadius: "16px", padding: "24px", width: "100%", maxWidth: "360px", display: "flex", flexDirection: "column", gap: "14px", boxSizing: "border-box" },
+    modalTitle: { margin: "0 0 5px 0", fontSize: "20px", color: "#1C3520", fontWeight: "bold" },
+    fieldGroup: { display: "flex", flexDirection: "column", gap: "4px" },
+    fieldLabel: { fontSize: "12px", fontWeight: "bold", color: "#1C3520" },
+    input: { width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #ddd", fontSize: "16px", boxSizing: "border-box", outline: "none", color: "#333" },
+    modalButtons: { display: "flex", gap: "10px", marginTop: "10px" },
+    btnCancel: { flex: 1, padding: "12px", borderRadius: "8px", border: "1px solid #ddd", backgroundColor: "#f9f9f9", color: "#333", fontSize: "16px", fontWeight: "600", cursor: "pointer" },
+    btnSave: { flex: 1, padding: "12px", borderRadius: "8px", border: "none", backgroundColor: "#1C3520", color: "white", fontSize: "16px", fontWeight: "600", cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center" }
   };
 
   return (
     <div style={styles.container}>
+      <style>{`
+        @keyframes modalSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .modal-spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: modalSpin 0.8s linear infinite; }
+      `}</style>
+
       <input type="file" accept="image/*" style={{ display: "none" }} ref={fileInputRef} onChange={handleTrocarFoto} />
 
+      {/* RENDERIZAÇÃO DA TELA DE PERFIL */}
       <div style={styles.topSection}>
         <div style={styles.blob} onClick={() => fileInputRef.current.click()}>
           {perfil.foto_perfil ? (
@@ -122,11 +269,10 @@ const Profile = () => {
         </div>
 
         <h2 style={styles.name}>{carregando ? "Carregando..." : perfil.nome}</h2>
-        {/* EXIBIÇÃO DA CIDADE/REGIÃO */}
         <h3 style={styles.location}>{carregando ? "..." : perfil.cidade_ranking}</h3>
 
         <div style={styles.progressBg}>
-          <div style={styles.progressFill}></div>
+          <div style={{ ...styles.progressFill, width: `${Math.min((perfil.pontuacao / 1000) * 100, 100)}%` }}></div>
         </div>
 
         <div style={styles.statsRow}>
@@ -165,11 +311,129 @@ const Profile = () => {
           )}
         </div>
 
-        <button style={styles.btnEdit}>Editar perfil</button>
-        <button style={styles.btnPass}>Mudar senha</button>
+        <button style={styles.btnEdit} onClick={abrirModalEdit}>Editar perfil</button>
+        <button style={styles.btnPass} onClick={abrirModalSenha}>Mudar senha</button>
         <button style={styles.btnLogout} onClick={fazerLogout}>Sair</button>
       </div>
+      
       <Navbar isAdmin={false} />
+
+      {/* --- POP-UP (MODAL): EDITAR PERFIL COM LABELS DIRETAS DO BANCO --- */}
+      {modalEditAberto && (
+        <div style={styles.overlay} onClick={() => !enviandoForm && setModalEditAberto(false)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3 style={styles.modalTitle}>Editar Perfil</h3>
+            
+            {/* Campo Nome */}
+            <div style={styles.fieldGroup}>
+              <label style={styles.fieldLabel}>Nome</label>
+              <input 
+                type="text" 
+                style={styles.input} 
+                value={editNome}
+                onChange={(e) => setEditNome(e.target.value)}
+                disabled={enviandoForm}
+                placeholder="Carregando nome..."
+              />
+            </div>
+
+            {/* Campo E-mail */}
+            <div style={styles.fieldGroup}>
+              <label style={styles.fieldLabel}>E-mail</label>
+              <input 
+                type="email" 
+                style={styles.input} 
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                disabled={enviandoForm}
+                placeholder="Carregando e-mail..."
+              />
+            </div>
+
+            {/* Campo Cidade (Label de Cidade Livre do Tipo Text) */}
+            <div style={styles.fieldGroup}>
+              <label style={styles.fieldLabel}>Cidade</label>
+              <input 
+                type="text" 
+                style={styles.input} 
+                value={editCidade}
+                onChange={(e) => setEditCidade(e.target.value)}
+                disabled={enviandoForm}
+                placeholder="Carregando cidade..."
+              />
+            </div>
+
+            {/* Status de Mensagem de Erro/Sucesso */}
+            {statusMsg.texto && (
+              <span style={{ 
+                fontSize: "14px", 
+                fontWeight: "600", 
+                textAlign: "center",
+                color: statusMsg.tipo === "sucesso" ? "#2D4627" : "#D8000C" 
+              }}>
+                {statusMsg.texto}
+              </span>
+            )}
+
+            {/* Botões do Pop-up */}
+            <div style={styles.modalButtons}>
+              <button style={styles.btnCancel} onClick={() => setModalEditAberto(false)} disabled={enviandoForm}>
+                Cancelar
+              </button>
+              <button style={styles.btnSave} onClick={handleSalvarPerfil} disabled={enviandoForm}>
+                {enviandoForm ? <div className="modal-spinner"></div> : "Salvar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- POP-UP (MODAL): MUDAR SENHA --- */}
+      {modalSenhaAberto && (
+        <div style={styles.overlay} onClick={() => !enviandoForm && setModalSenhaAberto(false)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3 style={styles.modalTitle}>Alterar Senha</h3>
+            
+            <input 
+              type="password" 
+              style={styles.input} 
+              placeholder="Senha atual"
+              value={senhaAtual}
+              onChange={(e) => setSenhaAtual(e.target.value)}
+              disabled={enviandoForm}
+            />
+
+            <input 
+              type="password" 
+              style={styles.input} 
+              placeholder="Nova senha"
+              value={novaSenha}
+              onChange={(e) => setNovaSenha(e.target.value)}
+              disabled={enviandoForm}
+            />
+
+            {statusMsg.texto && (
+              <span style={{ 
+                fontSize: "14px", 
+                fontWeight: "600", 
+                textAlign: "center",
+                color: statusMsg.tipo === "sucesso" ? "#2D4627" : "#D8000C" 
+              }}>
+                {statusMsg.texto}
+              </span>
+            )}
+
+            <div style={styles.modalButtons}>
+              <button style={styles.btnCancel} onClick={() => setModalSenhaAberto(false)} disabled={enviandoForm}>
+                Cancelar
+              </button>
+              <button style={styles.btnSave} onClick={handleMudarSenha} disabled={enviandoForm}>
+                {enviandoForm ? <div className="modal-spinner"></div> : "Alterar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
