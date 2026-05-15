@@ -186,7 +186,7 @@ const Ranking = () => {
               <span style={{ fontWeight: "bold", color: "#1C3520", fontSize: "14px" }}>
                 {item.pts || item.total || item.pontos || 0} 
                 <span style={{ marginLeft: "4px", fontSize: "12px", fontWeight: "normal" }}>
-                  {activeTab === "global" ? "denúncias" : "pts"}
+                  {activeTab === "global" ? "registro(s)" : "pts"}
                 </span>
               </span>
             </div>

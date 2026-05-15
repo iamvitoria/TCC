@@ -42,8 +42,7 @@ const Profile = () => {
             pontuacao: dados.pontuacao || 0,
             foto_perfil: dados.foto_perfil || null,
             posicao_ranking: dados.posicao_ranking || "-",
-            // Tenta pegar 'regiao' (nome do seu banco) ou 'cidade'
-            cidade_ranking: dados.regiao || dados.cidade || "Sua região", 
+            cidade_ranking: dados.regiao || dados.cidade || "Sua cidade", 
             denuncias: dados.total_denuncias ?? dados.denuncias ?? 0,
             conquistas: dados.conquistas || []
           });
@@ -60,7 +59,6 @@ const Profile = () => {
     buscarPerfil();
   }, [navigate]);
 
-  // ... (handleTrocarFoto e fazerLogout permanecem iguais)
   const handleTrocarFoto = async (event) => {
     const arquivo = event.target.files[0];
     if (!arquivo) return;

@@ -6,7 +6,7 @@ import API_URL from "../config";
 const Home = () => {
   const navigate = useNavigate();
 
-  const [nomeUsuario, setNomeUsuario] = useState("Usuário"); 
+  const [nomeUsuario, setNomeUsuario] = useState("..."); 
   const [localizacao, setLocalizacao] = useState("Buscando localização...");
   
   const [denuncias, setDenuncias] = useState([]);
@@ -59,7 +59,7 @@ const Home = () => {
         
         if (responsePerfil.ok) {
           const dadosPerfil = await responsePerfil.json();
-          setNomeUsuario(dadosPerfil.nome || "Usuário");
+          setNomeUsuario(dadosPerfil.nome || "...");
         }
 
         const responseDenuncias = await fetch(`${API_URL}/minhas-denuncias`, {
