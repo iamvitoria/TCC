@@ -70,7 +70,7 @@ const ReportDetails = () => {
       poluicao_agua: "Poluição da água",
       queimada: "Queimada",
       poluicao_ar: "Poluição do ar",
-      animais: "Maus-tratos animais",
+      animais: "Maus-tratos aos animais",
       foco_mosquito: "Foco de mosquito",
       esgoto: "Esgoto aberto"
     };

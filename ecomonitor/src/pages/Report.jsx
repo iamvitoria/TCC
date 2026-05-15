@@ -64,13 +64,13 @@ const Report = () => {
     setMensagem({ texto: "", tipo: "" });
 
     if (!foto || !categoria || !localizacao.lat) {
-      setMensagem({ texto: "⚠️ Preencha a foto, categoria e aguarde o GPS!", tipo: "erro" });
+      setMensagem({ texto: "Preencha a foto, categoria e aguarde o GPS!", tipo: "erro" });
       return;
     }
 
     const token = localStorage.getItem("token");
     if (!token) {
-      setMensagem({ texto: "❌ Você precisa estar logado!", tipo: "erro" });
+      setMensagem({ texto: "Você precisa estar logado!", tipo: "erro" });
       return;
     }
 
@@ -103,14 +103,14 @@ const Report = () => {
       });
 
       if (response.ok) {
-        setMensagem({ texto: "Denúncia enviada com sucesso!", tipo: "sucesso" });
+        setMensagem({ texto: "Registro enviado com sucesso!", tipo: "sucesso" });
         setTimeout(() => navigate("/home"), 2000);
       } else {
         setMensagem({ texto: "Erro ao enviar denúncia.", tipo: "erro" });
       }
     // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      setMensagem({ texto: "❌ Erro de conexão com o servidor.", tipo: "erro" });
+      setMensagem({ texto: "Erro de conexão com o servidor.", tipo: "erro" });
     } finally {
       setEnviando(false);
     }
