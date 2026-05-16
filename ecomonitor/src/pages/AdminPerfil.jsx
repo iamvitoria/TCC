@@ -7,17 +7,32 @@ export default function AdminPerfil() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null); 
 
-  const [carregando, setCarregando] = useState(true);
+  const [carregandoFoto, setCarregandoFoto] = useState(false);
+  const [enviandoEdit, setEnviandoEdit] = useState(false);
+  
+  const [modalEditAberto, setModalEditAberto] = useState(false);
+  const [modalSenhaAberto, setModalSenhaAberto] = useState(false);
+
   const [adminData, setAdminData] = useState({
-    nome: "",
-    cargo: "",
+    nome: "Carregando...",
+    cargo: "", 
     regiao: "",
+    email: "", 
     foto_perfil: null,
     estatisticas: {
-      resolvidas: 0,
-      pendentes: 0
+      resolvidas: "-",
+      pendentes: "-"
     }
   });
+
+  const [editNome, setEditNome] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editCargo, setEditCargo] = useState("");
+  const [editRegiao, setEditRegiao] = useState("");
+  
+  const [senhaAtual, setSenhaAtual] = useState("");
+  const [novaSenha, setNovaSenha] = useState("");
+  const [statusMsg, setStatusMsg] = useState("");
 
   const buscarPerfil = async () => {
     const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
@@ -39,21 +54,20 @@ export default function AdminPerfil() {
         
         setAdminData({
           nome: dados.nome || "Administrador",
-          cargo: dados.cargo || "Analista Ambiental",
+          email: dados.email || "",
+          cargo: dados.cargo || "", 
           regiao: dados.regiao || dados.cidade || "Santa Maria",
           foto_perfil: dados.foto_perfil 
             ? (dados.foto_perfil.startsWith('http') ? dados.foto_perfil : `${API_URL}/${dados.foto_perfil}`)
             : null,
           estatisticas: {
-            resolvidas: dados.estatisticas?.resolvidas || 0,
-            pendentes: dados.estatisticas?.pendentes || 0
+            resolvidas: dados.estatisticas?.resolvidas ?? 0,
+            pendentes: dados.estatisticas?.pendentes ?? 0
           }
         });
       }
     } catch (erro) {
       console.error("Erro ao buscar perfil do admin:", erro);
-    } finally {
-      setCarregando(false);
     }
   };
 
@@ -62,13 +76,16 @@ export default function AdminPerfil() {
   }, [navigate]);
 
   const handleFotoClick = () => {
-    fileInputRef.current.click();
+    if (!carregandoFoto) {
+      fileInputRef.current.click();
+    }
   };
 
   const handleFileChange = async (event) => {
     const arquivo = event.target.files[0];
     if (!arquivo) return;
 
+    setCarregandoFoto(true);
     const formData = new FormData();
     formData.append("foto", arquivo);
 
@@ -90,6 +107,112 @@ export default function AdminPerfil() {
       }
     } catch (erro) {
       console.error("Erro no upload:", erro);
+    } finally {
+      setCarregandoFoto(false);
+    }
+  };
+
+  const abrirModalEdicao = () => {
+    setStatusMsg("");
+    setEditNome(adminData.nome);
+    setEditEmail(adminData.email);
+    setEditCargo(adminData.cargo);
+    setEditRegiao(adminData.regiao);
+    setModalEditAberto(true);
+  };
+
+  const handleSalvarEdicao = async () => {
+    if (!editNome || !editEmail || !editCargo || !editRegiao) {
+      setStatusMsg("Todos os campos sao obrigatorios.");
+      return;
+    }
+
+    setEnviandoEdit(true);
+    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+
+    try {
+      const resposta = await fetch(`${API_URL}/perfil/editar`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          nome: editNome, 
+          email: editEmail, 
+          cargo: editCargo, 
+          cidade: editRegiao 
+        })
+      });
+
+      if (resposta.ok) {
+        setStatusMsg("Perfil atualizado com sucesso.");
+        setAdminData(prev => ({
+          ...prev,
+          nome: editNome,
+          email: editEmail,
+          cargo: editCargo,
+          regiao: editRegiao
+        }));
+        
+        setTimeout(() => {
+          setModalEditAberto(false);
+          setStatusMsg("");
+        }, 1200);
+      } else {
+        const resultado = await resposta.json();
+        setStatusMsg(resultado.detail || "Erro ao salvar alteracoes.");
+      }
+    // eslint-disable-next-line no-unused-vars
+    } catch (erro) {
+      setStatusMsg("Erro de conexao com o servidor.");
+    } finally {
+      setEnviandoEdit(false);
+    }
+  };
+
+  const abrirModalSenha = () => {
+    setStatusMsg("");
+    setSenhaAtual("");
+    setNovaSenha("");
+    setModalSenhaAberto(true);
+  };
+
+  const handleSalvarSenha = async () => {
+    if (!senhaAtual || !novaSenha) {
+      setStatusMsg("Preencha ambos os campos.");
+      return;
+    }
+
+    setEnviandoEdit(true);
+    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+
+    try {
+      const resposta = await fetch(`${API_URL}/perfil/senha`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ senha_atual: senhaAtual, nova_senha: novaSenha })
+      });
+
+      const resultado = await resposta.json();
+
+      if (resposta.ok) {
+        setStatusMsg("Senha alterada com sucesso.");
+        setTimeout(() => {
+          setModalSenhaAberto(false);
+          setStatusMsg("");
+        }, 1200);
+      } else {
+        setStatusMsg(resultado.detail || "Senha atual incorreta.");
+      }
+    // eslint-disable-next-line no-unused-vars
+    } catch (erro) {
+      setStatusMsg("Erro de conexao com o servidor.");
+    } finally {
+      setEnviandoEdit(false);
     }
   };
 
@@ -97,14 +220,6 @@ export default function AdminPerfil() {
     localStorage.clear();
     navigate("/");
   };
-
-  if (carregando) {
-    return (
-      <div style={{ ...styles.container, justifyContent: 'center', alignItems: 'center', color: 'white' }}>
-        <p>Carregando perfil do administrador...</p>
-      </div>
-    );
-  }
 
   return (
     <div style={styles.container}>
@@ -118,13 +233,14 @@ export default function AdminPerfil() {
       />
 
       <div style={styles.topSection}>
-        <span style={styles.role}>Administrador</span>
 
         <div style={styles.blob} onClick={handleFotoClick} title="Clique para mudar a foto">
           {adminData.foto_perfil ? (
             <img src={adminData.foto_perfil} alt="perfil" style={styles.foto} />
           ) : (
-            <div style={styles.fotoPlaceholder}>+</div>
+            <div style={styles.fotoPlaceholder}>
+              {carregandoFoto ? "..." : ""}
+            </div>
           )}
         </div>
 
@@ -138,25 +254,85 @@ export default function AdminPerfil() {
 
       <div style={styles.bottomSection}>
         
-        <h3 style={styles.sectionTitle}>Denúncias</h3>
+        <h3 style={styles.sectionTitle}>Registros</h3>
 
         <div style={styles.statsRow}>
           <div style={styles.card}>
             <strong style={styles.cardNumber}>{adminData.estatisticas.resolvidas}</strong>
-            <span style={styles.cardLabel}>Resolvidas</span>
+            <span style={styles.cardLabel}>Resolvida(s)</span>
           </div>
 
           <div style={styles.card}>
             <strong style={styles.cardNumber}>{adminData.estatisticas.pendentes}</strong>
-            <span style={styles.cardLabel}>Pendentes</span>
+            <span style={styles.cardLabel}>Pendente(s)</span>
           </div>
         </div>
 
-        <button style={styles.btnPrimary} onClick={() => navigate('/editar-perfil-admin')}>Editar perfil</button>
-        <button style={styles.btnSecondary}>Mudar senha</button>
-        <button style={styles.btnLogout} onClick={handleSair}>Sair</button>
+        <button style={styles.btnPrimary} onClick={abrirModalEdicao}>
+          Editar perfil
+        </button>
+        
+        <button style={styles.btnSecondary} onClick={abrirModalSenha}>
+          Mudar senha
+        </button>
+        
+        <button style={styles.btnLogout} onClick={handleSair}>
+          Sair
+        </button>
 
       </div>
+
+      {modalEditAberto && (
+        <div style={styles.overlayModal} onClick={() => !enviandoEdit && setModalEditAberto(false)}>
+          <div style={styles.modal} onClick={e => e.stopPropagation()}>
+            <h3 style={styles.modalTitle}>Editar Perfil Admin</h3>
+            
+            <label style={styles.modalLabel}>Nome Completo</label>
+            <input type="text" value={editNome} onChange={e => setEditNome(e.target.value)} style={styles.modalInput} disabled={enviandoEdit} />
+            
+            <label style={styles.modalLabel}>E-mail</label>
+            <input type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} style={styles.modalInput} disabled={enviandoEdit} />
+
+            <label style={styles.modalLabel}>Cargo / Função</label>
+            <input type="text" value={editCargo} onChange={e => setEditCargo(e.target.value)} style={styles.modalInput} disabled={enviandoEdit} />
+
+            <label style={styles.modalLabel}>Cidade / Região</label>
+            <input type="text" value={editRegiao} onChange={e => setEditRegiao(e.target.value)} style={styles.modalInput} disabled={enviandoEdit} />
+
+            {statusMsg && <p style={styles.modalStatus}>{statusMsg}</p>}
+
+            <div style={styles.modalButtonGroup}>
+              <button onClick={() => !enviandoEdit && setModalEditAberto(false)} style={styles.modalBtnVoltar} type="button">Voltar</button>
+              <button onClick={handleSalvarEdicao} style={styles.modalBtnSalvar} type="button" disabled={enviandoEdit}>
+                {enviandoEdit ? "Salvando..." : "Salvar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalSenhaAberto && (
+        <div style={styles.overlayModal} onClick={() => !enviandoEdit && setModalSenhaAberto(false)}>
+          <div style={styles.modal} onClick={e => e.stopPropagation()}>
+            <h3 style={styles.modalTitle}>Alterar Senha</h3>
+            
+            <label style={styles.modalLabel}>Senha Atual</label>
+            <input type="password" value={senhaAtual} onChange={e => setSenhaAtual(e.target.value)} style={styles.modalInput} disabled={enviandoEdit} />
+
+            <label style={styles.modalLabel}>Nova Senha</label>
+            <input type="password" value={novaSenha} onChange={e => setNovaSenha(e.target.value)} style={styles.modalInput} disabled={enviandoEdit} />
+
+            {statusMsg && <p style={styles.modalStatus}>{statusMsg}</p>}
+
+            <div style={styles.modalButtonGroup}>
+              <button onClick={() => !enviandoEdit && setModalSenhaAberto(false)} style={styles.modalBtnVoltar} type="button">Voltar</button>
+              <button onClick={handleSalvarSenha} style={styles.modalBtnSalvar} type="button" disabled={enviandoEdit}>
+                {enviandoEdit ? "Salvando..." : "Alterar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Navbar isAdmin={true} />
     </div>
@@ -290,6 +466,81 @@ const styles = {
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
+    fontWeight: "bold",
+    cursor: "pointer"
+  },
+  overlayModal: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
+    padding: "20px"
+  },
+  modal: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 24,
+    width: "100%",
+    maxWidth: 360,
+    boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+    display: "flex",
+    flexDirection: "column"
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#2D4627",
+    margin: "0 0 15px 0",
+    textAlign: "center"
+  },
+  modalLabel: {
+    fontSize: 12,
+    color: "#555",
+    fontWeight: "bold",
+    marginBottom: 4,
+    marginTop: 8
+  },
+  modalInput: {
+    padding: "10px 12px",
+    borderRadius: "8px",
+    border: "1px solid #ccc",
+    fontSize: "15px",
+    outline: "none"
+  },
+  modalStatus: {
+    fontSize: "14px",
+    textAlign: "center",
+    marginTop: 10,
+    fontWeight: "500"
+  },
+  modalButtonGroup: {
+    display: "flex",
+    gap: 10,
+    marginTop: 20
+  },
+  modalBtnVoltar: {
+    flex: 1,
+    backgroundColor: "white",
+    color: "#666",
+    border: "1px solid #ccc",
+    padding: "12px",
+    borderRadius: "8px",
+    fontWeight: "bold",
+    cursor: "pointer"
+  },
+  modalBtnSalvar: {
+    flex: 1,
+    backgroundColor: "#2D4627",
+    color: "white",
+    border: "none",
+    padding: "12px",
+    borderRadius: "8px",
     fontWeight: "bold",
     cursor: "pointer"
   }
