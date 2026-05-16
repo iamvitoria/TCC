@@ -121,7 +121,7 @@ export default function AdminReportDetails() {
     return (
       <PageLayout isAdmin={true}>
         <div style={{ backgroundColor: "#F4F6F3", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <p style={{ color: "#1C3520" }}>Denúncia não encontrada.</p>
+          <p style={{ color: "#1C3520" }}>Registro não encontrado.</p>
         </div>
       </PageLayout>
     );
@@ -244,7 +244,7 @@ export default function AdminReportDetails() {
         <div style={contentContainerStyle}>
           
           <div>
-            <h3 style={sectionTitleStyle}>Informações da Denúncia</h3>
+            <h3 style={sectionTitleStyle}>Informações do Registro</h3>
             <div style={greenCardStyle}>
               <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "15px", marginBottom: "15px" }}>
                 <div>

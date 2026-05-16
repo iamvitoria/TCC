@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from "../components/PageLayout/PageLayout";
+import API_URL from "../config";
 
 export default function AdminDashboard() {
   const [denuncias, setDenuncias] = useState([]);
@@ -17,7 +18,7 @@ export default function AdminDashboard() {
   const buscarDenuncias = async () => {
     setCarregando(true);
     try {
-      const resposta = await fetch(`https://ecomonitor-api.onrender.com/denuncias?t=${new Date().getTime()}`, {
+      const resposta = await fetch(`${API_URL}/denuncias?t=${new Date().getTime()}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -52,20 +53,19 @@ export default function AdminDashboard() {
   const obterCorStatus = (status) => {
     switch (status) {
       case 'Em análise':
-        return '#CD8B42'; // Laranja escuro / ocre
+        return '#CD8B42'; 
       case 'Validado':
-        return '#5A8F53'; // Verde natural
+        return '#5A8F53'; 
       case 'Resolvido':
-        return '#4A7CA6'; // Azul
+        return '#4A7CA6'; 
       case 'Negado':
       case 'Cancelado':
-        return '#A64A4A'; // Vermelho terroso
+        return '#A64A4A'; 
       default:
-        return '#6C757D'; // Cinza
+        return '#6C757D'; 
     }
   };
 
-  // --- Estilos ---
   const containerStyle = {
     backgroundColor: '#F4F6F3',
     minHeight: '100vh',
@@ -160,10 +160,9 @@ export default function AdminDashboard() {
   };
 
   return (
-    <PageLayout title="Denúncias Recebidas" isAdmin={true}>
+    <PageLayout title="Registros recebidos" isAdmin={true}>
       <div style={containerStyle}>
         
-        {/* Busca */}
         <input 
           type="text" 
           placeholder="ID, Usuário..." 
@@ -172,7 +171,6 @@ export default function AdminDashboard() {
           style={searchInputStyle}
         />
 
-        {/* Filtros */}
         <div style={filtersGridStyle}>
           <div>
             <label style={labelStyle}>Categoria</label>
@@ -182,12 +180,14 @@ export default function AdminDashboard() {
               style={selectStyle}
             >
               <option value="Todas">Todas</option>
-              <option value="Descarte Irregular de Lixo">Descarte de lixo</option>
+              <option value="Descarte Irregular de Lixo">Descarte irregular de lixo</option>
               <option value="Desmatamento">Desmatamento</option>
               <option value="Poluição da Água">Poluição da Água</option>
               <option value="Queimada">Queimada</option>
               <option value="Poluição do Ar">Poluição do Ar</option>
-              <option value="Maus-tratos Animais">Maus-tratos Animais</option>
+              <option value="Maus-tratos aos Animais">Maus-tratos aos Animais</option>
+              <option value="Foco de Mosquito">Foco de Mosquito</option>
+              <option value="Esgoto Aberto">Esgoto a Céu Aberto</option>
             </select>
           </div>
           <div>
@@ -202,7 +202,6 @@ export default function AdminDashboard() {
               <option value="Validado">Validado</option>
               <option value="Resolvido">Resolvido</option>
               <option value="Negado">Negado</option>
-              <option value="Cancelado">Cancelado</option>
             </select>
           </div>
           <div>
@@ -223,12 +222,11 @@ export default function AdminDashboard() {
 
         <div style={dividerStyle}></div>
 
-        {/* Listagem */}
         <div>
           {carregando ? (
             <p style={{ textAlign: 'center', color: '#666', marginTop: '20px' }}>Carregando...</p>
           ) : denunciasFiltradas.length === 0 ? (
-            <p style={{ textAlign: 'center', color: '#666', marginTop: '20px' }}>Nenhuma denúncia encontrada.</p>
+            <p style={{ textAlign: 'center', color: '#666', marginTop: '20px' }}>Nenhum registro encontrado.</p>
           ) : (
             denunciasFiltradas.map((denuncia) => (
               <div

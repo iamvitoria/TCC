@@ -7,6 +7,7 @@ const Register = () => {
 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [cidade, setCidade] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [carregando, setCarregando] = useState(false);
@@ -15,7 +16,7 @@ const Register = () => {
   const fecharAlerta = () => setAlerta({ visivel: false, texto: "", tipo: "" });
 
   const fazerCadastro = async () => {
-    if (!nome || !email || !senha || !confirmarSenha) {
+    if (!nome || !email || !cidade || !senha || !confirmarSenha) {
       setAlerta({ visivel: true, texto: "Por favor, preencha todos os campos!", tipo: "erro" });
       return;
     }
@@ -35,11 +36,12 @@ const Register = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json', // Adicione isso
+          'Accept': 'application/json', 
         },
         body: JSON.stringify({
           nome: nome,
           email: email,
+          cidade: cidade,
           senha: senha,
           perfil: "user"
         }),
@@ -54,7 +56,6 @@ const Register = () => {
       }
       
     } catch (erro) {
-      // Se o erro for "Failed to fetch", veja se o seu navegador não está bloqueando por HTTPS
       console.error("DETALHE DO ERRO:", erro.name, erro.message);
       
       if (erro.name === 'TypeError' && erro.message === 'Failed to fetch') {
@@ -177,6 +178,14 @@ const Register = () => {
         style={inputStyle} 
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+      />
+
+      <input 
+        type="cidade" 
+        placeholder="Cidade" 
+        style={inputStyle} 
+        value={cidade}
+        onChange={(e) => setCidade(e.target.value)}
       />
       
       <input 
