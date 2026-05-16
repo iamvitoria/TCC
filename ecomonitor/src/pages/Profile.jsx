@@ -19,16 +19,13 @@ const Profile = () => {
     conquistas: []
   });
 
-  // --- Estados de Controle dos Pop-ups (Modais) ---
   const [modalEditAberto, setModalEditAberto] = useState(false);
   const [modalSenhaAberto, setModalSenhaAberto] = useState(false);
 
-  // --- Estados dos Inputs dentro do Pop-up (Carregados do Banco) ---
   const [editNome, setEditNome] = useState("");
   const [editEmail, setEditEmail] = useState("");
-  const [editCidade, setEditCidade] = useState(""); // Alterado para input text normal
+  const [editCidade, setEditCidade] = useState(""); 
 
-  // --- Estados de Feedback e Envio ---
   const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [enviandoForm, setEnviandoForm] = useState(false);
@@ -64,7 +61,6 @@ const Profile = () => {
 
           setPerfil(dadosCarregados);
 
-          // Puxa as informações que estão no banco para os inputs do pop-up
           setEditNome(dadosCarregados.nome);
           setEditEmail(dadosCarregados.email);
           setEditCidade(dadosCarregados.cidade_ranking);
@@ -100,7 +96,6 @@ const Profile = () => {
     } catch (erro) { console.error(erro); }
   };
 
-  // --- Salva os dados editados do pop-up direto na função do banco ---
   const handleSalvarPerfil = async () => {
     if (!editNome.trim() || !editEmail.trim() || !editCidade.trim()) {
       setStatusMsg({ texto: "Todos os campos são obrigatórios.", tipo: "erro" });
@@ -126,16 +121,14 @@ const Profile = () => {
       });
 
       if (resposta.ok) {
-        // Altera visualmente os labels na tela de perfil imediatamente
         setPerfil(prev => ({ 
           ...prev, 
           nome: editNome, 
           email: editEmail, 
           cidade_ranking: editCidade 
         }));
-        setStatusMsg({ texto: "Perfil atualizado com sucesso!", tipo: "sucesso" });
+        setStatusMsg({ texto: "Perfil updated!", tipo: "sucesso" });
         
-        // Fecha o pop-up
         setTimeout(() => {
           setModalEditAberto(false);
           setStatusMsg({ texto: "", tipo: "" });
@@ -194,7 +187,6 @@ const Profile = () => {
 
   const abrirModalEdit = () => {
     setStatusMsg({ texto: "", tipo: "" });
-    // Carrega o que está gravado atualmente no estado para os campos editáveis
     setEditNome(perfil.nome);
     setEditEmail(perfil.email);
     setEditCidade(perfil.cidade_ranking);
@@ -214,7 +206,6 @@ const Profile = () => {
     navigate("/");
   };
 
-  // --- ESTILOS ---
   const styles = {
     container: { display: "flex", flexDirection: "column", height: "100vh", overflowY: "auto", backgroundColor: "#1C3520", boxSizing: "border-box" },
     topSection: { display: "flex", flexDirection: "column", alignItems: "center", padding: "50px 20px 30px 20px", width: "100%", boxSizing: "border-box" },
@@ -234,8 +225,6 @@ const Profile = () => {
     btnEdit: { width: "100%", padding: "15px", borderRadius: "10px", fontSize: "18px", backgroundColor: "#1C3520", color: "white", border: "none", cursor: "pointer" },
     btnPass: { width: "100%", padding: "15px", borderRadius: "10px", fontSize: "18px", backgroundColor: "#E7F0DC", color: "#1C3520", border: "none", cursor: "pointer" },
     btnLogout: { width: "100%", padding: "15px", borderRadius: "10px", fontSize: "18px", backgroundColor: "#FFF0F4", color: "#D8000C", border: "none", cursor: "pointer" },
-    
-    // Estilos estruturais das Janelas Pop-up (Modais)
     overlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000, padding: "20px" },
     modal: { backgroundColor: "white", borderRadius: "16px", padding: "24px", width: "100%", maxWidth: "360px", display: "flex", flexDirection: "column", gap: "14px", boxSizing: "border-box" },
     modalTitle: { margin: "0 0 5px 0", fontSize: "20px", color: "#1C3520", fontWeight: "bold" },
@@ -256,7 +245,6 @@ const Profile = () => {
 
       <input type="file" accept="image/*" style={{ display: "none" }} ref={fileInputRef} onChange={handleTrocarFoto} />
 
-      {/* RENDERIZAÇÃO DA TELA DE PERFIL */}
       <div style={styles.topSection}>
         <div style={styles.blob} onClick={() => fileInputRef.current.click()}>
           {perfil.foto_perfil ? (
@@ -318,13 +306,11 @@ const Profile = () => {
       
       <Navbar isAdmin={false} />
 
-      {/* --- POP-UP (MODAL): EDITAR PERFIL COM LABELS DIRETAS DO BANCO --- */}
       {modalEditAberto && (
         <div style={styles.overlay} onClick={() => !enviandoForm && setModalEditAberto(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <h3 style={styles.modalTitle}>Editar Perfil</h3>
             
-            {/* Campo Nome */}
             <div style={styles.fieldGroup}>
               <label style={styles.fieldLabel}>Nome</label>
               <input 
@@ -337,7 +323,6 @@ const Profile = () => {
               />
             </div>
 
-            {/* Campo E-mail */}
             <div style={styles.fieldGroup}>
               <label style={styles.fieldLabel}>E-mail</label>
               <input 
@@ -350,7 +335,6 @@ const Profile = () => {
               />
             </div>
 
-            {/* Campo Cidade (Label de Cidade Livre do Tipo Text) */}
             <div style={styles.fieldGroup}>
               <label style={styles.fieldLabel}>Cidade</label>
               <input 
@@ -363,7 +347,6 @@ const Profile = () => {
               />
             </div>
 
-            {/* Status de Mensagem de Erro/Sucesso */}
             {statusMsg.texto && (
               <span style={{ 
                 fontSize: "14px", 
@@ -375,7 +358,6 @@ const Profile = () => {
               </span>
             )}
 
-            {/* Botões do Pop-up */}
             <div style={styles.modalButtons}>
               <button style={styles.btnCancel} onClick={() => setModalEditAberto(false)} disabled={enviandoForm}>
                 Cancelar
@@ -388,7 +370,6 @@ const Profile = () => {
         </div>
       )}
 
-      {/* --- POP-UP (MODAL): MUDAR SENHA --- */}
       {modalSenhaAberto && (
         <div style={styles.overlay} onClick={() => !enviandoForm && setModalSenhaAberto(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
