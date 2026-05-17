@@ -9,6 +9,8 @@ export default function AdminDashboard() {
   const [termoBusca, setTermoBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('Todas');
   const [filtroCategoria, setFiltroCategoria] = useState('Todas');
+  const [filtroRegiao, setFiltroRegiao] = useState('Todas');
+  const [ordenacao, setOrdenacao] = useState('Mais recente');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,16 +41,52 @@ export default function AdminDashboard() {
     }
   };
 
-  const denunciasFiltradas = denuncias.filter(d => {
-    if (!d) return false;
-    const matchesBusca = termoBusca === '' || d.id?.toString().includes(termoBusca);
-    const matchesStatus = filtroStatus === 'Todas' || d.status === filtroStatus;
-    const matchesCategoria = 
-      filtroCategoria === 'Todas' || 
-      d.categoria?.trim().toLowerCase() === filtroCategoria.trim().toLowerCase();
-    
-    return matchesBusca && matchesStatus && matchesCategoria;
-  });
+  const regioesDisponiveis = [
+    ...new Set(
+      denuncias
+        .map(d => d?.cidade || d?.regiao)
+        .filter(Boolean)
+        .map(r => r.trim())
+    )
+  ].sort((a, b) => a.localeCompare(b));
+
+  const filtradasEOrdenadas = () => {
+    const filtradas = denuncias.filter(d => {
+      if (!d) return false;
+
+      const buscaLower = termoBusca.trim().toLowerCase();
+      const matchesBusca = 
+        buscaLower === '' || 
+        d.id?.toString().includes(buscaLower) || 
+        (d.usuario_nome && d.usuario_nome.toLowerCase().includes(buscaLower)) ||
+        (d.nome && d.nome.toLowerCase().includes(buscaLower));
+
+      const matchesStatus = filtroStatus === 'Todas' || d.status === filtroStatus;
+
+      const matchesCategoria = 
+        filtroCategoria === 'Todas' || 
+        (d.categoria && d.categoria.trim().toLowerCase() === filtroCategoria.trim().toLowerCase());
+
+      const regiaoItem = (d.cidade || d.regiao || '').trim().toLowerCase();
+      const matchesRegiao = 
+        filtroRegiao === 'Todas' || 
+        regiaoItem === filtroRegiao.trim().toLowerCase();
+      
+      return matchesBusca && matchesStatus && matchesCategoria && matchesRegiao;
+    });
+
+    if (ordenacao === 'Mais recente') {
+      return filtradas.sort((a, b) => {
+        const dataA = a.data_criacao ? new Date(a.data_criacao).getTime() : 0;
+        const dataB = b.data_criacao ? new Date(b.data_criacao).getTime() : 0;
+        return dataB - dataA;
+      });
+    }
+
+    return filtradas;
+  };
+
+  const denunciasFiltradas = filtradasEOrdenadas();
 
   const obterCorStatus = (status) => {
     switch (status) {
@@ -206,16 +244,26 @@ export default function AdminDashboard() {
           </div>
           <div>
             <label style={labelStyle}>Região</label>
-            <select style={selectStyle}>
-              <option>Todas</option>
-              <option>Santa Maria</option>
+            <select 
+              value={filtroRegiao} 
+              onChange={(e) => setFiltroRegiao(e.target.value)} 
+              style={selectStyle}
+            >
+              <option value="Todas">Todas</option>
+              {regioesDisponiveis.map((regiao, index) => (
+                <option key={index} value={regiao}>{regiao}</option>
+              ))}
             </select>
           </div>
           <div>
             <label style={labelStyle}>Ordenar</label>
-            <select style={selectStyle}>
-              <option>Todas</option>
-              <option>Mais recente</option>
+            <select 
+              value={ordenacao} 
+              onChange={(e) => setOrdenacao(e.target.value)} 
+              style={selectStyle}
+            >
+              <option value="Todas">Todas (Padrão)</option>
+              <option value="Mais recente">Mais recente</option>
             </select>
           </div>
         </div>

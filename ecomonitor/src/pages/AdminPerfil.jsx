@@ -259,7 +259,7 @@ export default function AdminPerfil() {
         <div style={styles.statsRow}>
           <div style={styles.card}>
             <strong style={styles.cardNumber}>{adminData.estatisticas.resolvidas}</strong>
-            <span style={styles.cardLabel}>Resolvida(s)</span>
+            <span style={styles.cardLabel}>Resolvido(s)</span>
           </div>
 
           <div style={styles.card}>
