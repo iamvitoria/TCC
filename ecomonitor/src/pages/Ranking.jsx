@@ -55,7 +55,9 @@ const Ranking = () => {
     buscarRanking();
   }, []);
 
-  const currentData = activeTab === "global" ? rankingGlobal : rankingLocal;
+  const currentData = (activeTab === "global" ? rankingGlobal : rankingLocal).filter(
+    (item) => (item.pts || item.total || item.pontos || 0) > 0
+  );
 
   const styles = {
     container: {
