@@ -52,6 +52,8 @@ const Report = () => {
   const [enviando, setEnviando] = useState(false);
   const [mensagem, setMensagem] = useState({ texto: "", tipo: "" });
   const [localizacao, setLocalizacao] = useState({ lat: null, lng: null });
+  
+  const [modalAberto, setModalAberto] = useState(false);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((pos) => {
@@ -148,9 +150,20 @@ const Report = () => {
           onChange={handleFotoChange}
         />
 
-        <div style={{...styles.uploadBox, border: preview ? "none" : styles.uploadBox.border}} onClick={() => fileInputRef.current.click()}>
+        <div 
+          style={{...styles.uploadBox, border: preview ? "none" : styles.uploadBox.border}} 
+          onClick={() => { if (!preview) fileInputRef.current.click(); }}
+        >
           {preview ? (
-            <img src={preview} alt="preview" style={styles.preview} />
+            <div style={{ width: "100%", height: "100%", position: "relative" }}>
+              <img 
+                src={preview} 
+                alt="preview" 
+                style={styles.preview} 
+                onClick={() => setModalAberto(true)} 
+              />
+              <div style={styles.miniBadge}>Toque para ampliar / trocar</div>
+            </div>
           ) : (
             <>
               <span style={{ fontSize: 40 }}>📷</span>
@@ -237,6 +250,27 @@ const Report = () => {
           {enviando ? <div className="spinner"></div> : "Enviar Registro"}
         </button>
       </div>
+
+      {modalAberto && (
+        <div style={styles.modalOverlay} onClick={() => setModalAberto(false)}>
+          <div style={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
+            <button style={styles.modalCloseBtn} onClick={() => setModalAberto(false)}>✖</button>
+            
+            <img src={preview} alt="Imagem completa" style={styles.modalImage} />
+            
+            <button 
+              style={styles.modalChangeBtn} 
+              onClick={() => {
+                fileInputRef.current.click();
+                setModalAberto(false);
+              }}
+            >
+              Trocar Imagem
+            </button>
+          </div>
+        </div>
+      )}
+
       <Navbar isAdmin={false} />
     </PageLayout>
   );
@@ -268,6 +302,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
+    position: "relative",
   },
   uploadText: {
     fontWeight: "600",
@@ -277,6 +312,17 @@ const styles = {
     width: "100%",
     height: "100%",
     objectFit: "cover", 
+  },
+  miniBadge: {
+    position: "absolute",
+    bottom: "8px",
+    right: "8px",
+    backgroundColor: "rgba(0,0,0,0.6)",
+    color: "white",
+    padding: "4px 8px",
+    borderRadius: "6px",
+    fontSize: "11px",
+    fontWeight: "bold"
   },
   select: {
     padding: 12,
@@ -324,6 +370,59 @@ const styles = {
     alignItems: "center",
     gap: "10px",
     minHeight: "55px" 
+  },
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 3000, 
+    padding: "20px",
+    boxSizing: "border-box"
+  },
+  modalContainer: {
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "15px",
+    maxWidth: "100%",
+    maxHeight: "90%"
+  },
+  modalImage: {
+    maxWidth: "100%",
+    maxHeight: "70vh",
+    objectFit: "contain",
+    borderRadius: "8px"
+  },
+  modalCloseBtn: {
+    position: "absolute",
+    top: "-40px",
+    right: "0px",
+    backgroundColor: "transparent",
+    border: "none",
+    color: "white",
+    fontSize: "24px",
+    cursor: "pointer"
+  },
+  modalChangeBtn: {
+    backgroundColor: "#4E9A51",
+    color: "white",
+    border: "none",
+    borderRadius: "10px",
+    padding: "12px 24px",
+    fontSize: "15px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.3)"
   }
 };
 
