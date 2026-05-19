@@ -191,8 +191,27 @@ const Home = () => {
           Seus Registros
         </h3>
 
-        {carregando && <p style={{ textAlign: "center", color: "#2D4627" }}>Carregando seus registros... </p>}
-        {erro && <p style={{ color: "#E74C3C", textAlign: "center", fontWeight: "bold" }}>{erro}</p>}
+        {carregando && (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: "30px" }}>
+            <div style={{
+              width: "32px",
+              height: "32px",
+              border: "4px solid rgba(45, 70, 39, 0.2)",
+              borderTop: "4px solid #2D4627",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite"
+            }} />
+            <style>
+              {`
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `}
+            </style>
+          </div>
+        )}
+        {erro && <p style={{ color: "#110f0f", textAlign: "center", fontWeight: "bold" }}>{erro}</p>}
         
         {!carregando && !erro && denuncias.length === 0 && (
           <div style={{ textAlign: "center", color: "#2D4627", marginTop: "20px" }}>

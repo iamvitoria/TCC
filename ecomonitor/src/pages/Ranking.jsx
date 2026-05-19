@@ -139,7 +139,24 @@ const Ranking = () => {
         </p>
 
         {carregando ? (
-          <p style={{ textAlign: "center", color: "#1C3520", marginTop: "20px" }}>Carregando dados...</p>
+          <div style={{ display: "flex", justifyContent: "center", marginTop: "30px" }}>
+            <div style={{
+              width: "32px",
+              height: "32px",
+              border: "4px solid rgba(45, 70, 39, 0.2)",
+              borderTop: "4px solid #2D4627",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite"
+            }} />
+            <style>
+              {`
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `}
+            </style>
+          </div>
         ) : (!currentData || currentData.length === 0) ? (
           <div style={{ 
             textAlign: "center", 

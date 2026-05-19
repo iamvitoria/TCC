@@ -272,14 +272,31 @@ export default function AdminDashboard() {
 
         <div>
           {carregando ? (
-            <p style={{ textAlign: 'center', color: '#666', marginTop: '20px' }}>Carregando...</p>
-          ) : denunciasFiltradas.length === 0 ? (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: "30px" }}>
+            <div style={{
+              width: "32px",
+              height: "32px",
+              border: "4px solid rgba(45, 70, 39, 0.2)",
+              borderTop: "4px solid #2D4627",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite"
+            }} />
+            <style>
+              {`
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `}
+            </style>
+          </div>
+        ) : denunciasFiltradas.length === 0 ? (
             <p style={{ textAlign: 'center', color: '#666', marginTop: '20px' }}>Nenhum registro encontrado.</p>
           ) : (
             denunciasFiltradas.map((denuncia) => (
               <div
                 key={denuncia.id}
-                onClick={() => navigate(`/admin/denuncia/${denuncia.id}`)}
+                onClick={() => navigate(`/admin/denuncia/${denuncia.id}`, { state: { denunciaSelecionada: denuncia } })}
                 style={cardStyle}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>

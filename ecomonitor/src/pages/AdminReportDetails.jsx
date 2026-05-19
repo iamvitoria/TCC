@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import PageLayout from "../components/PageLayout/PageLayout";
 import API_URL from "../config";
 
 export default function AdminReportDetails() {
   const { id } = useParams(); 
   const navigate = useNavigate();
-
-  const [denuncia, setDenuncia] = useState(null);
-  const [carregando, setCarregando] = useState(true);
-  const [endereco, setEndereco] = useState("Buscando endereço...");
+  const location = useLocation();
   
-  const [novoStatus, setNovoStatus] = useState(''); 
+  const denunciaInicial = location.state?.denunciaSelecionada;
+
+  const [denuncia, setDenuncia] = useState(denunciaInicial || null);
+  const [carregando, setCarregando] = useState(!denunciaInicial);
+  const [endereco, setEndereco] = useState(denunciaInicial?.endereco || "Buscando endereço...");
+  
+  const [novoStatus, setNovoStatus] = useState(denunciaInicial?.status || ''); 
   const [atualizando, setAtualizando] = useState(false);
   const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
 
@@ -49,10 +52,10 @@ export default function AdminReportDetails() {
           }
         })
         .catch(() => setEndereco("Erro ao buscar endereço"));
-    } else {
+    } else if (!denuncia) {
       setEndereco("Localização não informada");
     }
-  }, [denuncia]);
+  }, [denuncia?.latitude, denuncia?.longitude]);
 
   const confirmarAlteracao = async () => {
     setMensagem({ texto: '', tipo: '' });
@@ -68,7 +71,7 @@ export default function AdminReportDetails() {
       });
 
       if (resposta.ok) {
-        setMensagem({ texto: "Status atualizado com sucesso!", tipo: 'sucesso' });
+        setMensagem({ texto: "Status updated com sucesso!", tipo: 'sucesso' });
         setDenuncia({ ...denuncia, status: novoStatus });
         
         setTimeout(() => {
@@ -107,7 +110,7 @@ export default function AdminReportDetails() {
     }
   };
 
-  if (carregando) {
+  if (carregando && !denuncia) {
     return (
       <PageLayout isAdmin={true}>
         <div style={{ backgroundColor: "#F4F6F3", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>

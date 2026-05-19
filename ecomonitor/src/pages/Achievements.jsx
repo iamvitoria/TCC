@@ -4,7 +4,7 @@ import API_URL from "../config";
 
 const Achievements = () => {
   const [conquistas, setConquistas] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
 
   useEffect(() => {
@@ -12,7 +12,7 @@ const Achievements = () => {
       const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
       
       if (!token) {
-        setLoading(false);
+        setCarregando(false);
         return;
       }
 
@@ -43,7 +43,7 @@ const Achievements = () => {
       } catch (err) {
         setErro("Erro ao conectar com o servidor.");
       } finally {
-        setLoading(false);
+        setCarregando(false);
       }
     };
 
@@ -65,15 +65,33 @@ const Achievements = () => {
       <div style={containerStyle}>
         <h2 style={headerTitleStyle}>Badges e Conquistas</h2>
         
-        {loading && <p style={{ color: "#666" }}>Carregando...</p>}
-        
+        {carregando && (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: "30px" }}>
+            <div style={{
+              width: "32px",
+              height: "32px",
+              border: "4px solid rgba(45, 70, 39, 0.2)",
+              borderTop: "4px solid #2D4627",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite"
+            }} />
+            <style>
+              {`
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `}
+            </style>
+          </div>
+        )}
         {erro && (
           <div style={{ backgroundColor: "#FFF0F4", color: "#D8000C", padding: "15px", borderRadius: "8px" }}>
             {erro}
           </div>
         )}
 
-        {!loading && !erro && (
+        {!carregando && !erro && (
           <div style={listStyle}>
             {conquistas.length > 0 ? (
               conquistas.map((conquista, index) => (

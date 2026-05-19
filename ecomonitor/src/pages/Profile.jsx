@@ -214,7 +214,7 @@ const Profile = () => {
     name: { color: "white", fontSize: "22px", fontWeight: "bold", margin: "0 0 5px 0", textAlign: "center" },
     location: { color: "#7FB04B", fontSize: "18px", margin: "0 0 20px 0", fontWeight: "normal", textAlign: "center" },
     progressBg: { width: "100%", maxWidth: "320px", height: "8px", backgroundColor: "rgba(255,255,255,0.2)", borderRadius: "4px", marginBottom: "25px", overflow: "hidden" },
-    progressFill: { width: `${Math.min((perfil.pontuacao / 1000) * 100, 100)}%`, height: "100%", backgroundColor: "#7FB04B", borderRadius: "4px", transition: "width 0.5s ease-in-out" },
+    progressFill: { width: `${Math.min((perfil.pontuacao / 5050) * 100, 100)}%`, height: "100%", backgroundColor: "#7FB04B", borderRadius: "4px", transition: "width 0.5s ease-in-out" },
     statsRow: { display: "flex", gap: "10px", width: "100%", maxWidth: "320px" },
     statCard: { backgroundColor: "#2D4627", borderRadius: "10px", padding: "15px 5px", flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" },
     statValue: { color: "white", fontSize: "20px", fontWeight: "bold", marginBottom: "5px" },
@@ -260,7 +260,7 @@ const Profile = () => {
         <h3 style={styles.location}>{carregando ? "..." : perfil.cidade_ranking}</h3>
 
         <div style={styles.progressBg}>
-          <div style={{ ...styles.progressFill, width: `${Math.min((perfil.pontuacao / 1000) * 100, 100)}%` }}></div>
+          <div style={{ ...styles.progressFill, width: `${Math.min((perfil.pontuacao / 5050) * 100, 100)}%` }}></div>
         </div>
 
         <div style={styles.statsRow}>
