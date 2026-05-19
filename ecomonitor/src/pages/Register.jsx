@@ -48,11 +48,44 @@ const Register = () => {
       });
 
       if (resposta.ok) {
-        setAlerta({ visivel: true, texto: "Cadastro realizado com sucesso!", tipo: "sucesso" });
-        setTimeout(() => { navigate("/home"); }, 2000);
-      } else {
-        const erroData = await resposta.json().catch(() => ({ detail: "Erro desconhecido no servidor" }));
-        setAlerta({ visivel: true, texto: erroData.detail || "Erro ao realizar cadastro", tipo: "erro" });
+        const formData = new URLSearchParams();
+        formData.append("username", email); 
+        formData.append("password", senha);
+
+        const loginResponse = await fetch(`${API_URL}/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: formData,
+        });
+
+        if (loginResponse.ok) {
+          const loginData = await loginResponse.json();
+
+          localStorage.setItem("token", loginData.access_token);
+          localStorage.setItem("perfil", loginData.perfil || "user");
+
+          setAlerta({
+            visivel: true,
+            texto: "Cadastro realizado com sucesso!",
+            tipo: "sucesso",
+          });
+
+          setTimeout(() => {
+            navigate("/home");
+          }, 1500);
+        } else {
+          setAlerta({
+            visivel: true,
+            texto: "Conta criada, mas faça login manualmente.",
+            tipo: "erro",
+          });
+
+          setTimeout(() => {
+            navigate("/login");
+          }, 2000);
+        }
       }
       
     } catch (erro) {
