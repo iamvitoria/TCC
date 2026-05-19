@@ -49,7 +49,7 @@ const Register = () => {
 
       if (resposta.ok) {
         setAlerta({ visivel: true, texto: "Cadastro realizado com sucesso!", tipo: "sucesso" });
-        setTimeout(() => { navigate("/login"); }, 2000);
+        setTimeout(() => { navigate("/home"); }, 2000);
       } else {
         const erroData = await resposta.json().catch(() => ({ detail: "Erro desconhecido no servidor" }));
         setAlerta({ visivel: true, texto: erroData.detail || "Erro ao realizar cadastro", tipo: "erro" });
@@ -181,7 +181,7 @@ const Register = () => {
       />
 
       <input 
-        type="cidade" 
+        type="text" 
         placeholder="Cidade" 
         style={inputStyle} 
         value={cidade}
