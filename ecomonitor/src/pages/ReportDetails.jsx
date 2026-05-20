@@ -392,9 +392,7 @@ const ReportDetails = () => {
             Editar registro
           </button>
         ) : (
-          // O Fragmento <> "empacota" a mensagem e os botões juntos
           <>
-            {/* A mensagem aparece aqui, coladinha em cima dos botões */}
             {mensagem.texto && (
               <div 
                 style={{ 

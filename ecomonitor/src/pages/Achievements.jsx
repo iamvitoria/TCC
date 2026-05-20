@@ -9,38 +9,29 @@ const Achievements = () => {
 
   useEffect(() => {
     const carregarConquistas = async () => {
-      const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
-      
+    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+
       if (!token) {
         setCarregando(false);
         return;
       }
 
       try {
-        const resposta = await fetch(`${API_URL}/perfil`, {
+        const resposta = await fetch(`${API_URL}/conquistas`, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json"
           }
         });
 
         if (resposta.ok) {
           const dados = await resposta.json();
-          const conquistasUnicas = (dados.conquistas || []).reduce((acc, atual) => {
-            const nome = typeof atual === 'string' ? atual : atual.nome;
-            if (!acc.find(item => (typeof item === 'string' ? item : item.nome) === nome)) {
-              acc.push(atual);
-            }
-            return acc;
-          }, []);
-          
-          setConquistas(conquistasUnicas);
+          setConquistas(dados);
         } else {
           setErro("Não foi possível carregar suas medalhas.");
         }
-      // eslint-disable-next-line no-unused-vars
-      } catch (err) {
+      } catch {
         setErro("Erro ao conectar com o servidor.");
       } finally {
         setCarregando(false);
@@ -52,7 +43,7 @@ const Achievements = () => {
 
   const containerStyle = { padding: "20px", backgroundColor: "#F4F6F3", minHeight: "100vh", boxSizing: "border-box", paddingBottom: "100px" };
   const headerTitleStyle = { color: "#1C3520", fontSize: "18px", fontWeight: "bold", marginBottom: "20px", marginTop: "0" };
-  const listStyle = { display: "flex", flexDirection: "column", gap: "12px" };
+  const listStyle = { display: "flex", flexDirection: "column", gap: "12px", paddingBottom: "100px" };
   const cardStyle = { backgroundColor: "white", borderRadius: "12px", padding: "15px", display: "flex", alignItems: "center", border: "1px solid #EBEBEB", boxShadow: "0px 2px 4px rgba(0,0,0,0.02)" };
   const iconContainerStyle = { backgroundColor: "#2D4627", width: "48px", height: "48px", borderRadius: "10px", display: "flex", justifyContent: "center", alignItems: "center", flexShrink: 0 };
   const textContainerStyle = { marginLeft: "15px", flexGrow: 1 };
@@ -95,21 +86,39 @@ const Achievements = () => {
           <div style={listStyle}>
             {conquistas.length > 0 ? (
               conquistas.map((conquista, index) => (
-                <div key={index} style={cardStyle}>
-                  <div style={iconContainerStyle}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M20 6L9 17L4 12" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                <div
+                  key={index}
+                  style={{
+                    ...cardStyle,
+                    backgroundColor: conquista.desbloqueado ? "white" : "#E0E0E0",
+                    opacity: conquista.desbloqueado ? 1 : 0.6
+                  }}
+                >
+                  <div
+                    style={{
+                      ...iconContainerStyle,
+                      backgroundColor: conquista.desbloqueado ? "#2D4627" : "#9E9E9E"
+                    }}
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M20 6L9 17L4 12"
+                        stroke="white"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </div>
+
                   <div style={textContainerStyle}>
-                    <h3 style={titleStyle}>
-                      {typeof conquista.nome === 'object' ? conquista.nome.nome : conquista.nome}
-                    </h3>
+                    <h3 style={titleStyle}>{conquista.nome}</h3>
                     <p style={subtitleStyle}>
-                      {(conquista.descricao || "Conquista desbloqueada!").replace(/denúncia/g, "registro")}
+                      {(conquista.descricao || "").replace(/denúncia/g, "registro")}
                     </p>
                   </div>
-                  <div style={pointsStyle}>+{conquista.pontos || 0} pts</div>
+
+                  <div style={pointsStyle}>+{conquista.pontos_adquiridos} pts</div>
                 </div>
               ))
             ) : (
