@@ -10,23 +10,6 @@ const Ranking = () => {
   const [cidadeUser, setCidadeUser] = useState("..."); 
 
   useEffect(() => {
-    const obterCidadeAtual = () => {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-          try {
-            const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`
-            );
-            const data = await response.json();
-            const cidade = data.address.city || data.address.town || data.address.village || "sua região";
-            setCidadeUser(cidade);
-          } catch (error) {
-            console.error("Erro ao obter nome da cidade:", error);
-          }
-        });
-      }
-    };
-
     const buscarRanking = async () => {
       setCarregando(true);
       try {
@@ -43,6 +26,7 @@ const Ranking = () => {
           const data = await response.json();
           setRankingLocal(data.local || []);
           setRankingGlobal(data.global || []);
+          setCidadeUser(data.cidade_usuario || "sua cidade");
         }
       } catch (error) {
         console.error("Erro ao procurar ranking:", error);
@@ -51,7 +35,6 @@ const Ranking = () => {
       }
     };
     
-    obterCidadeAtual();
     buscarRanking();
   }, []);
 
