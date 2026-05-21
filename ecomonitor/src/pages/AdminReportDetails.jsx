@@ -18,6 +18,8 @@ export default function AdminReportDetails() {
   const [atualizando, setAtualizando] = useState(false);
   const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
 
+  const [modalAberto, setModalAberto] = useState(false);
+
   useEffect(() => {
     const buscarDetalhesDenuncia = async () => {
       try {
@@ -71,7 +73,7 @@ export default function AdminReportDetails() {
       });
 
       if (resposta.ok) {
-        setMensagem({ texto: "Status updated com sucesso!", tipo: 'sucesso' });
+        setMensagem({ texto: "Status atualizado com sucesso!", tipo: 'sucesso' });
         setDenuncia({ ...denuncia, status: novoStatus });
         
         setTimeout(() => {
@@ -129,6 +131,12 @@ export default function AdminReportDetails() {
       </PageLayout>
     );
   }
+
+  const urlFotoFinal = denuncia.foto_url
+    ? denuncia.foto_url.startsWith('http') 
+      ? denuncia.foto_url 
+      : `${API_URL}/${denuncia.foto_url}`
+    : null;
 
   const containerStyle = {
     backgroundColor: "#F4F6F3",
@@ -227,12 +235,22 @@ export default function AdminReportDetails() {
     border: "none",
     fontWeight: "bold",
     fontSize: "16px",
-    cursor: atualizando ? "not-allowed" : "pointer",
-    marginTop: "15px"
+    marginTop: "15px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "10px"
   };
 
   return (
     <PageLayout isAdmin={true}>
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+
       <div style={containerStyle}>
         <div style={headerStyle}>
           <button style={backButtonStyle} onClick={() => navigate(-1)}>
@@ -269,23 +287,25 @@ export default function AdminReportDetails() {
           <div style={{ display: "flex", gap: "15px" }}>
             <div style={{ flex: 1 }}>
               <h3 style={sectionTitleStyle}>Foto</h3>
-              {denuncia.foto_url ? (
-                <img 
-                  src={
-                    denuncia.foto_url.startsWith('http') 
-                      ? denuncia.foto_url 
-                      : `${API_URL}/${denuncia.foto_url}`
-                  } 
-                  alt="Foto" 
-                  style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "12px" }}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "https://placehold.co/120x100?text=Erro+na+Foto";
-                  }}
-                />
+              {urlFotoFinal ? (
+                <div 
+                  style={{ position: "relative", cursor: "pointer", borderRadius: "12px", overflow: "hidden" }}
+                  onClick={() => setModalAberto(true)}
+                >
+                  <img 
+                    src={urlFotoFinal} 
+                    alt="Foto da denúncia" 
+                    style={{ width: "100%", height: "100px", objectFit: "cover", display: "block" }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "https://placehold.co/120x100?text=Erro+na+Foto";
+                    }}
+                  />
+                  <div style={styles.imageOverlayBadge}>Toque para ampliar</div>
+                </div>
               ) : (
                 <div style={{ width: "100%", height: "100px", backgroundColor: "#EBEBEB", borderRadius: "12px", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                  <span style={{ color: "#888", fontSize: "12px" }}>Sem Foto</span>
+                  <span style={{ color: "#888", fontSize: "12px", fontWeight: "bold" }}>Sem Foto</span>
                 </div>
               )}
             </div>
@@ -364,17 +384,94 @@ export default function AdminReportDetails() {
               )}
 
               <button 
-                onClick={confirmarAlteracao}
+                onClick={confirmarAlteracao} 
                 disabled={atualizando}
-                style={buttonStyle}
+                style={{
+                  ...buttonStyle,
+                  opacity: atualizando ? 0.7 : 1,
+                  cursor: atualizando ? "not-allowed" : "pointer"
+                }}
               >
-                {atualizando ? 'Salvando...' : 'Confirmar alteração'}
+                {atualizando ? (
+                  <div style={{
+                    width: "18px",
+                    height: "18px",
+                    border: "3px solid rgba(255,255,255,0.3)",
+                    borderTop: "3px solid white",
+                    borderRadius: "50%",
+                    animation: "spin 0.8s linear infinite"
+                  }} />
+                ) : "Confirmar alteração"}
               </button>
             </div>
           </div>
 
         </div>
       </div>
+
+      {modalAberto && urlFotoFinal && (
+        <div style={styles.modalOverlay} onClick={() => setModalAberto(false)}>
+          <div style={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
+            <button style={styles.modalCloseBtn} onClick={() => setModalAberto(false)}>✖</button>
+            <img src={urlFotoFinal} alt="Imagem completa" style={styles.modalImage} />
+          </div>
+        </div>
+      )}
     </PageLayout>
   );
 }
+
+const styles = {
+  imageOverlayBadge: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    width: "100%",
+    backgroundColor: "rgba(0,0,0,0.65)",
+    color: "#fff",
+    fontSize: "10px",
+    textAlign: "center",
+    padding: "4px 0",
+    fontWeight: "bold"
+  },
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 3000, 
+    padding: "20px",
+    boxSizing: "border-box"
+  },
+  modalContainer: {
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    maxWidth: "100%",
+    maxHeight: "90%"
+  },
+  modalImage: {
+    maxWidth: "100%",
+    maxHeight: "80vh",
+    objectFit: "contain",
+    borderRadius: "12px",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.5)"
+  },
+  modalCloseBtn: {
+    position: "absolute",
+    top: "-45px",
+    right: "0px",
+    backgroundColor: "transparent",
+    border: "none",
+    color: "white",
+    fontSize: "28px",
+    cursor: "pointer",
+    textShadow: "0 2px 4px rgba(0,0,0,0.5)"
+  }
+};
