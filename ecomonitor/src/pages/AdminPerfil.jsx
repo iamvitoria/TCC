@@ -123,7 +123,7 @@ export default function AdminPerfil() {
 
   const handleSalvarEdicao = async () => {
     if (!editNome || !editEmail || !editCargo || !editRegiao) {
-      setStatusMsg("Todos os campos sao obrigatorios.");
+      setStatusMsg("Todos os campos são obrigatórios.");
       return;
     }
 
@@ -161,11 +161,11 @@ export default function AdminPerfil() {
         }, 1200);
       } else {
         const resultado = await resposta.json();
-        setStatusMsg(resultado.detail || "Erro ao salvar alteracoes.");
+        setStatusMsg(resultado.detail || "Erro ao salvar alterações.");
       }
     // eslint-disable-next-line no-unused-vars
     } catch (erro) {
-      setStatusMsg("Erro de conexao com o servidor.");
+      setStatusMsg("Erro de conexão com o servidor.");
     } finally {
       setEnviandoEdit(false);
     }
@@ -210,7 +210,7 @@ export default function AdminPerfil() {
       }
     // eslint-disable-next-line no-unused-vars
     } catch (erro) {
-      setStatusMsg("Erro de conexao com o servidor.");
+      setStatusMsg("Erro de conexão com o servidor.");
     } finally {
       setEnviandoEdit(false);
     }
@@ -223,6 +223,11 @@ export default function AdminPerfil() {
 
   return (
     <div style={styles.container}>
+      {/* Estilos globais injetados para a animação do spinner nos botões de salvar */}
+      <style>{`
+        @keyframes modalSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .modal-spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: modalSpin 0.8s linear infinite; }
+      `}</style>
       
       <input 
         type="file" 
@@ -233,7 +238,6 @@ export default function AdminPerfil() {
       />
 
       <div style={styles.topSection}>
-
         <div style={styles.blob} onClick={handleFotoClick} title="Clique para mudar a foto">
           {adminData.foto_perfil ? (
             <img src={adminData.foto_perfil} alt="perfil" style={styles.foto} />
@@ -304,7 +308,7 @@ export default function AdminPerfil() {
             <div style={styles.modalButtonGroup}>
               <button onClick={() => !enviandoEdit && setModalEditAberto(false)} style={styles.modalBtnVoltar} type="button">Voltar</button>
               <button onClick={handleSalvarEdicao} style={styles.modalBtnSalvar} type="button" disabled={enviandoEdit}>
-                {enviandoEdit ? "Salvando..." : "Salvar"}
+                {enviandoEdit ? <div className="modal-spinner"></div> : "Salvar"}
               </button>
             </div>
           </div>
@@ -327,7 +331,7 @@ export default function AdminPerfil() {
             <div style={styles.modalButtonGroup}>
               <button onClick={() => !enviandoEdit && setModalSenhaAberto(false)} style={styles.modalBtnVoltar} type="button">Voltar</button>
               <button onClick={handleSalvarSenha} style={styles.modalBtnSalvar} type="button" disabled={enviandoEdit}>
-                {enviandoEdit ? "Salvando..." : "Alterar"}
+                {enviandoEdit ? <div className="modal-spinner"></div> : "Alterar"}
               </button>
             </div>
           </div>
@@ -542,6 +546,9 @@ const styles = {
     padding: "12px",
     borderRadius: "8px",
     fontWeight: "bold",
-    cursor: "pointer"
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center"
   }
 };
