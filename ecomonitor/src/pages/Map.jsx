@@ -69,7 +69,6 @@ const Map = () => {
       setCarregandoDados(true);
       const token = localStorage.getItem("token");
       try {
-        // UTILIZANDO API_URL DO CONFIG.JS
         const response = await fetch(`${API_URL}/denuncias`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -135,6 +134,10 @@ const Map = () => {
                     <h4 style={{ margin: "0 0 10px 0", color: "#1C3520", fontSize: "16px", borderBottom: "1px solid #eee", paddingBottom: "5px" }}>
                       {denuncia.categoria}
                     </h4>
+                    <div style={styles.infoRow}>
+                      <span style={styles.label}>Status:</span>
+                      <p style={{ margin: "2px 0", color: "#444" }}>{denuncia.status}</p>
+                    </div>
                     <div style={styles.infoRow}>
                       <span style={styles.label}>Descrição:</span>
                       <p style={{ margin: "2px 0", color: "#444" }}>{denuncia.descricao || "Sem descrição."}</p>
