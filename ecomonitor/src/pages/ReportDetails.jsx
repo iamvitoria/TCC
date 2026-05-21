@@ -50,6 +50,8 @@ const ReportDetails = () => {
   const [preview, setPreview] = useState(null);
   const [salvando, setSalvando] = useState(false);
   const [mensagem, setMensagem] = useState({ texto: "", tipo: "" });
+  
+  const [modalAberto, setModalAberto] = useState(false);
 
   const obterChaveCategoria = (nomeBanco) => {
     const mapa = {
@@ -161,7 +163,6 @@ const ReportDetails = () => {
         }, 1500);
       } else {
         const erroData = await response.json();
-        
         const msgErro = Array.isArray(erroData.detail) 
             ? "Erro de validação: Verifique os dados enviados." 
             : (erroData.detail || "Erro ao atualizar o registro.");
@@ -247,16 +248,6 @@ const ReportDetails = () => {
 
       <div style={styles.whiteCardContainer}>
         
-        {mensagem.texto && (
-          <div style={{
-            ...styles.messageBox,
-            backgroundColor: mensagem.tipo === "sucesso" ? "#DFF2BF" : "#FFD2D2",
-            color: mensagem.tipo === "sucesso" ? "#2D4627" : "#D8000C"
-          }}>
-            {mensagem.texto}
-          </div>
-        )}
-
         <section>
           <h3 style={styles.sectionTitle}>Dados gerais</h3>
           <div style={{ ...styles.grayCardBox, ...styles.dataGeneralRow }}>
@@ -321,8 +312,14 @@ const ReportDetails = () => {
           />
           <div style={styles.imageRow}>
             <div 
-              style={{ ...styles.imageWrapper, cursor: editando ? "pointer" : "default" }}
-              onClick={() => { if (editando) fileInputRef.current.click(); }}
+              style={{ ...styles.imageWrapper, cursor: "pointer" }}
+              onClick={() => { 
+                if (editando) {
+                  fileInputRef.current.click();
+                } else {
+                  setModalAberto(true);
+                }
+              }}
             >
               <img 
                 src={preview} 
@@ -330,9 +327,9 @@ const ReportDetails = () => {
                 style={styles.imageItem}
                 onError={(e) => { e.target.src = "https://placehold.co/120x100?text=Sem+Foto"; }}
               />
-              {editando && (
-                <div style={styles.imageOverlayBadge}>Trocar Imagem</div>
-              )}
+              <div style={styles.imageOverlayBadge}>
+                {editando ? "Trocar Imagem" : "Toque para ampliar"}
+              </div>
             </div>
           </div>
         </section>
@@ -393,18 +390,13 @@ const ReportDetails = () => {
           </button>
         ) : (
           <>
+            {/* A MENSAGEM FOI MOVIDA PARA EXIBIR EXATAMENTE AQUI (EM CIMA DOS BOTÕES DE AÇÃO) */}
             {mensagem.texto && (
-              <div 
-                style={{ 
-                  marginBottom: '12px', 
-                  padding: '10px', 
-                  borderRadius: '5px', 
-                  textAlign: 'center',
-                  backgroundColor: mensagem.tipo === 'sucesso' ? '#d1fae5' : '#fee2e2', 
-                  color: mensagem.tipo === 'sucesso' ? '#065f46' : '#991b1b',
-                  fontWeight: 'bold'
-                }}
-              >
+              <div style={{
+                ...styles.messageBox,
+                backgroundColor: mensagem.tipo === "sucesso" ? "#DFF2BF" : "#FFD2D2",
+                color: mensagem.tipo === "sucesso" ? "#2D4627" : "#D8000C"
+              }}>
                 {mensagem.texto}
               </div>
             )}
@@ -422,6 +414,16 @@ const ReportDetails = () => {
 
         <div style={{ height: "80px" }}></div>
       </div>
+
+      {modalAberto && (
+        <div style={styles.modalOverlay} onClick={() => setModalAberto(false)}>
+          <div style={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
+            <button style={styles.modalCloseBtn} onClick={() => setModalAberto(false)}>✖</button>
+            <img src={preview} alt="Imagem completa" style={styles.modalImage} />
+          </div>
+        </div>
+      )}
+
       <Navbar isAdmin={false} />
     </PageLayout>
   );
@@ -443,7 +445,7 @@ const styles = {
   imageRow: { display: "flex", gap: "10px" },
   imageWrapper: { position: "relative", width: "120px", height: "100px", overflow: "hidden", borderRadius: "15px" },
   imageItem: { width: "100%", height: "100%", objectFit: "cover" },
-  imageOverlayBadge: { position: "absolute", bottom: 0, left: 0, width: "100%", backgroundColor: "rgba(0,0,0,0.7)", color: "#fff", fontSize: "11px", textAlign: "center", padding: "6px 0", fontWeight: "bold" },
+  imageOverlayBadge: { position: "absolute", bottom: 0, left: 0, width: "100%", backgroundColor: "rgba(0,0,0,0.65)", color: "#fff", fontSize: "11px", textAlign: "center", padding: "6px 0", fontWeight: "bold" },
   locationRow: { backgroundColor: "#F0F0F0", borderRadius: "15px", display: "flex", height: "90px", overflow: "hidden" },
   mapContainerWrapper: { width: "35%", height: "100%" },
   addressColumn: { flex: 1, padding: "10px", fontSize: "12px", color: "#444", display: "flex", alignItems: "center" },
@@ -462,7 +464,48 @@ const styles = {
   selectInput: { padding: "6px", borderRadius: "8px", border: "1px solid #ccc", fontSize: "13px", color: "#333", backgroundColor: "#fff", width: "100%", maxWidth: "150px" },
   textareaInput: { width: "100%", height: "80px", border: "1px solid #ccc", borderRadius: "10px", padding: "10px", boxSizing: "border-box", fontSize: "13px", color: "#444", fontFamily: "inherit" },
   textInputAddress: { width: "100%", border: "1px solid #ccc", borderRadius: "8px", padding: "8px", fontSize: "12px", color: "#333", boxSizing: "border-box" },
-  messageBox: { padding: "12px", borderRadius: "8px", textAlign: "center", fontWeight: "bold", fontSize: "14px", width: "100%", boxSizing: "border-box" }
+  messageBox: { padding: "12px", borderRadius: "8px", textAlign: "center", fontWeight: "bold", fontSize: "14px", width: "100%", boxSizing: "border-box", marginBottom: "5px" },
+
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 3000, 
+    padding: "20px",
+    boxSizing: "border-box"
+  },
+  modalContainer: {
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    maxWidth: "100%",
+    maxHeight: "90%"
+  },
+  modalImage: {
+    maxWidth: "100%",
+    maxHeight: "80vh",
+    objectFit: "contain",
+    borderRadius: "12px",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.5)"
+  },
+  modalCloseBtn: {
+    position: "absolute",
+    top: "-45px",
+    right: "0px",
+    backgroundColor: "transparent",
+    border: "none",
+    color: "white",
+    fontSize: "28px",
+    cursor: "pointer",
+    textShadow: "0 2px 4px rgba(0,0,0,0.5)"
+  }
 };
 
 export default ReportDetails;

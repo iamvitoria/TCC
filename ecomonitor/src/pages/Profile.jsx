@@ -127,7 +127,7 @@ const Profile = () => {
           email: editEmail, 
           cidade_ranking: editCidade 
         }));
-        setStatusMsg({ texto: "Perfil updated!", tipo: "sucesso" });
+        setStatusMsg({ texto: "Perfil atualizado com sucesso!", tipo: "sucesso" });
         
         setTimeout(() => {
           setModalEditAberto(false);
