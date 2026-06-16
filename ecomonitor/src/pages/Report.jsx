@@ -166,7 +166,6 @@ const Report = () => {
             </div>
           ) : (
             <>
-              {/* NOVO ÍCONE LINDO EM SVG */}
               <svg 
                 width="42" 
                 height="42" 
