@@ -38,13 +38,13 @@ const Login = () => {
       if (resposta.ok) {
         const dados = await resposta.json();
         
-        localStorage.setItem('token', dados.access_token);
+        sessionStorage.setItem('token', dados.access_token);
         
         const perfilDoUsuario = dados.perfil || 'user'; 
-        localStorage.setItem('perfilUsuario', perfilDoUsuario); 
+        sessionStorage.setItem('perfilUsuario', perfilDoUsuario);
 
         if (dados.nome) {
-            localStorage.setItem('nomeUsuario', dados.nome);
+            sessionStorage.setItem('nomeUsuario', dados.nome);
         }
 
         setAlerta({ visivel: true, texto: "Login feito com sucesso!", tipo: "sucesso" });
