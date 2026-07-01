@@ -67,7 +67,7 @@ const Map = () => {
   useEffect(() => {
     const buscarDenuncias = async () => {
       setCarregandoDados(true);
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       try {
         const response = await fetch(`${API_URL}/denuncias`, {
           headers: { Authorization: `Bearer ${token}` },

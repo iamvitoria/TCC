@@ -124,7 +124,7 @@ const ReportDetails = () => {
 
   const handleSalvarEdicao = async () => {
     setMensagem({ texto: "", tipo: "" });
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     if (!token) {
       setMensagem({ texto: "Você precisa estar logado!", tipo: "erro" });

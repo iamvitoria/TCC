@@ -44,7 +44,7 @@ const Home = () => {
     };
 
     const carregarDadosDaTela = async () => {
-      const token = localStorage.getItem("token"); 
+      const token = sessionStorage.getItem("token") 
 
       if (!token) {
         setErro("Você precisa estar logado para ver seu painel.");

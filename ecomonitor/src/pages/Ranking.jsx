@@ -13,7 +13,7 @@ const Ranking = () => {
     const buscarRanking = async () => {
       setCarregando(true);
       try {
-        const token = localStorage.getItem("token"); 
+        const token = sessionStorage.getItem("token"); 
         const response = await fetch(`${API_URL}/ranking`, {
           method: "GET",
           headers: {

@@ -9,7 +9,7 @@ const Achievements = () => {
 
   useEffect(() => {
     const carregarConquistas = async () => {
-    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+    const token = sessionStorage.getItem("token") || localStorage.getItem("meuToken");
 
       if (!token) {
         setCarregando(false);

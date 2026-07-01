@@ -35,7 +35,7 @@ export default function AdminPerfil() {
   const [statusMsg, setStatusMsg] = useState("");
 
   const buscarPerfil = async () => {
-    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+    const token = sessionStorage.getItem("token") || localStorage.getItem("meuToken");
     
     if (!token) {
       navigate("/");
@@ -89,7 +89,7 @@ export default function AdminPerfil() {
     const formData = new FormData();
     formData.append("foto", arquivo);
 
-    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+    const token = sessionStorage.getItem("token") || localStorage.getItem("meuToken");
 
     try {
       const resposta = await fetch(`${API_URL}/perfil/foto`, {
@@ -128,7 +128,7 @@ export default function AdminPerfil() {
     }
 
     setEnviandoEdit(true);
-    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+    const token = sessionStorage.getItem("token") || localStorage.getItem("meuToken");
 
     try {
       const resposta = await fetch(`${API_URL}/perfil/editar`, {
@@ -185,7 +185,7 @@ export default function AdminPerfil() {
     }
 
     setEnviandoEdit(true);
-    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+    const token = sessionStorage.getItem("token") || localStorage.getItem("meuToken");
 
     try {
       const resposta = await fetch(`${API_URL}/perfil/senha`, {

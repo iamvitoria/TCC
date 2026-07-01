@@ -33,7 +33,7 @@ const Profile = () => {
 
   useEffect(() => {
     const buscarPerfil = async () => {
-      const token = localStorage.getItem("token") || localStorage.getItem("meuToken"); 
+      const token = sessionStorage.getItem("token") || localStorage.getItem("meuToken"); 
       
       if (!token) {
         navigate("/"); 
@@ -82,7 +82,7 @@ const Profile = () => {
     if (!arquivo) return;
     const formData = new FormData();
     formData.append("foto", arquivo);
-    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+    const token = sessionStorage.getItem("token") || localStorage.getItem("meuToken");
     try {
       const resposta = await fetch(`${API_URL}/perfil/foto`,{
         method: "POST",
@@ -104,7 +104,7 @@ const Profile = () => {
 
     setEnviandoForm(true);
     setStatusMsg({ texto: "", tipo: "" });
-    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+    const token = sessionStorage.getItem("token") || localStorage.getItem("meuToken");
 
     try {
       const resposta = await fetch(`${API_URL}/perfil/editar`, {
@@ -153,7 +153,7 @@ const Profile = () => {
 
     setEnviandoForm(true);
     setStatusMsg({ texto: "", tipo: "" });
-    const token = localStorage.getItem("token") || localStorage.getItem("meuToken");
+    const token = sessionStorage.getItem("token") || localStorage.getItem("meuToken");
 
     try {
       const resposta = await fetch(`${API_URL}/perfil/senha`, {
