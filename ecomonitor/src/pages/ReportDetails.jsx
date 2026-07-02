@@ -43,6 +43,7 @@ const ReportDetails = () => {
   const [enderecoExibido, setEnderecoExibido] = useState(currentDenuncia?.endereco || "Buscando localização...");
 
   const [editando, setEditando] = useState(false);
+  const [categorias, setCategorias] = useState([]); // <-- Estado para as categorias do banco
   const [categoria, setCategoria] = useState("");
   const [descricao, setDescricao] = useState("");
   const [endereco, setEndereco] = useState("");
@@ -53,26 +54,27 @@ const ReportDetails = () => {
   
   const [modalAberto, setModalAberto] = useState(false);
 
-  const obterChaveCategoria = (nomeBanco) => {
-    const mapa = {
-      "Descarte Irregular de Lixo": "lixo",
-      "Desmatamento": "desmatamento",
-      "Poluição da Água": "poluicao_agua",
-      "Queimada": "queimada",
-      "Poluição do Ar": "poluicao_ar",
-      "Maus-tratos aos Animais": "animais",
-      "Foco de Mosquito": "foco_mosquito",
-      "Esgoto a Céu Aberto": "esgoto"
+  // 1. Busca categorias do banco ao carregar a página
+  useEffect(() => {
+    const buscarCategorias = async () => {
+      try {
+        const response = await fetch(`${API_URL}/categorias`);
+        const data = await response.json();
+        setCategorias(data);
+      } catch (error) {
+        console.error("Erro ao carregar categorias:", error);
+      }
     };
-    return mapa[nomeBanco] || nomeBanco;
-  };
+    buscarCategorias();
+  }, []);
 
+  // 2. Preenche os estados iniciais quando a denúncia for carregada
   useEffect(() => {
     if (currentDenuncia) {
-      setCategoria(obterChaveCategoria(currentDenuncia.categoria) || "");
-      setDescricao(currentDenuncia.descricao || "");
+      setCategoria(currentDenuncia.categoria_id || currentDenuncia.categoria || "");
+      setDescricao(currentDenuncia.descricao || currentDenuncia.relato || "");
       setEndereco(currentDenuncia.endereco || "");
-      setPreview(currentDenuncia.foto_url || null);
+      setPreview(currentDenuncia.foto_url || currentDenuncia.foto || null);
     }
   }, [currentDenuncia]);
 
@@ -133,7 +135,7 @@ const ReportDetails = () => {
 
     setSalvando(true);
     const formData = new FormData();
-    formData.append("categoria", categoria);
+    formData.append("categoria_id", categoria); // Usando categoria_id para combinar com o backend
     formData.append("descricao", descricao);
     formData.append("endereco", endereco);
     if (foto) {
@@ -153,7 +155,7 @@ const ReportDetails = () => {
         setCurrentDenuncia(prev => ({
           ...prev,
           ...dadosAtualizados.denuncia,
-          foto_url: foto ? preview : prev.foto_url
+          foto_url: foto ? preview : (prev.foto_url || prev.foto)
         }));
 
         setMensagem({ texto: "Registro atualizado com sucesso!", tipo: "sucesso" });
@@ -178,29 +180,27 @@ const ReportDetails = () => {
   };
 
   const handleCancelar = () => {
-    setCategoria(obterChaveCategoria(currentDenuncia.categoria) || "");
-    setDescricao(currentDenuncia.descricao || "");
+    setCategoria(currentDenuncia.categoria_id || currentDenuncia.categoria || "");
+    setDescricao(currentDenuncia.descricao || currentDenuncia.relato || "");
     setEndereco(currentDenuncia.endereco || enderecoExibido);
     setFoto(null);
-    setPreview(currentDenuncia.foto_url || null);
+    setPreview(currentDenuncia.foto_url || currentDenuncia.foto || null);
     setMensagem({ texto: "", tipo: "" });
     setEditando(false);
   };
 
-  const formatarNomeCategoria = (slug) => {
-    const nomes = {
-      lixo: "Descarte irregular de lixo",
-      desmatamento: "Desmatamento",
-      poluicao_agua: "Poluição da água",
-      queimada: "Queimada",
-      poluicao_ar: "Poluição do ar",
-      animais: "Maus-tratos aos animais",
-      foco_mosquito: "Foco de mosquito",
-      esgoto: "Esgoto aberto"
-    };
-    if (nomes[slug]) return nomes[slug];
-    const texto = slug?.replace(/_/g, " ") || "";
-    return texto.charAt(0).toUpperCase() + texto.slice(1);
+  // 3. Usa a lista do banco para exibir o nome correto
+  const obterNomeDaCategoria = () => {
+    // Verifica se temos as categorias carregadas
+    if (categorias.length > 0) {
+      const catEncontrada = categorias.find(
+        (c) => String(c.id) === String(currentDenuncia.categoria_id) || String(c.nome) === String(currentDenuncia.categoria)
+      );
+      if (catEncontrada) return catEncontrada.nome;
+    }
+    
+    // Fallback: se ainda não carregou, exibe o que já veio na denúncia ou um texto padrão
+    return currentDenuncia.categoria_nome || currentDenuncia.categoria || "Carregando...";
   };
 
   const getStatusBadge = (status) => {
@@ -219,14 +219,15 @@ const ReportDetails = () => {
   };
 
   const formatarData = (dataIso) => {
-    const dataAlvo = dataIso || currentDenuncia?.data_criacao;
+    const dataAlvo = dataIso || currentDenuncia?.data_criacao || currentDenuncia?.data || currentDenuncia?.created_at;
     if (!dataAlvo) return "Data indisponível";
     const date = new Date(dataAlvo);
     return isNaN(date.getTime()) ? "Data indisponível" : date.toLocaleDateString("pt-BR");
   };
 
   const formatarHora = (dataIso) => {
-    const dataAlvo = dataIso || currentDenuncia.data_criacao;
+    const dataAlvo = dataIso || currentDenuncia?.data_criacao || currentDenuncia?.data || currentDenuncia?.created_at;
+    if (!dataAlvo) return "--:--";
     const date = new Date(dataAlvo);
     return isNaN(date.getTime()) ? "--:--" : date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   };
@@ -254,22 +255,23 @@ const ReportDetails = () => {
             <div style={styles.dataColumn}>
               <span style={styles.dataLabel}>Categoria</span>
               {editando ? (
+                // 4. Select com as opções dinâmicas do banco
                 <select 
                   value={categoria} 
                   onChange={(e) => setCategoria(e.target.value)}
                   style={styles.selectInput}
                 >
-                  <option value="lixo">Descarte irregular de lixo</option>
-                  <option value="desmatamento">Desmatamento</option>
-                  <option value="poluicao_agua">Poluição da água</option>
-                  <option value="queimada">Queimada</option>
-                  <option value="poluicao_ar">Poluição do ar</option>
-                  <option value="animais">Maus-tratos aos animais</option>
-                  <option value="foco_mosquito">Foco de mosquito</option>
-                  <option value="esgoto">Esgoto aberto</option>
+                  <option value="" disabled>Escolha a Categoria</option>
+                  {categorias.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.nome}
+                    </option>
+                  ))}
                 </select>
               ) : (
-                <span style={styles.dataValue}>{formatarNomeCategoria(currentDenuncia.categoria)}</span>
+                <span style={styles.dataValue}>
+                  {obterNomeDaCategoria()}
+                </span>
               )}
             </div>
             <div style={styles.dataColumn}>
@@ -295,7 +297,7 @@ const ReportDetails = () => {
               />
             ) : (
               <p style={{ margin: 0, fontSize: "14px", color: "#444", lineHeight: "1.5" }}>
-                {currentDenuncia.descricao || "Nenhuma descrição detalhada fornecida pelo usuário."}
+                {currentDenuncia.descricao || currentDenuncia.relato || "Nenhuma descrição detalhada fornecida pelo usuário."}
               </p>
             )}
           </div>
@@ -338,10 +340,12 @@ const ReportDetails = () => {
           <h3 style={styles.sectionTitle}>Localização capturada</h3>
           <div style={styles.locationRow}>
             <div style={styles.mapContainerWrapper}>
-              <MapContainer center={[currentDenuncia.latitude, currentDenuncia.longitude]} zoom={16} style={{ height: "100%", width: "100%" }} zoomControl={false} dragging={false}>
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={[currentDenuncia.latitude, currentDenuncia.longitude]} />
-              </MapContainer>
+              {currentDenuncia.latitude && currentDenuncia.longitude && (
+                <MapContainer center={[currentDenuncia.latitude, currentDenuncia.longitude]} zoom={16} style={{ height: "100%", width: "100%" }} zoomControl={false} dragging={false}>
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <Marker position={[currentDenuncia.latitude, currentDenuncia.longitude]} />
+                </MapContainer>
+              )}
             </div>
             <div style={styles.addressColumn}>
               {editando ? (
@@ -368,14 +372,14 @@ const ReportDetails = () => {
               historicoReal.map((item, index) => (
                 <div key={index} style={styles.timelineItemRow}>
                   <div style={styles.timelineDateColumn}>
-                    <div>{formatarData(item.data_registro)}</div>
-                    <div style={{ fontSize: "11px" }}>{formatarHora(item.data_registro)}</div>
+                    <div>{formatarData(item.data_registro || item.data)}</div>
+                    <div style={{ fontSize: "11px" }}>{formatarHora(item.data_registro || item.data)}</div>
                   </div>
                   <div style={styles.timelineGraphicColumn}>
                     <div style={styles.timelineDot}></div>
                     {index !== historicoReal.length - 1 && <div style={styles.timelineLine}></div>}
                   </div>
-                  <div style={styles.timelineTextColumn}>{item.texto}</div>
+                  <div style={styles.timelineTextColumn}>{item.texto || item.descricao}</div>
                 </div>
               ))
             ) : (
@@ -390,7 +394,6 @@ const ReportDetails = () => {
           </button>
         ) : (
           <>
-            {/* A MENSAGEM FOI MOVIDA PARA EXIBIR EXATAMENTE AQUI (EM CIMA DOS BOTÕES DE AÇÃO) */}
             {mensagem.texto && (
               <div style={{
                 ...styles.messageBox,

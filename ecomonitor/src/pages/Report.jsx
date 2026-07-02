@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
+
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import Navbar from "../components/Navbar/Navbar.jsx"; 
+import Navbar from "../components/Navbar/Navbar.jsx";
 import PageLayout from "../components/PageLayout/PageLayout";
 
 import icon from "leaflet/dist/images/marker-icon.png";
@@ -31,14 +32,47 @@ let DefaultIcon = L.icon({
   iconSize: [25, 41],
   iconAnchor: [12, 41]
 });
+
 L.Marker.prototype.options.icon = DefaultIcon;
 
 const RecenterMap = ({ lat, lng }) => {
   const map = useMap();
+
   useEffect(() => {
-    if (lat && lng) map.setView([lat, lng], 15);
+    if (lat && lng) {
+      map.setView([lat, lng], 15);
+    }
   }, [lat, lng, map]);
+
   return null;
+};
+
+const LocationPicker = ({ localizacao, setLocalizacao }) => {
+  useMapEvents({
+    click(e) {
+      setLocalizacao({
+        lat: e.latlng.lat,
+        lng: e.latlng.lng
+      });
+    }
+  });
+
+  return (
+    <Marker
+      position={[localizacao.lat, localizacao.lng]}
+      draggable
+      eventHandlers={{
+        dragend: (e) => {
+          const pos = e.target.getLatLng();
+
+          setLocalizacao({
+            lat: pos.lat,
+            lng: pos.lng
+          });
+        }
+      }}
+    />
+  );
 };
 
 const Report = () => {
@@ -48,13 +82,15 @@ const Report = () => {
   const [foto, setFoto] = useState(null);
   const [preview, setPreview] = useState(null);
   const [categoria, setCategoria] = useState("");
+  const [categorias, setCategorias] = useState([]);
   const [descricao, setDescricao] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [mensagem, setMensagem] = useState({ texto: "", tipo: "" });
   const [localizacao, setLocalizacao] = useState({ lat: null, lng: null });
-  
+  // eslint-disable-next-line no-unused-vars
   const [modalAberto, setModalAberto] = useState(false);
 
+  // Busca localização atual
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((pos) => {
       setLocalizacao({
@@ -64,8 +100,24 @@ const Report = () => {
     });
   }, []);
 
+  // Busca categorias do banco
+  useEffect(() => {
+    const buscarCategorias = async () => {
+      try {
+        const response = await fetch(`${API_URL}/categorias`);
+        const data = await response.json();
+        setCategorias(data);
+      } catch (error) {
+        console.error("Erro ao carregar categorias:", error);
+      }
+    };
+
+    buscarCategorias();
+  }, []);
+
   const handleFotoChange = (e) => {
     const file = e.target.files[0];
+
     if (file) {
       setFoto(file);
       setPreview(URL.createObjectURL(file));
@@ -76,13 +128,20 @@ const Report = () => {
     setMensagem({ texto: "", tipo: "" });
 
     if (!foto || !categoria || !localizacao.lat) {
-      setMensagem({ texto: "Preencha a foto, categoria e aguarde o GPS!", tipo: "erro" });
+      setMensagem({
+        texto: "Preencha a foto, categoria e aguarde o GPS!",
+        tipo: "erro"
+      });
       return;
     }
 
     const token = sessionStorage.getItem("token");
+
     if (!token) {
-      setMensagem({ texto: "Você precisa estar logado!", tipo: "erro" });
+      setMensagem({
+        texto: "Você precisa estar logado!",
+        tipo: "erro"
+      });
       return;
     }
 
@@ -96,39 +155,55 @@ const Report = () => {
         const responseGeo = await fetch(
           `https://nominatim.openstreetmap.org/reverse?format=json&lat=${localizacao.lat}&lon=${localizacao.lng}`
         );
+
         const dataGeo = await responseGeo.json();
-        
-        cidadeTexto = dataGeo.address.city || dataGeo.address.town || dataGeo.address.village || "Desconhecida";
-        
+
+        cidadeTexto =
+          dataGeo.address.city ||
+          dataGeo.address.town ||
+          dataGeo.address.village ||
+          "Desconhecida";
+
         enderecoTexto = dataGeo.display_name;
       } catch (geoError) {
         console.error("Erro ao buscar endereço:", geoError);
       }
 
       const formData = new FormData();
-      formData.append("categoria", categoria);
+      formData.append("categoria_id", categoria);
       formData.append("descricao", descricao);
       formData.append("latitude", localizacao.lat);
       formData.append("longitude", localizacao.lng);
-      formData.append("endereco", enderecoTexto); 
-      formData.append("cidade", cidadeTexto); 
+      formData.append("endereco", enderecoTexto);
+      formData.append("cidade", cidadeTexto);
       formData.append("foto", foto);
 
       const response = await fetch(`${API_URL}/denuncias`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${token}` },
-        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
       });
 
       if (response.ok) {
-        setMensagem({ texto: "Registro enviado com sucesso!", tipo: "sucesso" });
+        setMensagem({
+          texto: "Registro enviado com sucesso!",
+          tipo: "sucesso"
+        });
+
         setTimeout(() => navigate("/home"), 2000);
       } else {
-        setMensagem({ texto: "Erro ao enviar denúncia.", tipo: "erro" });
+        setMensagem({
+          texto: "Erro ao enviar denúncia.",
+          tipo: "erro"
+        });
       }
-    // eslint-disable-next-line no-unused-vars
-    } catch (error) {
-      setMensagem({ texto: "Erro de conexão com o servidor.", tipo: "erro" });
+    } catch {
+      setMensagem({
+        texto: "Erro de conexão com o servidor.",
+        tipo: "erro"
+      });
     } finally {
       setEnviando(false);
     }
@@ -139,8 +214,8 @@ const Report = () => {
       <style>{spinnerStyle}</style>
 
       <div style={styles.container}>
-        
         <label style={styles.label}>Foto da ocorrência</label>
+
         <input
           type="file"
           accept="image/*"
@@ -149,77 +224,86 @@ const Report = () => {
           onChange={handleFotoChange}
         />
 
-        <div 
-          style={{...styles.uploadBox, border: preview ? "none" : styles.uploadBox.border}} 
-          onClick={() => { if (!preview) fileInputRef.current.click(); }}
+        <div
+          style={{
+            ...styles.uploadBox,
+            border: preview ? "none" : styles.uploadBox.border
+          }}
+          onClick={() => {
+            if (!preview) fileInputRef.current.click();
+          }}
         >
           {preview ? (
             <div style={{ width: "100%", height: "100%", position: "relative" }}>
-              <img 
-                src={preview} 
-                alt="preview" 
-                style={styles.preview} 
-                onClick={() => setModalAberto(true)} 
+              <img
+                src={preview}
+                alt="preview"
+                style={styles.preview}
+                onClick={() => setModalAberto(true)}
               />
               <div style={styles.miniBadge}>Toque para ampliar / trocar</div>
             </div>
           ) : (
-            <>
-              <svg 
-                width="42" 
-                height="42" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="#2D4627" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
+            // Novo layout com o ícone de câmera alinhado ao texto
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#2D4627"
+                strokeWidth="2.5"
+                strokeLinecap="round"
                 strokeLinejoin="round"
-                style={{ marginBottom: "8px" }}
               >
-                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                <circle cx="12" cy="13" r="3" />
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
               </svg>
               <span style={styles.uploadText}>Tirar foto ou importar</span>
-            </>
+            </div>
           )}
         </div>
 
         <label style={styles.label}>Categoria</label>
+
         <select
           value={categoria}
           onChange={(e) => setCategoria(e.target.value)}
           style={styles.select}
         >
-          <option value="" disabled>Escolha a Categoria</option>
-          <option value="lixo">Descarte Irregular de lixo</option>
-          <option value="desmatamento">Desmatamento</option>
-          <option value="poluicao_agua">Poluição da Água</option>
-          <option value="queimada">Queimada</option>
-          <option value="poluicao_ar">Poluição do Ar</option>
-          <option value="animais">Maus-tratos aos Animais</option>
-          <option value="foco_mosquito">Foco de Mosquito</option>
-          <option value="esgoto">Esgoto a Céu Aberto</option>
+          <option value="" disabled>
+            Escolha a Categoria
+          </option>
+
+          {categorias.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.nome}
+            </option>
+          ))}
         </select>
 
         <label style={styles.label}>Localização</label>
+
         <div style={styles.locationCard}>
           <div style={styles.map}>
             {localizacao.lat && (
               <MapContainer
                 center={[localizacao.lat, localizacao.lng]}
                 zoom={15}
-                dragging={false}
-                zoomControl={false}
                 style={{ height: "100%", width: "100%" }}
               >
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={[localizacao.lat, localizacao.lng]} />
+                <LocationPicker
+                  localizacao={localizacao}
+                  setLocalizacao={setLocalizacao}
+                />
                 <RecenterMap lat={localizacao.lat} lng={localizacao.lng} />
               </MapContainer>
             )}
           </div>
+
           <div style={styles.locationText}>
-            <strong>Localização capturada</strong>
+            <strong>Localização (toque ou arraste para ajustar)</strong>
             <span>
               {localizacao.lat
                 ? `${localizacao.lat.toFixed(4)}, ${localizacao.lng.toFixed(4)}`
@@ -228,7 +312,8 @@ const Report = () => {
           </div>
         </div>
 
-        <label style={styles.label}>Descrição Opcional</label>
+        <label style={styles.label}>Descrição opcional</label>
+
         <textarea
           placeholder="Descreva o problema em detalhes..."
           style={styles.textarea}
@@ -237,51 +322,30 @@ const Report = () => {
         />
 
         {mensagem.texto && (
-          <div style={{
-            padding: "10px",
-            borderRadius: "8px",
-            textAlign: "center",
-            fontWeight: "bold",
-            fontSize: "14px",
-            backgroundColor: mensagem.tipo === "sucesso" ? "#DFF2BF" : "#FFD2D2",
-            color: mensagem.tipo === "sucesso" ? "#2D4627" : "#D8000C"
-          }}>
+          <div
+            style={{
+              padding: "10px",
+              borderRadius: "8px",
+              textAlign: "center",
+              fontWeight: "bold",
+              fontSize: "14px",
+              backgroundColor:
+                mensagem.tipo === "sucesso" ? "#DFF2BF" : "#FFD2D2",
+              color: mensagem.tipo === "sucesso" ? "#2D4627" : "#D8000C"
+            }}
+          >
             {mensagem.texto}
           </div>
         )}
 
-        <button 
-          onClick={handleSubmit} 
+        <button
+          onClick={handleSubmit}
           disabled={enviando}
-          style={{
-            ...styles.button,
-            opacity: enviando ? 0.7 : 1,
-            cursor: enviando ? "not-allowed" : "pointer"
-          }}
+          style={styles.button}
         >
           {enviando ? <div className="spinner"></div> : "Enviar Registro"}
         </button>
       </div>
-
-      {modalAberto && (
-        <div style={styles.modalOverlay} onClick={() => setModalAberto(false)}>
-          <div style={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
-            <button style={styles.modalCloseBtn} onClick={() => setModalAberto(false)}>✖</button>
-            
-            <img src={preview} alt="Imagem completa" style={styles.modalImage} />
-            
-            <button 
-              style={styles.modalChangeBtn} 
-              onClick={() => {
-                fileInputRef.current.click();
-                setModalAberto(false);
-              }}
-            >
-              Trocar Imagem
-            </button>
-          </div>
-        </div>
-      )}
 
       <Navbar isAdmin={false} />
     </PageLayout>
@@ -291,30 +355,25 @@ const Report = () => {
 const styles = {
   container: {
     padding: "20px",
-    paddingBottom: "120px", 
+    paddingBottom: "120px",
     backgroundColor: "#F4F6F3",
     display: "flex",
     flexDirection: "column",
-    gap: 14,
-    boxSizing: "border-box",
-    width: "100%",
+    gap: 14
   },
   label: {
     fontWeight: "600",
-    color: "#2D4627",
+    color: "#2D4627"
   },
-  uploadBox: {
+uploadBox: {
     border: "2px dashed #8DAF73",
     backgroundColor: "#E7F0DC",
     borderRadius: 15,
-    height: 140, 
-    overflow: "hidden", 
+    height: 140,
     display: "flex",
-    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    cursor: "pointer",
-    position: "relative",
+    cursor: "pointer" 
   },
   uploadText: {
     fontWeight: "600",
@@ -323,7 +382,7 @@ const styles = {
   preview: {
     width: "100%",
     height: "100%",
-    objectFit: "cover", 
+    objectFit: "cover"
   },
   miniBadge: {
     position: "absolute",
@@ -333,21 +392,18 @@ const styles = {
     color: "white",
     padding: "4px 8px",
     borderRadius: "6px",
-    fontSize: "11px",
-    fontWeight: "bold"
+    fontSize: "11px"
   },
   select: {
     padding: 12,
     borderRadius: 10,
-    border: "1px solid #ddd",
-    backgroundColor: "#fff",
+    border: "1px solid #ddd"
   },
   locationCard: {
     display: "flex",
     borderRadius: 12,
     overflow: "hidden",
-    border: "1px solid #ddd",
-    backgroundColor: "#fff",
+    border: "1px solid #ddd"
   },
   map: {
     width: "35%",
@@ -358,17 +414,15 @@ const styles = {
     fontSize: 12,
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center",
-    color: "#333"
+    justifyContent: "center"
   },
   textarea: {
     borderRadius: 10,
     border: "1px solid #ddd",
     padding: 12,
-    height: 90,
-    fontFamily: "inherit",
+    height: 90
   },
-  button: {
+button: {
     marginTop: 10,
     backgroundColor: "#2D4627",
     color: "white",
@@ -377,64 +431,9 @@ const styles = {
     border: "none",
     fontSize: 16,
     fontWeight: "bold",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "10px",
-    minHeight: "55px" 
-  },
-  modalOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100vw",
-    height: "100vh",
-    backgroundColor: "rgba(0, 0, 0, 0.9)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 3000, 
-    padding: "20px",
-    boxSizing: "border-box"
-  },
-  modalContainer: {
-    position: "relative",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "15px",
-    maxWidth: "100%",
-    maxHeight: "90%"
-  },
-  modalImage: {
-    maxWidth: "100%",
-    maxHeight: "70vh",
-    objectFit: "contain",
-    borderRadius: "8px"
-  },
-  modalCloseBtn: {
-    position: "absolute",
-    top: "-40px",
-    right: "0px",
-    backgroundColor: "transparent",
-    border: "none",
-    color: "white",
-    fontSize: "24px",
-    cursor: "pointer"
-  },
-  modalChangeBtn: {
-    backgroundColor: "#4E9A51",
-    color: "white",
-    border: "none",
-    borderRadius: "10px",
-    padding: "12px 24px",
-    fontSize: "15px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.3)"
+    display: "flex",          
+    justifyContent: "center", 
+    alignItems: "center"    
   }
 };
 
