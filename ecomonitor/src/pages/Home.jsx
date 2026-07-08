@@ -9,7 +9,7 @@ const Home = () => {
   const [nomeUsuario, setNomeUsuario] = useState("..."); 
   const [localizacao, setLocalizacao] = useState("Buscando localização...");
   
-  const [denuncias, setDenuncias] = useState([]);
+  const [registros, setRegistros] = useState([]); // Semântica atualizada
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
 
@@ -53,6 +53,7 @@ const Home = () => {
       }
 
       try {
+        // 1. Carrega dados do perfil
         const responsePerfil = await fetch(`${API_URL}/perfil`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
@@ -62,14 +63,15 @@ const Home = () => {
           setNomeUsuario(dadosPerfil.nome || "...");
         }
 
-        const responseDenuncias = await fetch(`${API_URL}/minhas-denuncias`, {
+        // 2. Carrega os registros atualizados da nova rota do backend
+        const responseRegistros = await fetch(`${API_URL}/meus-registros`, {
           method: "GET",
           headers: { "Authorization": `Bearer ${token}` }
         });
 
-        if (responseDenuncias.ok) {
-          const data = await responseDenuncias.json();
-          setDenuncias(data);
+        if (responseRegistros.ok) {
+          const data = await responseRegistros.json();
+          setRegistros(data);
           calcularEstatisticas(data);
         } else {
           setErro("Não foi possível carregar os registros.");
@@ -86,39 +88,19 @@ const Home = () => {
     carregarDadosDaTela();
   }, []);
 
-  const calcularEstatisticas = (listaDenuncias) => {
+  const calcularEstatisticas = (listaRegistros) => {
     let abertas = 0;
     let emAnalise = 0;
     let resolvidas = 0;
 
-    listaDenuncias.forEach(d => {
-      const status = d.status ? d.status.toLowerCase().trim() : "";
+    listaRegistros.forEach(r => {
+      const status = r.status ? r.status.toLowerCase().trim() : "";
       if (status === "validado" || status === "aceito") abertas++;
       else if (status === "pendente" || status === "em análise" || status === "em analise") emAnalise++;
       else if (status === "resolvida" || status === "resolvido") resolvidas++;
     });
 
     setEstatisticas({ abertas, emAnalise, resolvidas });
-  };
-
-  const formatarNomeCategoria = (slug) => {
-    if (!slug) return "Desconhecida";
-
-    const nomes = {
-      lixo: "Descarte irregular de lixo",
-      desmatamento: "Desmatamento",
-      poluicao_agua: "Poluição da água",
-      queimada: "Queimada",
-      poluicao_ar: "Poluição do ar",
-      animais: "Maus-tratos animais",
-      foco_mosquito: "Foco de mosquito",
-      esgoto: "Esgoto aberto"
-    };
-
-    if (nomes[slug]) return nomes[slug];
-
-    const texto = slug.replace(/_/g, " ");
-    return texto.charAt(0).toUpperCase() + texto.slice(1);
   };
 
   const formatarData = (dataIso) => {
@@ -213,21 +195,21 @@ const Home = () => {
         )}
         {erro && <p style={{ color: "#110f0f", textAlign: "center", fontWeight: "bold" }}>{erro}</p>}
         
-        {!carregando && !erro && denuncias.length === 0 && (
+        {!carregando && !erro && registros.length === 0 && (
           <div style={{ textAlign: "center", color: "#2D4627", marginTop: "20px" }}>
             <p>Nenhum registro relatado.</p>
           </div>
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-          {!carregando && denuncias.map((denuncia) => {
-            const statusInfo = getStatusStyle(denuncia.status);
-            const dataReal = denuncia.data_criacao || denuncia.created_at;
+          {!carregando && registros.map((registro) => {
+            const statusInfo = getStatusStyle(registro.status);
+            const dataReal = registro.data_criacao || registro.created_at;
 
             return (
               <div 
-                key={denuncia.id} 
-                onClick={() => navigate(`/report-details/${denuncia.id}`, { state: { denunciaSelecionada: denuncia } })}
+                key={registro.id} 
+                onClick={() => navigate(`/report-details/${registro.id}`, { state: { registroSelecionado: registro } })}
                 style={{
                   backgroundColor: "white",
                   borderRadius: "12px",
@@ -242,7 +224,8 @@ const Home = () => {
               >
                 <div>
                   <h4 style={{ margin: 0, color: "#1C3520", fontSize: "16px" }}>
-                    {formatarNomeCategoria(denuncia.categoria)}
+                    {/* Captura o nome de dentro do objeto de relacionamento da categoria */}
+                    {registro.categoria?.nome || "Categoria não informada"}
                   </h4>
                   <p style={{ margin: "5px 0 0 0", color: "#666", fontSize: "12px" }}>
                     {formatarData(dataReal)}

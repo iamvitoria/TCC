@@ -69,7 +69,7 @@ const Map = () => {
       setCarregandoDados(true);
       const token = sessionStorage.getItem("token");
       try {
-        const response = await fetch(`${API_URL}/denuncias`, {
+        const response = await fetch(`${API_URL}/registros`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -132,7 +132,10 @@ const Map = () => {
                 <Popup>
                   <div style={styles.popupBox}>
                     <h4 style={{ margin: "0 0 10px 0", color: "#1C3520", fontSize: "16px", borderBottom: "1px solid #eee", paddingBottom: "5px" }}>
-                      {denuncia.categoria}
+                      {/* ✅ PROTEGIDO: Pega o nome se for objeto */}
+                      {typeof denuncia.categoria === 'object' && denuncia.categoria !== null 
+                        ? denuncia.categoria.nome 
+                        : (denuncia.categoria || "Registro")}
                     </h4>
                     <div style={styles.infoRow}>
                       <span style={styles.label}>Status:</span>
@@ -144,7 +147,11 @@ const Map = () => {
                     </div>
                     <div style={styles.infoRow}>
                       <span style={styles.label}>Local:</span>
-                      <p style={{ margin: "2px 0", color: "#444" }}>{denuncia.endereco || denuncia.cidade || "Localização via GPS"}</p>
+                      <p style={{ margin: "2px 0", color: "#444" }}>
+                        {typeof denuncia.endereco === 'object' && denuncia.endereco !== null
+                          ? `${denuncia.endereco.logradouro || ""}, ${denuncia.endereco.numero || ""}`
+                          : (denuncia.endereco || denuncia.cidade || "Localização via GPS")}
+                      </p>
                     </div>
                     <div style={styles.infoRow}>
                       <span style={styles.label}>Usuário:</span>
@@ -179,7 +186,7 @@ const Map = () => {
                 </div>
               ))}
             </div>
-          ) : <p style={{ color: "#666", fontSize: "14px", margin: 0 }}>Nenhuma denúncia próxima encontrada.</p>
+          ) : <p style={{ color: "#666", fontSize: "14px", margin: 0 }}>Nenhum registro próximo encontrado.</p>
         )}
       </div>
       <Navbar isAdmin={false} />

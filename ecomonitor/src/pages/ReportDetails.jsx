@@ -37,13 +37,15 @@ const ReportDetails = () => {
   const location = useLocation();
   const fileInputRef = useRef(null);
   
-  const [currentDenuncia, setCurrentDenuncia] = useState(location.state?.denunciaSelecionada);
+  const [currentDenuncia, setCurrentDenuncia] = useState(
+      location.state?.registroSelecionado
+  );
   const [historicoReal, setHistoricoReal] = useState([]);
   const [carregandoHistorico, setCarregandoHistorico] = useState(true);
   const [enderecoExibido, setEnderecoExibido] = useState(currentDenuncia?.endereco || "Buscando localização...");
 
   const [editando, setEditando] = useState(false);
-  const [categorias, setCategorias] = useState([]); // <-- Estado para as categorias do banco
+  const [categorias, setCategorias] = useState([]); 
   const [categoria, setCategoria] = useState("");
   const [descricao, setDescricao] = useState("");
   const [endereco, setEndereco] = useState("");
@@ -71,9 +73,19 @@ const ReportDetails = () => {
   // 2. Preenche os estados iniciais quando a denúncia for carregada
   useEffect(() => {
     if (currentDenuncia) {
-      setCategoria(currentDenuncia.categoria_id || currentDenuncia.categoria || "");
+      const catIdInicial = typeof currentDenuncia.categoria === 'object' && currentDenuncia.categoria !== null
+        ? currentDenuncia.categoria.id 
+        : (currentDenuncia.categoria_id || currentDenuncia.categoria || "");
+        
+      setCategoria(catIdInicial);
       setDescricao(currentDenuncia.descricao || currentDenuncia.relato || "");
-      setEndereco(currentDenuncia.endereco || "");
+      
+      // ✅ FORMATA PARA TEXTO ANTES DE COLOCAR NO INPUT
+      const endFormatado = typeof currentDenuncia.endereco === 'object' && currentDenuncia.endereco !== null
+        ? `${currentDenuncia.endereco.logradouro || ""}, ${currentDenuncia.endereco.numero || ""}`
+        : (currentDenuncia.endereco || "");
+      setEndereco(endFormatado);
+      
       setPreview(currentDenuncia.foto_url || currentDenuncia.foto || null);
     }
   }, [currentDenuncia]);
@@ -82,7 +94,8 @@ const ReportDetails = () => {
     const buscarHistorico = async () => {
       if (!currentDenuncia?.id) return;
       try {
-        const response = await fetch(`${API_URL}/denuncias/${currentDenuncia.id}/historico`);
+        // CORREÇÃO DE ROTA: Atualizando de denúncias para registros conforme nova API
+        const response = await fetch(`${API_URL}/registros/${currentDenuncia.id}/historico`);
         if (response.ok) {
           const data = await response.json();
           setHistoricoReal(data);
@@ -135,7 +148,7 @@ const ReportDetails = () => {
 
     setSalvando(true);
     const formData = new FormData();
-    formData.append("categoria_id", categoria); // Usando categoria_id para combinar com o backend
+    formData.append("categoria_id", categoria); 
     formData.append("descricao", descricao);
     formData.append("endereco", endereco);
     if (foto) {
@@ -143,7 +156,9 @@ const ReportDetails = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/denuncias/${currentDenuncia.id}`, {
+      // CORREÇÃO DE ROTA: Ajustando endpoint para registros se aplicável
+      const endpoint = `${API_URL}/registros/${currentDenuncia.id}`;
+      const response = await fetch(endpoint, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` },
         body: formData,
@@ -154,7 +169,7 @@ const ReportDetails = () => {
         
         setCurrentDenuncia(prev => ({
           ...prev,
-          ...dadosAtualizados.denuncia,
+          ...dadosAtualizados.registro, // Assumindo que o back retorna "registro" agora
           foto_url: foto ? preview : (prev.foto_url || prev.foto)
         }));
 
@@ -180,7 +195,11 @@ const ReportDetails = () => {
   };
 
   const handleCancelar = () => {
-    setCategoria(currentDenuncia.categoria_id || currentDenuncia.categoria || "");
+    const catIdInicial = typeof currentDenuncia.categoria === 'object' && currentDenuncia.categoria !== null
+      ? currentDenuncia.categoria.id 
+      : (currentDenuncia.categoria_id || currentDenuncia.categoria || "");
+      
+    setCategoria(catIdInicial);
     setDescricao(currentDenuncia.descricao || currentDenuncia.relato || "");
     setEndereco(currentDenuncia.endereco || enderecoExibido);
     setFoto(null);
@@ -189,9 +208,14 @@ const ReportDetails = () => {
     setEditando(false);
   };
 
-  // 3. Usa a lista do banco para exibir o nome correto
+  // 3. CORREÇÃO: Trata se a categoria for um objeto para evitar o erro do React Child
   const obterNomeDaCategoria = () => {
-    // Verifica se temos as categorias carregadas
+    // Se a categoria já vier do backend como o objeto { id, nome }
+    if (typeof currentDenuncia.categoria === 'object' && currentDenuncia.categoria !== null) {
+      return currentDenuncia.categoria.nome;
+    }
+
+    // Se já carregou do /categorias
     if (categorias.length > 0) {
       const catEncontrada = categorias.find(
         (c) => String(c.id) === String(currentDenuncia.categoria_id) || String(c.nome) === String(currentDenuncia.categoria)
@@ -199,8 +223,9 @@ const ReportDetails = () => {
       if (catEncontrada) return catEncontrada.nome;
     }
     
-    // Fallback: se ainda não carregou, exibe o que já veio na denúncia ou um texto padrão
-    return currentDenuncia.categoria_nome || currentDenuncia.categoria || "Carregando...";
+    // Fallback: garante que se passar daqui, é string. Se for objeto e caiu aqui por bug, força string para não quebrar a tela
+    return currentDenuncia.categoria_nome || 
+           (typeof currentDenuncia.categoria === 'string' ? currentDenuncia.categoria : "Categoria desconhecida");
   };
 
   const getStatusBadge = (status) => {
@@ -357,7 +382,11 @@ const ReportDetails = () => {
                   placeholder="Edite o endereço do local..."
                 />
               ) : (
-                <span>{currentDenuncia.endereco || enderecoExibido}</span>
+                <span>
+                  {typeof currentDenuncia.endereco === 'object' && currentDenuncia.endereco !== null
+                    ? `${currentDenuncia.endereco.logradouro || ""}, ${currentDenuncia.endereco.numero || ""} - ${currentDenuncia.endereco.bairro || ""}`
+                    : (currentDenuncia.endereco || enderecoExibido)}
+                </span>
               )}
             </div>
           </div>

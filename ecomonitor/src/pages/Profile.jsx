@@ -55,7 +55,7 @@ const Profile = () => {
             foto_perfil: dados.foto_perfil || null,
             posicao_ranking: dados.posicao_ranking || "-",
             cidade_ranking: dados.cidade || dados.regiao || "Sua cidade", 
-            denuncias: dados.total_denuncias ?? dados.denuncias ?? 0,
+            denuncias: dados.total_registros ?? 0,
             conquistas: dados.conquistas || []
           };
 

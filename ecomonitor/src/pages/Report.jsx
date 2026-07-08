@@ -148,8 +148,13 @@ const Report = () => {
     setEnviando(true);
 
     try {
+      // eslint-disable-next-line no-unused-vars
       let enderecoTexto = "Endereço não identificado";
       let cidadeTexto = "Cidade não identificada";
+      let cepTexto = "00000-000";
+      let logradouroTexto = "Não identificado";
+      let numeroTexto = "S/N";
+      let bairroTexto = "Não identificado";
 
       try {
         const responseGeo = await fetch(
@@ -157,28 +162,36 @@ const Report = () => {
         );
 
         const dataGeo = await responseGeo.json();
+        const address = dataGeo.address || {};
 
-        cidadeTexto =
-          dataGeo.address.city ||
-          dataGeo.address.town ||
-          dataGeo.address.village ||
-          "Desconhecida";
+        // Extraindo cada pedacinho do endereço retornado pelo mapa
+        cidadeTexto = address.city || address.town || address.village || "Desconhecida";
+        cepTexto = address.postcode || "00000-000";
+        logradouroTexto = address.road || "Não identificado";
+        numeroTexto = address.house_number || "S/N";
+        bairroTexto = address.suburb || address.neighbourhood || "Não identificado";
 
-        enderecoTexto = dataGeo.display_name;
       } catch (geoError) {
         console.error("Erro ao buscar endereço:", geoError);
       }
 
+      // Agora sim, enviando os dados com os nomes EXATOS que o backend exige
       const formData = new FormData();
       formData.append("categoria_id", categoria);
       formData.append("descricao", descricao);
       formData.append("latitude", localizacao.lat);
       formData.append("longitude", localizacao.lng);
-      formData.append("endereco", enderecoTexto);
+      
+      // Enviando o endereço fatiado
+      formData.append("cep", cepTexto);
+      formData.append("logradouro", logradouroTexto);
+      formData.append("numero", numeroTexto);
+      formData.append("bairro", bairroTexto);
       formData.append("cidade", cidadeTexto);
+      
       formData.append("foto", foto);
 
-      const response = await fetch(`${API_URL}/denuncias`, {
+      const response = await fetch(`${API_URL}/registros`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`
@@ -195,7 +208,7 @@ const Report = () => {
         setTimeout(() => navigate("/home"), 2000);
       } else {
         setMensagem({
-          texto: "Erro ao enviar denúncia.",
+          texto: "Erro ao enviar registro.",
           tipo: "erro"
         });
       }
@@ -244,7 +257,6 @@ const Report = () => {
               <div style={styles.miniBadge}>Toque para ampliar / trocar</div>
             </div>
           ) : (
-            // Novo layout com o ícone de câmera alinhado ao texto
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <svg
                 width="24"
