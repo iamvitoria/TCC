@@ -32,7 +32,7 @@ const Profile = () => {
   const [statusMsg, setStatusMsg] = useState({ texto: "", tipo: "" });
 
   useEffect(() => {
-    const buscarPerfil = async () => {
+    const buscarDadosPerfil = async () => {
       const token = sessionStorage.getItem("token") || localStorage.getItem("meuToken"); 
       
       if (!token) {
@@ -41,19 +41,42 @@ const Profile = () => {
       }
 
       try {
-        const resposta = await fetch(`${API_URL}/perfil`, {
+        const respostaPerfil = await fetch(`${API_URL}/perfil`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
 
-        if (resposta.ok) {
-          const dados = await resposta.json();
+        if (respostaPerfil.ok) {
+          const dados = await respostaPerfil.json();
           
+          let posicaoLocalCalculada = "-";
+
+          try {
+            const respostaRanking = await fetch(`${API_URL}/ranking`, {
+              headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (respostaRanking.ok) {
+              const dadosRanking = await respostaRanking.json();
+              const listaLocal = dadosRanking.local || [];
+              
+              const indexNoRankingLocal = listaLocal.findIndex(
+                (item) => item.nome === dados.nome || item.email === dados.email
+              );
+
+              if (indexNoRankingLocal !== -1) {
+                const itemLocal = listaLocal[indexNoRankingLocal];
+                posicaoLocalCalculada = itemLocal.posicao || itemLocal.rank || itemLocal.ranking || (indexNoRankingLocal + 1);
+              }
+            }
+          } catch (errRanking) {
+            console.error("Erro ao calcular posição local pelo ranking:", errRanking);
+          }
+
           const dadosCarregados = {
             nome: dados.nome || "Usuário",
             email: dados.email || "",
             pontuacao: dados.pontuacao || 0,
             foto_perfil: dados.foto_perfil || null,
-            posicao_ranking: dados.posicao_ranking || "-",
+            posicao_ranking: posicaoLocalCalculada !== "-" ? posicaoLocalCalculada : (dados.posicao_ranking || dados.posicao || "-"),
             cidade_ranking: dados.cidade || dados.regiao || "Sua cidade", 
             denuncias: dados.total_registros ?? 0,
             conquistas: dados.conquistas || []
@@ -65,7 +88,7 @@ const Profile = () => {
           setEditEmail(dadosCarregados.email);
           setEditCidade(dadosCarregados.cidade_ranking);
         } else {
-          if(resposta.status === 401) navigate("/");
+          if(respostaPerfil.status === 401) navigate("/");
         }
       } catch (erro) {
         console.error("Erro ao carregar perfil:", erro);
@@ -74,7 +97,7 @@ const Profile = () => {
       }
     };
 
-    buscarPerfil();
+    buscarDadosPerfil();
   }, [navigate]);
 
   const handleTrocarFoto = async (event) => {
@@ -127,7 +150,7 @@ const Profile = () => {
           email: editEmail, 
           cidade_ranking: editCidade 
         }));
-        setStatusMsg({ texto: "Perfil atualizado com sucesso!", tipo: "sucesso" });
+        setStatusMsg({ texto: "Perfil atualizado!", tipo: "sucesso" });
         
         setTimeout(() => {
           setModalEditAberto(false);
@@ -269,7 +292,9 @@ const Profile = () => {
             <span style={styles.statLabel}>Registro(s)</span>
           </div>
           <div style={styles.statCard}>
-            <span style={styles.statValue}>{perfil.posicao_ranking}º</span>
+            <span style={styles.statValue}>
+              {perfil.posicao_ranking}{!isNaN(perfil.posicao_ranking) && perfil.posicao_ranking !== "-" ? "º" : ""}
+            </span>
             <span style={styles.statLabel}>Ranking local</span>
           </div>
           <div style={styles.statCard}>

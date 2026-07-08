@@ -38,9 +38,7 @@ const Ranking = () => {
     buscarRanking();
   }, []);
 
-  const currentData = (activeTab === "global" ? rankingGlobal : rankingLocal).filter(
-    (item) => (item.pts || item.total || item.pontos || 0) > 0
-  );
+  const currentData = activeTab === "global" ? rankingGlobal : rankingLocal;
 
   const styles = {
     container: {
@@ -161,7 +159,7 @@ const Ranking = () => {
           currentData.map((item, index) => (
             <div key={index} style={styles.card}>
               <span style={{ fontWeight: "bold", fontSize: "18px", width: "25px", color: "#1C3520" }}>
-                {index + 1}
+                {item.posicao || item.rank || item.ranking || (index + 1)}
               </span>
 
               <div style={{ 
