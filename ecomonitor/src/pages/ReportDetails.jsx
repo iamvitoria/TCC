@@ -465,25 +465,46 @@ const ReportDetails = () => {
             onChange={handleFotoChange} 
           />
           <div style={styles.imageRow}>
-            <div 
+            <div
               style={{ ...styles.imageWrapper, cursor: "pointer" }}
-              onClick={() => { 
+              onClick={() => {
                 if (editando) {
                   fileInputRef.current.click();
-                } else {
+                } else if (preview) {
                   setModalAberto(true);
                 }
               }}
             >
-              <img 
-                src={preview} 
-                alt="Denúncia" 
-                style={styles.imageItem}
-                onError={(e) => { e.target.src = "https://placehold.co/120x100?text=Sem+Foto"; }}
-              />
-              <div style={styles.imageOverlayBadge}>
-                {editando ? "Trocar Imagem" : "Toque para ampliar"}
-              </div>
+              {preview ? (
+                <>
+                  <img
+                    src={preview}
+                    alt="Registro"
+                    style={styles.imageItem}
+                  />
+
+                  <div style={styles.imageOverlayBadge}>
+                    {editando ? "Trocar Imagem" : "Toque para ampliar"}
+                  </div>
+                </>
+              ) : (
+                <div
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    background: "#eee",
+                    color: "#666",
+                    fontSize: "13px",
+                    textAlign: "center",
+                    padding: "10px"
+                  }}
+                >
+                  Nenhuma foto enviada
+                </div>
+              )}
             </div>
           </div>
         </section>

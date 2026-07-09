@@ -145,8 +145,11 @@ const Report = () => {
   const handleSubmit = async () => {
     setMensagem({ texto: "", tipo: "" });
 
-    if (!foto || !categoria || (!usouEnderecoManual && !localizacao.lat)) {
-      setMensagem({ texto: "Preencha a foto, categoria e localização!", tipo: "erro" });
+    if (!categoria || (!usouEnderecoManual && !localizacao.lat)) {
+      setMensagem({
+        texto: "Preencha a categoria e a localização!",
+        tipo: "erro"
+      });
       return;
     }
 
@@ -201,7 +204,9 @@ const Report = () => {
       formData.append("numero", numeroTexto);
       formData.append("bairro", bairroTexto);
       formData.append("cidade", cidadeTexto);
-      formData.append("foto", foto);
+      if (foto) {
+          formData.append("foto", foto);
+      }
 
       const response = await fetch(`${API_URL}/registros`, {
         method: "POST",
