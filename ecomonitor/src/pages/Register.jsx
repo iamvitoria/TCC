@@ -48,6 +48,8 @@ const Register = () => {
       });
 
       if (resposta.ok) {
+        sessionStorage.clear();
+
         const formData = new URLSearchParams();
         formData.append("username", email); 
         formData.append("password", senha);
@@ -63,8 +65,8 @@ const Register = () => {
         if (loginResponse.ok) {
           const loginData = await loginResponse.json();
 
-          localStorage.setItem("token", loginData.access_token);
-          localStorage.setItem("perfil", loginData.perfil || "user");
+          sessionStorage.setItem("token", loginData.access_token);
+          sessionStorage.setItem("perfil", loginData.perfil || "user");
 
           setAlerta({
             visivel: true,
@@ -218,7 +220,13 @@ const Register = () => {
         placeholder="Cidade" 
         style={inputStyle} 
         value={cidade}
-        onChange={(e) => setCidade(e.target.value)}
+        onChange={(e) => {
+        const texto = e.target.value
+            .toLowerCase()
+            .replace(/\b\w/g, letra => letra.toUpperCase());
+
+        setCidade(texto);
+    }}
       />
       
       <input 

@@ -64,7 +64,6 @@ const ReportDetails = () => {
   
   const [modalAberto, setModalAberto] = useState(false);
 
-  // Função auxiliar para garantir ordenação correta convertendo formatos DD/MM/YYYY e ISO
   const parseDataParaTimestamp = (dateStr) => {
     if (!dateStr) return 0;
     if (typeof dateStr === 'number') return dateStr;
@@ -110,7 +109,6 @@ const ReportDetails = () => {
     if (currentDenuncia) {
       setCategoria(currentDenuncia.categoria_id);
       
-      // Garante que capture 'descricao' ou 'relato' para edição
       setDescricao(currentDenuncia.descricao || currentDenuncia.relato || "");
       setPreview(currentDenuncia.foto_url);
 
@@ -207,11 +205,8 @@ const ReportDetails = () => {
     setSalvando(true);
     const formData = new FormData();
     formData.append("categoria_id", categoria); 
-    
-    // Envia ambos os campos de texto para garantir a persistência em qualquer modelo de banco
     formData.append("descricao", descricao);
     formData.append("relato", descricao);
-    
     formData.append("logradouro", logradouro);
     formData.append("numero", numero);
     formData.append("bairro", bairro);
@@ -232,24 +227,21 @@ const ReportDetails = () => {
         body: formData,
       });
 
-      if (response.ok) {
-        const dadosAtualizados = await response.json();
-        const registroSalvo = dadosAtualizados.registro || dadosAtualizados;
-        
+      if (response.ok) {        
         setCurrentDenuncia(prev => ({
-          ...prev,
-          ...registroSalvo,
-          latitude,
-          longitude,
-          descricao: descricao,
-          relato: descricao,
-          endereco: {
-            logradouro,
-            numero,
-            bairro,
-            cidade
-          },
-          foto_url: foto ? preview : (registroSalvo.foto_url || prev.foto_url || prev.foto)
+            ...prev,
+            categoria_id: Number(categoria),
+            descricao,
+            latitude,
+            longitude,
+            endereco: {
+                ...prev.endereco,
+                logradouro,
+                numero,
+                bairro,
+                cidade
+            },
+            foto_url: foto ? preview : (prev.foto_url || prev.foto)
         }));
 
         setMensagem({ texto: "Registro atualizado com sucesso!", tipo: "sucesso" });
@@ -587,7 +579,6 @@ const ReportDetails = () => {
             {carregandoHistorico ? (
               <p>Carregando...</p>
             ) : historicoReal.length > 0 ? (
-              // Organiza de cima para baixo de forma perfeitamente cronológica (Antigo -> Novo)
               [...historicoReal]
                 .sort((a, b) => parseDataParaTimestamp(a.data_registro || a.data) - parseDataParaTimestamp(b.data_registro || b.data))
                 .map((item, index, arr) => (

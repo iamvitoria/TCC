@@ -132,7 +132,6 @@ const Map = () => {
                 <Popup>
                   <div style={styles.popupBox}>
                     <h4 style={{ margin: "0 0 10px 0", color: "#1C3520", fontSize: "16px", borderBottom: "1px solid #eee", paddingBottom: "5px" }}>
-                      {/* ✅ PROTEGIDO: Pega o nome se for objeto */}
                       {typeof denuncia.categoria === 'object' && denuncia.categoria !== null 
                         ? denuncia.categoria.nome 
                         : (denuncia.categoria || "Registro")}

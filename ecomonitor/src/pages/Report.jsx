@@ -383,7 +383,6 @@ const styles = {
   loadingMap: { width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#666" },
   locationText: { padding: 10, fontSize: 11, display: "flex", flexDirection: "column", justifyContent: "center", flex: 1, overflow: "hidden", textOverflow: "ellipsis" },
   
-  // ✅ ESTILO DO BOTÃO MANUAL ATUALIZADO
   btnManual: { 
     backgroundColor: "#2D4627", 
     color: "white", 
