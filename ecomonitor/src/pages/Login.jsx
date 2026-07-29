@@ -73,6 +73,16 @@ const Login = () => {
     }
   };
 
+  const entrarComoVisitante = () => {
+    sessionStorage.clear();
+
+    sessionStorage.setItem("perfilUsuario", "anonimo");
+    sessionStorage.setItem("modoVisitante", "true");
+    sessionStorage.setItem("nomeUsuario", "Visitante");
+
+    navigate("/home");
+  };
+
   const containerStyle = {
     backgroundColor: "#1C3520", 
     minHeight: "100vh",
@@ -83,6 +93,14 @@ const Login = () => {
     padding: "30px",
     boxSizing: "border-box",
     fontFamily: "Arial, sans-serif"
+  };
+
+  const formWrapperStyle = {
+    width: "100%",
+    maxWidth: "400px", 
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center"
   };
 
   const logoStyle = {
@@ -133,7 +151,22 @@ const Login = () => {
     justifyContent: "center",
     alignItems: "center",
     gap: "10px",
-    boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+    boxSizing: "border-box"
+  };
+
+  const visitanteButtonStyle = {
+    width: "100%",
+    backgroundColor: "transparent",
+    color: "#5FA362",
+    border: "2px solid #5FA362",
+    borderRadius: "12px",
+    padding: "18px",
+    fontSize: "18px",
+    fontWeight: "bold",
+    marginTop: "12px",
+    cursor: "pointer",
+    boxSizing: "border-box"
   };
 
   const linkStyle = {
@@ -146,76 +179,85 @@ const Login = () => {
 
   return (
     <div style={containerStyle}>
-      <img src={logo} alt="EcoMonitor Logo" style={logoStyle} />
+      <div style={formWrapperStyle}>
+        <img src={logo} alt="EcoMonitor Logo" style={logoStyle} />
 
-      <h1 style={titleStyle}>Bem-Vindo!</h1>
-      <p style={subtitleStyle}>Faça login para entrar</p>
+        <h1 style={titleStyle}>Bem-Vindo!</h1>
+        <p style={subtitleStyle}>Faça login para entrar</p>
 
-      <input 
-        type="email" 
-        placeholder="Email" 
-        style={inputStyle}
-        value={email}
-        onChange={(e) => setEmail(e.target.value)} 
-      />
-      
-      <input 
-        type="password" 
-        placeholder="Senha" 
-        style={inputStyle}
-        value={senha}
-        onChange={(e) => setSenha(e.target.value)} 
-      />
+        <input 
+          type="email" 
+          placeholder="Email" 
+          style={inputStyle}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)} 
+        />
+        
+        <input 
+          type="password" 
+          placeholder="Senha" 
+          style={inputStyle}
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)} 
+        />
 
-      {alerta.visivel && (
-        <div style={{
-          padding: "15px",
-          marginBottom: "15px",
-          borderRadius: "12px",
-          width: "100%", 
-          boxSizing: "border-box",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          backgroundColor: alerta.tipo === "erro" ? "#ffebee" : "#e8f5e9",
-          color: alerta.tipo === "erro" ? "#c62828" : "#2e7d32",
-          border: `1px solid ${alerta.tipo === "erro" ? "#ef9a9a" : "#a5d6a7"}`,
-          fontWeight: "bold",
-          fontSize: "14px"
-        }}>
-          <span>{alerta.texto}</span>
-          <span onClick={fecharAlerta} style={{ cursor: "pointer", fontSize: "16px" }}>✖</span>
-        </div>
-      )}
-
-      <button 
-        onClick={fazerLogin} 
-        disabled={carregando}
-        style={buttonStyle}
-      >
-        {carregando ? (
-          <>
-            <div style={{
-              width: "20px",
-              height: "20px",
-              border: "3px solid rgba(255,255,255,0.3)",
-              borderTop: "3px solid white",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite"
-            }} />
-            <style>
-              {`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}
-            </style>
-          </>
-        ) : (
-          "Entrar"
+        {alerta.visivel && (
+          <div style={{
+            padding: "15px",
+            marginBottom: "15px",
+            borderRadius: "12px",
+            width: "100%", 
+            boxSizing: "border-box",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            backgroundColor: alerta.tipo === "erro" ? "#ffebee" : "#e8f5e9",
+            color: alerta.tipo === "erro" ? "#c62828" : "#2e7d32",
+            border: `1px solid ${alerta.tipo === "erro" ? "#ef9a9a" : "#a5d6a7"}`,
+            fontWeight: "bold",
+            fontSize: "14px"
+          }}>
+            <span>{alerta.texto}</span>
+            <span onClick={fecharAlerta} style={{ cursor: "pointer", fontSize: "16px" }}>✖</span>
+          </div>
         )}
-      </button>
 
-      <p style={linkStyle} onClick={() => navigate("/register")}>
-        Não tem uma conta? Cadastre-se
-      </p>
-      
+        <button 
+          onClick={fazerLogin} 
+          disabled={carregando}
+          style={buttonStyle}
+        >
+          {carregando ? (
+            <>
+              <div style={{
+                width: "20px",
+                height: "20px",
+                border: "3px solid rgba(255,255,255,0.3)",
+                borderTop: "3px solid white",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite"
+              }} />
+              <style>
+                {`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}
+              </style>
+            </>
+          ) : (
+            "Entrar"
+          )}
+        </button>
+
+        <button
+          onClick={entrarComoVisitante}
+          style={visitanteButtonStyle}
+          disabled={carregando}
+        >
+          Entrar como visitante
+        </button>
+
+        <p style={linkStyle} onClick={() => navigate("/register")}>
+          Não tem uma conta? Cadastre-se
+        </p>
+      </div>
     </div>
   );
 };

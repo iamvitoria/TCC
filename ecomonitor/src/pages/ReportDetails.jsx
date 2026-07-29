@@ -11,8 +11,8 @@ import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
 const spinnerStyle = `
   @keyframes spin {
-    0% { transform: rotate(0deg); }\
-    100% { transform: rotate(360deg); }\
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
   .spinner {
     width: 20px;
@@ -36,6 +36,7 @@ const ReportDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const fileInputRef = useRef(null);
+  
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   
@@ -244,7 +245,7 @@ const ReportDetails = () => {
             foto_url: foto ? preview : (prev.foto_url || prev.foto)
         }));
 
-        setMensagem({ texto: "Registro atualizado com sucesso!", tipo: "sucesso" });
+        setMensagem({ texto: "Registro updated com sucesso!", tipo: "sucesso" });
         setTimeout(() => {
           setEditando(false);
           setMensagem({ texto: "", tipo: "" });
@@ -335,54 +336,53 @@ const ReportDetails = () => {
     const markerRef = useRef(null);
 
     const eventHandlers = {
-          async dragend() {
-              const marker = markerRef.current;
-              if (!marker) return;
+      async dragend() {
+        const marker = markerRef.current;
+        if (!marker) return;
 
-              const pos = marker.getLatLng();
+        const pos = marker.getLatLng();
+        setLatitude(pos.lat);
+        setLongitude(pos.lng);
 
-              setLatitude(pos.lat);
-              setLongitude(pos.lng);
+        await buscarEndereco(pos.lat, pos.lng);
+      },
+    };
 
-              await buscarEndereco(pos.lat, pos.lng);
-          },
-      };
-
-      return (
-          <Marker
-              draggable
-              eventHandlers={eventHandlers}
-              position={[latitude, longitude]}
-              ref={markerRef}
-          />
-      );
+    return (
+      <Marker
+        draggable
+        eventHandlers={eventHandlers}
+        position={[latitude, longitude]}
+        ref={markerRef}
+      />
+    );
   };
 
   const buscarEndereco = async (lat, lng) => {
-      try {
-          const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
-          );
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
+      );
 
-          const data = await response.json();
+      const data = await response.json();
 
-          if (data && data.address) {
-              const rua = data.address.road || data.address.pedestrian || data.address.path || "";
-              const num = data.address.house_number || "";
-              const br = data.address.suburb || data.address.neighbourhood || data.address.village || "";
-              const cid = data.address.city || data.address.town || "";
+      if (data && data.address) {
+        const rua = data.address.road || data.address.pedestrian || data.address.path || "";
+        const num = data.address.house_number || "";
+        const br = data.address.suburb || data.address.neighbourhood || data.address.village || "";
+        const cid = data.address.city || data.address.town || "";
 
-              setLogradouro(rua);
-              setNumero(num);
-              setBairro(br);
-              setCidade(cid);
+        setLogradouro(rua);
+        setNumero(num);
+        setBairro(br);
+        setCidade(cid);
 
-              const textoFinal = `${rua}${num ? `, ${num}` : ""}${br ? ` - ${br}` : ""}`;
-              setEnderecoExibido(textoFinal || "Endereço encontrado");
-          }
-      } catch (err) {
-          console.error("Erro ao arrastar e buscar endereço:", err);
+        const textoFinal = `${rua}${num ? `, ${num}` : ""}${br ? ` - ${br}` : ""}`;
+        setEnderecoExibido(textoFinal || "Endereço encontrado");
       }
+    } catch (err) {
+      console.error("Erro ao arrastar e buscar endereço:", err);
+    }
   };
 
   return (
@@ -482,7 +482,6 @@ const ReportDetails = () => {
                     alt="Registro"
                     style={styles.imageItem}
                   />
-
                   <div style={styles.imageOverlayBadge}>
                     {editando ? "Trocar Imagem" : "Toque para ampliar"}
                   </div>
@@ -512,7 +511,6 @@ const ReportDetails = () => {
         <section>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <h3 style={styles.sectionTitle}>Localização capturada</h3>
-              {editando}
           </div>
 
           <div style={styles.locationCard}>
@@ -565,7 +563,6 @@ const ReportDetails = () => {
                               style={styles.textInputAddress}
                               placeholder="Rua / Av"
                           />
-
                           <div style={{display:"flex", gap: 6}}>
                               <input
                                   value={numero}
@@ -573,7 +570,6 @@ const ReportDetails = () => {
                                   style={{...styles.textInputAddress, flex:1}}
                                   placeholder="Nº"
                               />
-
                               <input
                                   value={bairro}
                                   onChange={(e)=>setBairro(e.target.value)}
@@ -581,7 +577,6 @@ const ReportDetails = () => {
                                   placeholder="Bairro"
                               />
                           </div>
-
                           <input
                               value={cidade}
                               onChange={(e)=>setCidade(e.target.value)}
@@ -592,7 +587,7 @@ const ReportDetails = () => {
                   )}
               </div>
           </div>
-      </section>
+        </section>
 
         <section>
           <h3 style={styles.sectionTitle}>Histórico</h3>
@@ -631,7 +626,7 @@ const ReportDetails = () => {
               <div style={{
                 ...styles.messageBox,
                 backgroundColor: mensagem.tipo === "sucesso" ? "#DFF2BF" : "#FFD2D2",
-                color: mensagem.tipo === "sucesso" ? "#2D4627" : "#D8000C"
+                color: () => mensagem.tipo === "sucesso" ? "#2D4627" : "#D8000C"
               }}>
                 {mensagem.texto}
               </div>

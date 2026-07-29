@@ -9,7 +9,7 @@ const Home = () => {
   const [nomeUsuario, setNomeUsuario] = useState("..."); 
   const [localizacao, setLocalizacao] = useState("Buscando localização...");
   
-  const [registros, setRegistros] = useState([]); // Semântica atualizada
+  const [registros, setRegistros] = useState([]); 
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
 
@@ -44,7 +44,33 @@ const Home = () => {
     };
 
     const carregarDadosDaTela = async () => {
-      const token = sessionStorage.getItem("token") 
+      const token = sessionStorage.getItem("token");
+      const modoVisitante = sessionStorage.getItem("modoVisitante") === "true";
+      const nomeVisitante = sessionStorage.getItem("nomeUsuario") || "Visitante";
+
+      if (modoVisitante) {
+        setNomeUsuario(nomeVisitante);
+        
+        try {
+          const responseRegistros = await fetch(`${API_URL}/registros`, {
+            method: "GET"
+          });
+
+          if (responseRegistros.ok) {
+            const data = await responseRegistros.json();
+            setRegistros(data);
+            calcularEstatisticas(data);
+          } else {
+            setErro("Não foi possível carregar os registros públicos.");
+          }
+        } catch (error) {
+          console.error("Erro de conexão:", error);
+          setErro("Erro ao conectar com o servidor.");
+        } finally {
+          setCarregando(false);
+        }
+        return; 
+      }
 
       if (!token) {
         setErro("Você precisa estar logado para ver seu painel.");
@@ -53,7 +79,6 @@ const Home = () => {
       }
 
       try {
-        // 1. Carrega dados do perfil
         const responsePerfil = await fetch(`${API_URL}/perfil`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
@@ -63,7 +88,6 @@ const Home = () => {
           setNomeUsuario(dadosPerfil.nome || "...");
         }
 
-        // 2. Carrega os registros atualizados da nova rota do backend
         const responseRegistros = await fetch(`${API_URL}/meus-registros`, {
           method: "GET",
           headers: { "Authorization": `Bearer ${token}` }
@@ -74,7 +98,7 @@ const Home = () => {
           setRegistros(data);
           calcularEstatisticas(data);
         } else {
-          setErro("Não foi possível carregar os registros.");
+          setErro("Não foi possível carregar seus registros.");
         }
       } catch (error) {
         console.error("Erro de conexão:", error);
@@ -132,6 +156,8 @@ const Home = () => {
     return { backgroundColor: "#9E9E9E", color: "white", text: status || "Desconhecido" };
   };
 
+  const modoVisitanteAtivo = sessionStorage.getItem("modoVisitante") === "true";
+
   return (
     <div style={{ backgroundColor: "#F5F7F5", minHeight: "100vh", paddingBottom: "120px", fontFamily: "Arial, sans-serif" }}>
       
@@ -170,7 +196,7 @@ const Home = () => {
         </div>
 
         <h3 style={{ marginTop: "30px", marginBottom: "15px", color: "#1C3520", fontSize: "18px" }}>
-          Seus Registros
+          {modoVisitanteAtivo ? "Registros na Região" : "Seus Registros"}
         </h3>
 
         {carregando && (
@@ -193,6 +219,7 @@ const Home = () => {
             </style>
           </div>
         )}
+        
         {erro && <p style={{ color: "#110f0f", textAlign: "center", fontWeight: "bold" }}>{erro}</p>}
         
         {!carregando && !erro && registros.length === 0 && (
@@ -224,7 +251,6 @@ const Home = () => {
               >
                 <div>
                   <h4 style={{ margin: 0, color: "#1C3520", fontSize: "16px" }}>
-                    {/* Captura o nome de dentro do objeto de relacionamento da categoria */}
                     {registro.categoria?.nome || "Categoria não informada"}
                   </h4>
                   <p style={{ margin: "5px 0 0 0", color: "#666", fontSize: "12px" }}>

@@ -20,7 +20,7 @@ const Profile = () => {
   });
 
   const [modalEditAberto, setModalEditAberto] = useState(false);
-  const [modalSenhaAberto, setModalSenhaAberto] = useState(false);
+  const [modalInfoAberto, setModalInfoAberto] = useState(false);
 
   const [editNome, setEditNome] = useState("");
   const [editEmail, setEditEmail] = useState("");
@@ -121,7 +121,12 @@ const Profile = () => {
 
   const handleSalvarPerfil = async () => {
     if (!editNome.trim() || !editEmail.trim() || !editCidade.trim()) {
-      setStatusMsg({ texto: "Todos os campos são obrigatórios.", tipo: "erro" });
+      setStatusMsg({ texto: "Nome, e-mail e cidade são obrigatórios.", tipo: "erro" });
+      return;
+    }
+
+    if ((senhaAtual && !novaSenha) || (!senhaAtual && novaSenha)) {
+      setStatusMsg({ texto: "Para alterar a senha, preencha a senha atual e a nova senha.", tipo: "erro" });
       return;
     }
 
@@ -130,7 +135,8 @@ const Profile = () => {
     const token = sessionStorage.getItem("token") || localStorage.getItem("meuToken");
 
     try {
-      const resposta = await fetch(`${API_URL}/perfil/editar`, {
+      // 1. Atualizar Dados do Perfil
+      const respostaPerfil = await fetch(`${API_URL}/perfil/editar`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -143,66 +149,46 @@ const Profile = () => {
         })
       });
 
-      if (resposta.ok) {
-        setPerfil(prev => ({ 
-          ...prev, 
-          nome: editNome, 
-          email: editEmail, 
-          cidade_ranking: editCidade 
-        }));
-        setStatusMsg({ texto: "Perfil atualizado!", tipo: "sucesso" });
-        
-        setTimeout(() => {
-          setModalEditAberto(false);
-          setStatusMsg({ texto: "", tipo: "" });
-        }, 1500);
-      } else {
-        const dadosErro = await resposta.json();
-        setStatusMsg({ texto: dadosErro.detail || "Erro ao atualizar perfil.", tipo: "erro" });
+      if (!respostaPerfil.ok) {
+        const dadosErro = await respostaPerfil.json();
+        throw new Error(dadosErro.detail || "Erro ao atualizar dados do perfil.");
       }
-    // eslint-disable-next-line no-unused-vars
-    } catch (error) {
-      setStatusMsg({ texto: "Erro na conexão com o servidor.", tipo: "erro" });
-    } finally {
-      setEnviandoForm(false);
-    }
-  };
 
-  const handleMudarSenha = async () => {
-    if (!senhaAtual || !novaSenha) {
-      setStatusMsg({ texto: "Preencha todos os campos de senha.", tipo: "erro" });
-      return;
-    }
+      // 2. Se informou senhas, atualizar a senha também
+      if (senhaAtual && novaSenha) {
+        const respostaSenha = await fetch(`${API_URL}/perfil/senha`, {
+          method: "PUT",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ senha_atual: senhaAtual, nova_senha: novaSenha })
+        });
 
-    setEnviandoForm(true);
-    setStatusMsg({ texto: "", tipo: "" });
-    const token = sessionStorage.getItem("token") || localStorage.getItem("meuToken");
-
-    try {
-      const resposta = await fetch(`${API_URL}/perfil/senha`, {
-        method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ senha_atual: senhaAtual, nova_senha: novaSenha })
-      });
-
-      if (resposta.ok) {
-        setStatusMsg({ texto: "Senha alterada com sucesso!", tipo: "sucesso" });
-        setSenhaAtual("");
-        setNovaSenha("");
-        setTimeout(() => {
-          setModalSenhaAberto(false);
-          setStatusMsg({ texto: "", tipo: "" });
-        }, 1500);
-      } else {
-        const dadosErro = await resposta.json();
-        setStatusMsg({ texto: dadosErro.detail || "Erro ao alterar senha.", tipo: "erro" });
+        if (!respostaSenha.ok) {
+          const dadosErro = await respostaSenha.json();
+          throw new Error(dadosErro.detail || "Perfil atualizado, mas erro ao alterar a senha.");
+        }
       }
-    // eslint-disable-next-line no-unused-vars
+
+      setPerfil(prev => ({ 
+        ...prev, 
+        nome: editNome, 
+        email: editEmail, 
+        cidade_ranking: editCidade 
+      }));
+
+      setStatusMsg({ texto: "Perfil atualizado com sucesso!", tipo: "sucesso" });
+      setSenhaAtual("");
+      setNovaSenha("");
+      
+      setTimeout(() => {
+        setModalEditAberto(false);
+        setStatusMsg({ texto: "", tipo: "" });
+      }, 1500);
+
     } catch (error) {
-      setStatusMsg({ texto: "Erro na conexão com o servidor.", tipo: "erro" });
+      setStatusMsg({ texto: error.message || "Erro na conexão com o servidor.", tipo: "erro" });
     } finally {
       setEnviandoForm(false);
     }
@@ -213,14 +199,9 @@ const Profile = () => {
     setEditNome(perfil.nome);
     setEditEmail(perfil.email);
     setEditCidade(perfil.cidade_ranking);
-    setModalEditAberto(true);
-  };
-
-  const abrirModalSenha = () => {
-    setStatusMsg({ texto: "", tipo: "" });
     setSenhaAtual("");
     setNovaSenha("");
-    setModalSenhaAberto(true);
+    setModalEditAberto(true);
   };
 
   const fazerLogout = () => {
@@ -246,17 +227,20 @@ const Profile = () => {
     achievementsTitle: { margin: 0, fontSize: "16px", color: "#1C3520", fontWeight: "bold" },
     achievementCard: { backgroundColor: "#E7F0DC", borderRadius: "10px", padding: "15px", flex: 1, textAlign: "center", color: "#1C3520", fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "70px" },
     btnEdit: { width: "100%", padding: "15px", borderRadius: "10px", fontSize: "18px", backgroundColor: "#1C3520", color: "white", border: "none", cursor: "pointer" },
-    btnPass: { width: "100%", padding: "15px", borderRadius: "10px", fontSize: "18px", backgroundColor: "#E7F0DC", color: "#1C3520", border: "none", cursor: "pointer" },
+    btnInfo: { width: "100%", padding: "15px", borderRadius: "10px", fontSize: "16px", backgroundColor: "#E7F0DC", color: "#1C3520", border: "none", cursor: "pointer", fontWeight: "600" },
     btnLogout: { width: "100%", padding: "15px", borderRadius: "10px", fontSize: "18px", backgroundColor: "#FFF0F4", color: "#D8000C", border: "none", cursor: "pointer" },
     overlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000, padding: "20px" },
-    modal: { backgroundColor: "white", borderRadius: "16px", padding: "24px", width: "100%", maxWidth: "360px", display: "flex", flexDirection: "column", gap: "14px", boxSizing: "border-box" },
+    modal: { backgroundColor: "white", borderRadius: "16px", padding: "24px", width: "100%", maxWidth: "380px", maxHeight: "85vh", overflowY: "auto", display: "flex", flexDirection: "column", gap: "14px", boxSizing: "border-box" },
     modalTitle: { margin: "0 0 5px 0", fontSize: "20px", color: "#1C3520", fontWeight: "bold" },
+    sectionDivider: { borderTop: "1px solid #E5E7EB", margin: "10px 0 5px 0", paddingTop: "10px", fontWeight: "bold", fontSize: "13px", color: "#1C3520" },
     fieldGroup: { display: "flex", flexDirection: "column", gap: "4px" },
     fieldLabel: { fontSize: "12px", fontWeight: "bold", color: "#1C3520" },
-    input: { width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #ddd", fontSize: "16px", boxSizing: "border-box", outline: "none", color: "#333" },
+    input: { width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #ddd", fontSize: "15px", boxSizing: "border-box", outline: "none", color: "#333" },
     modalButtons: { display: "flex", gap: "10px", marginTop: "10px" },
     btnCancel: { flex: 1, padding: "12px", borderRadius: "8px", border: "1px solid #ddd", backgroundColor: "#f9f9f9", color: "#333", fontSize: "16px", fontWeight: "600", cursor: "pointer" },
-    btnSave: { flex: 1, padding: "12px", borderRadius: "8px", border: "none", backgroundColor: "#1C3520", color: "white", fontSize: "16px", fontWeight: "600", cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center" }
+    btnSave: { flex: 1, padding: "12px", borderRadius: "8px", border: "none", backgroundColor: "#1C3520", color: "white", fontSize: "16px", fontWeight: "600", cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center" },
+    infoBox: { fontSize: "14px", color: "#333", lineHeight: "1.5", display: "flex", flexDirection: "column", gap: "12px" },
+    infoItem: { backgroundColor: "#F4F6F3", padding: "12px", borderRadius: "8px", borderLeft: "4px solid #7FB04B" }
   };
 
   return (
@@ -325,12 +309,13 @@ const Profile = () => {
         </div>
 
         <button style={styles.btnEdit} onClick={abrirModalEdit}>Editar perfil</button>
-        <button style={styles.btnPass} onClick={abrirModalSenha}>Mudar senha</button>
+        <button style={styles.btnInfo} onClick={() => setModalInfoAberto(true)}>Para onde vai seu registro?</button>
         <button style={styles.btnLogout} onClick={fazerLogout}>Sair</button>
       </div>
       
       <Navbar isAdmin={false} />
 
+      {/* Modal de Editar Perfil (Com opção de Alterar Senha inclusa) */}
       {modalEditAberto && (
         <div style={styles.overlay} onClick={() => !enviandoForm && setModalEditAberto(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -344,7 +329,7 @@ const Profile = () => {
                 value={editNome}
                 onChange={(e) => setEditNome(e.target.value)}
                 disabled={enviandoForm}
-                placeholder="Carregando nome..."
+                placeholder="Seu nome"
               />
             </div>
 
@@ -356,7 +341,7 @@ const Profile = () => {
                 value={editEmail}
                 onChange={(e) => setEditEmail(e.target.value)}
                 disabled={enviandoForm}
-                placeholder="Carregando e-mail..."
+                placeholder="Seu e-mail"
               />
             </div>
 
@@ -368,7 +353,33 @@ const Profile = () => {
                 value={editCidade}
                 onChange={(e) => setEditCidade(e.target.value)}
                 disabled={enviandoForm}
-                placeholder="Carregando cidade..."
+                placeholder="Sua cidade"
+              />
+            </div>
+
+            <div style={styles.sectionDivider}>Alterar Senha (opcional)</div>
+
+            <div style={styles.fieldGroup}>
+              <label style={styles.fieldLabel}>Senha Atual</label>
+              <input 
+                type="password" 
+                style={styles.input} 
+                value={senhaAtual}
+                onChange={(e) => setSenhaAtual(e.target.value)}
+                disabled={enviandoForm}
+                placeholder="Preencha apenas se quiser alterar"
+              />
+            </div>
+
+            <div style={styles.fieldGroup}>
+              <label style={styles.fieldLabel}>Nova Senha</label>
+              <input 
+                type="password" 
+                style={styles.input} 
+                value={novaSenha}
+                onChange={(e) => setNovaSenha(e.target.value)}
+                disabled={enviandoForm}
+                placeholder="Nova senha"
               />
             </div>
 
@@ -395,48 +406,41 @@ const Profile = () => {
         </div>
       )}
 
-      {modalSenhaAberto && (
-        <div style={styles.overlay} onClick={() => !enviandoForm && setModalSenhaAberto(false)}>
+      {/* Modal Informativo: Para Onde Vai Seu Registro */}
+      {modalInfoAberto && (
+        <div style={styles.overlay} onClick={() => setModalInfoAberto(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 style={styles.modalTitle}>Alterar Senha</h3>
+            <h3 style={styles.modalTitle}>Para Onde Vai Seu Registro?</h3>
             
-            <input 
-              type="password" 
-              style={styles.input} 
-              placeholder="Senha atual"
-              value={senhaAtual}
-              onChange={(e) => setSenhaAtual(e.target.value)}
-              disabled={enviandoForm}
-            />
+            <div style={styles.infoBox}>
+              <div style={styles.infoItem}>
+                <strong>🏢 Órgãos de Fiscalização Ambiental:</strong>
+                <p style={{ margin: "4px 0 0 0" }}>
+                  Os registros e denúncias são consolidados e direcionados aos órgãos públicos competentes responsáveis pela fiscalização da sua região.
+                </p>
+              </div>
 
-            <input 
-              type="password" 
-              style={styles.input} 
-              placeholder="Nova senha"
-              value={novaSenha}
-              onChange={(e) => setNovaSenha(e.target.value)}
-              disabled={enviandoForm}
-            />
+              <div style={styles.infoItem}>
+                <strong>📊 Gestão e Monitoramento Urbano:</strong>
+                <p style={{ margin: "4px 0 0 0" }}>
+                  As informações alimentam o sistema de dados ambientais, auxiliando gestores públicos no planejamento de intervenções e tomada de decisão.
+                </p>
+              </div>
 
-            {statusMsg.texto && (
-              <span style={{ 
-                fontSize: "14px", 
-                fontWeight: "600", 
-                textAlign: "center",
-                color: statusMsg.tipo === "sucesso" ? "#2D4627" : "#D8000C" 
-              }}>
-                {statusMsg.texto}
-              </span>
-            )}
-
-            <div style={styles.modalButtons}>
-              <button style={styles.btnCancel} onClick={() => setModalSenhaAberto(false)} disabled={enviandoForm}>
-                Cancelar
-              </button>
-              <button style={styles.btnSave} onClick={handleMudarSenha} disabled={enviandoForm}>
-                {enviandoForm ? <div className="modal-spinner"></div> : "Alterar"}
-              </button>
+              <div style={styles.infoItem}>
+                <strong>🌱 Incentivo a Práticas Sustentáveis:</strong>
+                <p style={{ margin: "4px 0 0 0" }}>
+                  Cada registro contribui para mapear ocorrências, engajar a comunidade local e promover a conscientização e sustentabilidade.
+                </p>
+              </div>
             </div>
+
+            <button 
+              style={{ ...styles.btnEdit, marginTop: "10px" }} 
+              onClick={() => setModalInfoAberto(false)}
+            >
+              Entendi
+            </button>
           </div>
         </div>
       )}
