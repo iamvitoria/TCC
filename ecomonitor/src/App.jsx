@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
-
+import InstallPWA from "./components/InstallPWA";
 import Login from "./pages/Login"; 
 import Register from "./pages/Register";
 import Home from "./pages/Home"; 
@@ -36,6 +36,9 @@ function App() {
         <Route path="/admin/denuncia/:id" element={ <ProtectedRoute adminOnly={true}> <AdminReportDetails /> </ProtectedRoute>} />
         <Route path="/admin-perfil" element={ <ProtectedRoute adminOnly={true}> <AdminPerfil /> </ProtectedRoute>} />
       </Routes>
+
+      <InstallPWA />
+      
     </BrowserRouter>
   );
 }
