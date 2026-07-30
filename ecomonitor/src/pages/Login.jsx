@@ -84,7 +84,7 @@ const Login = () => {
   };
 
   const containerStyle = {
-    backgroundColor: "#1C3520", 
+    backgroundColor: "#1C3520",
     minHeight: "100vh",
     display: "flex",
     flexDirection: "column",
@@ -92,12 +92,13 @@ const Login = () => {
     justifyContent: "center",
     padding: "30px",
     boxSizing: "border-box",
-    fontFamily: "Arial, sans-serif"
+    fontFamily: "Arial, sans-serif",
+    position: "relative"
   };
 
   const formWrapperStyle = {
     width: "100%",
-    maxWidth: "400px", 
+    maxWidth: "400px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center"
@@ -113,13 +114,7 @@ const Login = () => {
     color: "white",
     fontSize: "26px",
     fontWeight: "bold",
-    margin: "0 0 10px 0"
-  };
-
-  const subtitleStyle = {
-    color: "#5FA362", 
-    fontSize: "15px",
-    marginBottom: "30px"
+    marginBottom: "40px"
   };
 
   const inputStyle = {
@@ -155,35 +150,34 @@ const Login = () => {
     boxSizing: "border-box"
   };
 
-  const visitanteButtonStyle = {
-    width: "100%",
-    backgroundColor: "transparent",
+  const registerLinkStyle = {
     color: "#5FA362",
-    border: "2px solid #5FA362",
-    borderRadius: "12px",
-    padding: "18px",
-    fontSize: "18px",
-    fontWeight: "bold",
-    marginTop: "12px",
+    fontSize: "15px",
     cursor: "pointer",
-    boxSizing: "border-box"
+    textAlign: "center",
+    width: "100%",
+    marginTop: "5px",
+    marginBottom: "25px"
   };
 
-  const linkStyle = {
-    color: "#5FA362", 
-    fontSize: "14px",
-    marginTop: "25px",
-    cursor: "pointer",
-    fontWeight: "bold"
+  const visitorLinkStyle = {
+    position: "absolute",
+    bottom: "30px",
+    left: 0,
+    right: 0,
+    textAlign: "center",
+    color: "#5FA362",
+    fontSize: "15px",
+    cursor: "pointer"
   };
 
   return (
     <div style={containerStyle}>
+      <div style={{ width: "100%" }}></div>
       <div style={formWrapperStyle}>
         <img src={logo} alt="EcoMonitor Logo" style={logoStyle} />
 
         <h1 style={titleStyle}>Bem-Vindo!</h1>
-        <p style={subtitleStyle}>Faça login para entrar</p>
 
         <input 
           type="email" 
@@ -222,6 +216,10 @@ const Login = () => {
           </div>
         )}
 
+        <p style={registerLinkStyle} onClick={() => navigate("/register")}>
+          Não tem uma conta? Cadastre-se
+        </p>
+
         <button 
           onClick={fazerLogin} 
           disabled={carregando}
@@ -246,17 +244,10 @@ const Login = () => {
           )}
         </button>
 
-        <button
-          onClick={entrarComoVisitante}
-          style={visitanteButtonStyle}
-          disabled={carregando}
-        >
+        <p style={visitorLinkStyle} onClick={entrarComoVisitante}>
           Entrar como visitante
-        </button>
-
-        <p style={linkStyle} onClick={() => navigate("/register")}>
-          Não tem uma conta? Cadastre-se
         </p>
+
       </div>
     </div>
   );
