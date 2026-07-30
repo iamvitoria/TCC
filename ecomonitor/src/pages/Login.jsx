@@ -156,8 +156,7 @@ const Login = () => {
     cursor: "pointer",
     textAlign: "center",
     width: "100%",
-    marginTop: "5px",
-    marginBottom: "25px"
+    marginTop: "25px",
   };
 
   const visitorLinkStyle = {
@@ -216,10 +215,6 @@ const Login = () => {
           </div>
         )}
 
-        <p style={registerLinkStyle} onClick={() => navigate("/register")}>
-          Não tem uma conta? Cadastre-se
-        </p>
-
         <button 
           onClick={fazerLogin} 
           disabled={carregando}
@@ -243,6 +238,10 @@ const Login = () => {
             "Entrar"
           )}
         </button>
+
+        <p style={registerLinkStyle} onClick={() => navigate("/register")}>
+          Não tem uma conta? Cadastre-se
+        </p>
 
         <p style={visitorLinkStyle} onClick={entrarComoVisitante}>
           Entrar como visitante
