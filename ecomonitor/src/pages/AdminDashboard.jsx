@@ -4,7 +4,7 @@ import PageLayout from "../components/PageLayout/PageLayout";
 import API_URL from "../config";
 
 export default function AdminDashboard() {
-  const [denuncias, setDenuncias] = useState([]);
+  const [registros, setRegistros] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [termoBusca, setTermoBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('Todas');
@@ -14,13 +14,13 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    buscarDenuncias();
+    buscarRegistros();
   }, []);
 
-  const buscarDenuncias = async () => {
+  const buscarRegistros = async () => {
     setCarregando(true);
     try {
-      const resposta = await fetch(`${API_URL}/denuncias?t=${new Date().getTime()}`, {
+      const resposta = await fetch(`${API_URL}/registros?t=${new Date().getTime()}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -30,7 +30,7 @@ export default function AdminDashboard() {
       
       if (resposta.ok) {
         const dados = await resposta.json();
-        setDenuncias(dados);
+        setRegistros(dados);
       } else {
         console.error("Servidor respondeu com erro:", resposta.status);
       }
@@ -43,7 +43,7 @@ export default function AdminDashboard() {
 
   const regioesDisponiveis = [
     ...new Set(
-      denuncias
+      registros
         .map(d => d?.cidade || d?.regiao)
         .filter(Boolean)
         .map(r => r.trim())
@@ -51,7 +51,7 @@ export default function AdminDashboard() {
   ].sort((a, b) => a.localeCompare(b));
 
   const filtradasEOrdenadas = () => {
-    const filtradas = denuncias.filter(d => {
+    const filtradas = registros.filter(d => {
       if (!d) return false;
 
       const buscaLower = termoBusca.trim().toLowerCase();
@@ -63,9 +63,13 @@ export default function AdminDashboard() {
 
       const matchesStatus = filtroStatus === 'Todas' || d.status === filtroStatus;
 
+      const nomeCategoriaDaDenuncia = typeof d.categoria === 'object' && d.categoria !== null 
+        ? d.categoria.nome 
+        : (d.categoria || '');
+
       const matchesCategoria = 
         filtroCategoria === 'Todas' || 
-        (d.categoria && d.categoria.trim().toLowerCase() === filtroCategoria.trim().toLowerCase());
+        (nomeCategoriaDaDenuncia.trim().toLowerCase() === filtroCategoria.trim().toLowerCase());
 
       const regiaoItem = (d.cidade || d.regiao || '').trim().toLowerCase();
       const matchesRegiao = 
@@ -296,13 +300,17 @@ export default function AdminDashboard() {
             denunciasFiltradas.map((denuncia) => (
               <div
                 key={denuncia.id}
-                onClick={() => navigate(`/admin/denuncia/${denuncia.id}`, { state: { denunciaSelecionada: denuncia } })}
+                onClick={() => navigate(`/admin/registros/${denuncia.id}`, { state: { denunciaSelecionada: denuncia } })}
                 style={cardStyle}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                   <span style={idStyle}>{denuncia.id}</span>
                   <div>
-                    <h4 style={titleStyle}>{denuncia.categoria || "Sem Categoria"}</h4>
+                    <h4 style={titleStyle}>
+                      {typeof denuncia.categoria === 'object' && denuncia.categoria !== null 
+                        ? denuncia.categoria.nome 
+                        : (denuncia.categoria || "Sem Categoria")}
+                    </h4>
                     <p style={dateStyle}>
                       {denuncia.data_criacao 
                         ? new Date(denuncia.data_criacao).toLocaleDateString('pt-BR') 

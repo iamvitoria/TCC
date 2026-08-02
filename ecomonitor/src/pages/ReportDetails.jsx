@@ -611,7 +611,7 @@ const ReportDetails = () => {
                   </div>
                 ))
             ) : (
-              <p style={{ fontSize: "13px", color: "#666" }}>Aguardando análise da prefeitura.</p>
+              <p style={{ fontSize: "13px", color: "#666" }}>Nenhuma atualização registrada ainda.</p>
             )}
           </div>
         </section>

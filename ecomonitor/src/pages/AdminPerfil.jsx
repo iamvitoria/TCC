@@ -65,6 +65,11 @@ export default function AdminPerfil() {
             pendentes: dados.estatisticas?.pendentes ?? 0
           }
         });
+      } else if (resposta.status === 401) {
+        console.warn("Sessão expirada. Redirecionando para o login...");
+        localStorage.clear();
+        sessionStorage.clear();
+        navigate("/");
       }
     } catch (erro) {
       console.error("Erro ao buscar perfil do admin:", erro);

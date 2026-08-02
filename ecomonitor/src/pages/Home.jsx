@@ -8,7 +8,6 @@ const Home = () => {
 
   const [nomeUsuario, setNomeUsuario] = useState("..."); 
   const [localizacao, setLocalizacao] = useState("Buscando localização...");
-  
   const [registros, setRegistros] = useState([]); 
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
@@ -59,6 +58,7 @@ const Home = () => {
           if (responseRegistros.ok) {
             const data = await responseRegistros.json();
             setRegistros(data);
+            console.log("DADOS DO BACKEND:", data);
             calcularEstatisticas(data);
           } else {
             setErro("Não foi possível carregar os registros públicos.");
@@ -196,7 +196,7 @@ const Home = () => {
         </div>
 
         <h3 style={{ marginTop: "30px", marginBottom: "15px", color: "#1C3520", fontSize: "18px" }}>
-          {modoVisitanteAtivo ? "Registros na Região" : "Seus Registros"}
+          {modoVisitanteAtivo ? "Registros Anônimos" : "Seus Registros"}
         </h3>
 
         {carregando && (
@@ -231,7 +231,9 @@ const Home = () => {
         <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
           {!carregando && registros.map((registro) => {
             const statusInfo = getStatusStyle(registro.status);
-            const dataReal = registro.data_criacao || registro.created_at;
+            const dataReal = registro.data_criacao || registro.created_at || registro.data;
+            
+            const tituloCard = registro.categoria?.nome || "Categoria não informada";
 
             return (
               <div 
@@ -249,9 +251,17 @@ const Home = () => {
                   cursor: "pointer"
                 }}
               >
-                <div>
-                  <h4 style={{ margin: 0, color: "#1C3520", fontSize: "16px" }}>
-                    {registro.categoria?.nome || "Categoria não informada"}
+                <div style={{ overflow: "hidden", paddingRight: "10px" }}>
+                  <h4 style={{ 
+                    margin: 0, 
+                    color: "#1C3520", 
+                    fontSize: "16px",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    maxWidth: "200px" 
+                  }}>
+                    {tituloCard}
                   </h4>
                   <p style={{ margin: "5px 0 0 0", color: "#666", fontSize: "12px" }}>
                     {formatarData(dataReal)}

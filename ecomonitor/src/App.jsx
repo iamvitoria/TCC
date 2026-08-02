@@ -33,7 +33,7 @@ function App() {
         <Route path="/denuncia" element={ <ProtectedRoute> <Report /> </ProtectedRoute>} />
         <Route path="/report-details/:id" element={ <ProtectedRoute> <ReportDetails /> </ProtectedRoute>} />
         <Route path="/admin-dashboard" element={ <ProtectedRoute adminOnly={true}> <AdminDashboard /> </ProtectedRoute>} />
-        <Route path="/admin/denuncia/:id" element={ <ProtectedRoute adminOnly={true}> <AdminReportDetails /> </ProtectedRoute>} />
+        <Route path="/admin/registros/:id" element={ <ProtectedRoute adminOnly={true}> <AdminReportDetails /> </ProtectedRoute>} />
         <Route path="/admin-perfil" element={ <ProtectedRoute adminOnly={true}> <AdminPerfil /> </ProtectedRoute>} />
       </Routes>
 

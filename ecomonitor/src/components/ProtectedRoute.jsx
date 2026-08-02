@@ -4,8 +4,9 @@ import { Navigate } from "react-router-dom";
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const token = sessionStorage.getItem("token");
   const perfil = sessionStorage.getItem("perfilUsuario");
+  const modoVisitante = sessionStorage.getItem("modoVisitante") === "true";
 
-  if (!token) {
+  if (!token && !modoVisitante) {
     return <Navigate to="/login" replace />;
   }
 

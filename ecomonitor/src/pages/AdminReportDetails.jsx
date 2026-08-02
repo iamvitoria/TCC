@@ -23,7 +23,7 @@ export default function AdminReportDetails() {
   useEffect(() => {
     const buscarDetalhesDenuncia = async () => {
       try {
-        const resposta = await fetch(`${API_URL}/denuncias/${id}`);
+        const resposta = await fetch(`${API_URL}/registros/${id}`);
         if (resposta.ok) {
           const dados = await resposta.json();
           setDenuncia(dados);
@@ -69,7 +69,7 @@ export default function AdminReportDetails() {
 
     setAtualizando(true);
     try {
-      const resposta = await fetch(`${API_URL}/denuncias/${id}/status?novo_status=${novoStatus}`, {        method: 'PUT',
+      const resposta = await fetch(`${API_URL}/registros/${id}/status?novo_status=${novoStatus}`, {        method: 'PUT',
       });
 
       if (resposta.ok) {
@@ -270,7 +270,11 @@ export default function AdminReportDetails() {
               <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "15px", marginBottom: "15px" }}>
                 <div>
                   <span style={labelStyle}>Categoria</span>
-                  <span style={valueStyle}>{denuncia.categoria}</span>
+                  <span style={valueStyle}>
+                    {typeof denuncia.categoria === 'object' && denuncia.categoria !== null 
+                      ? denuncia.categoria.nome 
+                      : (denuncia.categoria || 'Não informada')}
+                  </span>
                 </div>
                 <div>
                   <span style={labelStyle}>Data</span>
@@ -313,7 +317,9 @@ export default function AdminReportDetails() {
               <h3 style={sectionTitleStyle}>Endereço</h3>
               <div style={{ ...greenCardStyle, height: "100px", padding: "10px", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", boxSizing: "border-box", overflow: "hidden" }}>
                 <span style={{ fontSize: "12px", color: "#1C3520", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                  {endereco}
+                  {typeof endereco === 'object' && endereco !== null 
+                    ? `${endereco.logradouro || 'Rua não informada'}, ${endereco.numero || 'S/N'} - ${endereco.bairro || ''}, ${endereco.cidade || ''}`
+                    : endereco}
                 </span>
               </div>
             </div>
@@ -327,8 +333,8 @@ export default function AdminReportDetails() {
                 <span style={valueStyle}>{denuncia.usuario?.nome || 'Não identificado'}</span>
               </div>
               <div>
-                <span style={labelStyle}>Região</span>
-                <span style={valueStyle}>{denuncia.usuario?.regiao || 'Santa Maria'}</span>
+                <span style={labelStyle}>Cidade</span>
+                <span style={valueStyle}>{denuncia.endereco?.cidade || 'Não informada'}</span>
               </div>
               <div>
                 <span style={labelStyle}>Contribuições</span>
