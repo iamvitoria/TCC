@@ -154,7 +154,9 @@ const Report = () => {
     }
 
     const token = sessionStorage.getItem("token");
-    if (!token) {
+    const modoVisitante = sessionStorage.getItem("modoVisitante") === "true";
+
+    if (!token && !modoVisitante) {
       setMensagem({ texto: "Você precisa estar logado!", tipo: "erro" });
       return;
     }
@@ -204,13 +206,26 @@ const Report = () => {
       formData.append("numero", numeroTexto);
       formData.append("bairro", bairroTexto);
       formData.append("cidade", cidadeTexto);
+      
+      // Enviamos as flags para o backend saber que é anônimo
+      if (modoVisitante) {
+        formData.append("anonimo", "true");
+        formData.append("is_anonimo", "true");
+      }
+
       if (foto) {
           formData.append("foto", foto);
       }
 
+      // Prepara os cabeçalhos. Se tiver token, envia. Se for visitante, envia sem token.
+      const headers = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_URL}/registros`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: headers,
         body: formData
       });
 

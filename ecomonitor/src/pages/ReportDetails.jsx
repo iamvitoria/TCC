@@ -108,8 +108,26 @@ const ReportDetails = () => {
 
   useEffect(() => {
     if (currentDenuncia) {
-      setCategoria(currentDenuncia.categoria_id);
-      
+      let catId = "";
+
+      if (typeof currentDenuncia.categoria === 'object' && currentDenuncia.categoria !== null) {
+        catId = currentDenuncia.categoria.id;
+      } 
+      else if (currentDenuncia.categoria_id) {
+        catId = currentDenuncia.categoria_id;
+      } 
+      else if (categorias.length > 0) {
+        const nomeCat = typeof currentDenuncia.categoria === 'string' 
+          ? currentDenuncia.categoria 
+          : currentDenuncia.categoria_nome;
+          
+        const catEncontrada = categorias.find(c => String(c.nome) === String(nomeCat));
+        if (catEncontrada) {
+          catId = catEncontrada.id;
+        }
+      }
+
+      setCategoria(catId);
       setDescricao(currentDenuncia.descricao || currentDenuncia.relato || "");
       setPreview(currentDenuncia.foto_url);
 
@@ -135,7 +153,7 @@ const ReportDetails = () => {
         setLogradouro(endObj);
       }
     }
-  }, [currentDenuncia]);
+  }, [currentDenuncia, categorias]); 
 
   useEffect(() => {
     const buscarHistorico = async () => {
@@ -196,16 +214,30 @@ const ReportDetails = () => {
 
   const handleSalvarEdicao = async () => {
     setMensagem({ texto: "", tipo: "" });
-    const token = sessionStorage.getItem("token");
 
-    if (!token) {
-      setMensagem({ texto: "Você precisa estar logado!", tipo: "erro" });
+    let idCategoriaFinal = categoria;
+
+    if (!idCategoriaFinal && categorias.length > 0) {
+      const nomeCat = typeof currentDenuncia.categoria === 'string' 
+        ? currentDenuncia.categoria 
+        : currentDenuncia.categoria_nome;
+        
+      const catEncontrada = categorias.find(c => c.nome === nomeCat);
+      if (catEncontrada) {
+        idCategoriaFinal = catEncontrada.id;
+      }
+    }
+
+    if (!idCategoriaFinal) {
+      setMensagem({ texto: "Por favor, selecione uma categoria na lista antes de salvar.", tipo: "erro" });
       return;
     }
 
+    const token = sessionStorage.getItem("token");
     setSalvando(true);
+    
     const formData = new FormData();
-    formData.append("categoria_id", categoria); 
+    formData.append("categoria_id", idCategoriaFinal); 
     formData.append("descricao", descricao);
     formData.append("relato", descricao);
     formData.append("logradouro", logradouro);
@@ -220,18 +252,23 @@ const ReportDetails = () => {
       formData.append("foto", foto);
     }
 
+    const headers = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     try {
       const endpoint = `${API_URL}/registros/${currentDenuncia.id}`;
       const response = await fetch(endpoint, {
         method: "PUT",
-        headers: { "Authorization": `Bearer ${token}` },
+        headers: headers, 
         body: formData,
       });
 
       if (response.ok) {        
         setCurrentDenuncia(prev => ({
             ...prev,
-            categoria_id: Number(categoria),
+            categoria_id: Number(idCategoriaFinal),
             descricao,
             latitude,
             longitude,
@@ -245,16 +282,24 @@ const ReportDetails = () => {
             foto_url: foto ? preview : (prev.foto_url || prev.foto)
         }));
 
-        setMensagem({ texto: "Registro updated com sucesso!", tipo: "sucesso" });
+        setMensagem({ texto: "Registro atualizado com sucesso!", tipo: "sucesso" });
         setTimeout(() => {
           setEditando(false);
           setMensagem({ texto: "", tipo: "" });
         }, 1500);
       } else {
         const erroData = await response.json();
-        const msgErro = Array.isArray(erroData.detail) 
-            ? "Erro de validação: Verifique os dados enviados." 
-            : (erroData.detail || "Erro ao atualizar o registro.");
+        
+        console.error("ERRO 422 DETALHADO DO FASTAPI:", erroData.detail);
+        
+        let msgErro = "Erro ao atualizar o registro.";
+        if (Array.isArray(erroData.detail) && erroData.detail.length > 0) {
+            const campoComErro = erroData.detail[0].loc.join(" -> ");
+            const motivoErro = erroData.detail[0].msg;
+            msgErro = `Erro no campo '${campoComErro}': ${motivoErro}`;
+        } else if (erroData.detail) {
+            msgErro = erroData.detail;
+        }
             
         setMensagem({ texto: msgErro, tipo: "erro" });
       }
@@ -617,9 +662,11 @@ const ReportDetails = () => {
         </section>
 
         {!editando ? (
-          <button style={styles.primaryEditBtn} onClick={() => setEditando(true)}>
-            Editar registro
-          </button>
+          (currentDenuncia.status?.toLowerCase() === 'em análise' || currentDenuncia.status?.toLowerCase() === 'pendente') && (
+            <button style={styles.primaryEditBtn} onClick={() => setEditando(true)}>
+              Editar registro
+            </button>
+          )
         ) : (
           <>
             {mensagem.texto && (

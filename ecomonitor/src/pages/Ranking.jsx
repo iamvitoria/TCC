@@ -10,23 +10,35 @@ const Ranking = () => {
   const [cidadeUser, setCidadeUser] = useState("..."); 
 
   useEffect(() => {
-    const buscarRanking = async () => {
+    const buscarRanking = async (cidadeLocal = "") => {
       setCarregando(true);
       try {
         const token = sessionStorage.getItem("token"); 
-        const response = await fetch(`${API_URL}/ranking`, {
+        
+        let url = `${API_URL}/ranking`;
+        if (cidadeLocal) {
+            url += `?cidade=${encodeURIComponent(cidadeLocal)}`;
+        }
+
+        const headers = {
+          "Content-Type": "application/json"
+        };
+        
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(url, {
           method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
+          headers: headers 
         });
 
         if (response.ok) {
           const data = await response.json();
           setRankingLocal(data.local || []);
           setRankingGlobal(data.global || []);
-          setCidadeUser(data.cidade_usuario || "sua cidade");
+          
+          setCidadeUser(data.cidade_usuario || cidadeLocal || "sua cidade");
         }
       } catch (error) {
         console.error("Erro ao procurar ranking:", error);
@@ -34,8 +46,35 @@ const Ranking = () => {
         setCarregando(false);
       }
     };
-    
-    buscarRanking();
+
+    const descobrirCidade = async (lat, lon) => {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+        const data = await res.json();
+        return data.address.city || data.address.town || data.address.village || data.address.municipality || "";
+      } catch (error) {
+        console.error("Erro ao descobrir cidade pelo GPS:", error);
+        return "";
+      }
+    };
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          const nomeCidade = await descobrirCidade(latitude, longitude);
+          buscarRanking(nomeCidade);
+        },
+        // eslint-disable-next-line no-unused-vars
+        (erro) => {
+          console.warn("GPS bloqueado ou indisponível, buscando ranking padrão.");
+          buscarRanking(); 
+        },
+        { enableHighAccuracy: true }
+      );
+    } else {
+      buscarRanking();
+    }
   }, []);
 
   const currentData = activeTab === "global" ? rankingGlobal : rankingLocal;

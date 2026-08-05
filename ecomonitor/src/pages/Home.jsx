@@ -56,10 +56,11 @@ const Home = () => {
           });
 
           if (responseRegistros.ok) {
-            const data = await responseRegistros.json();
-            setRegistros(data);
-            console.log("DADOS DO BACKEND:", data);
-            calcularEstatisticas(data);
+            const data = await responseRegistros.json();            
+            const registrosAnonimos = data.filter(registro => registro.usuario_nome === null);         
+            setRegistros(registrosAnonimos);
+            console.log("DADOS DO BACKEND (ANÔNIMOS):", registrosAnonimos);
+            calcularEstatisticas(registrosAnonimos);
           } else {
             setErro("Não foi possível carregar os registros públicos.");
           }
@@ -224,7 +225,7 @@ const Home = () => {
         
         {!carregando && !erro && registros.length === 0 && (
           <div style={{ textAlign: "center", color: "#2D4627", marginTop: "20px" }}>
-            <p>Nenhum registro relatado.</p>
+            <p>Nenhum registro anônimo relatado.</p>
           </div>
         )}
 

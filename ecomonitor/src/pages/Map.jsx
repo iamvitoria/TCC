@@ -180,7 +180,11 @@ const Map = () => {
             <div style={styles.cardsContainer}>
               {denunciasProximas.map((d, index) => (
                 <div key={d.id || index} style={styles.card}>
-                  <h4 style={{ margin: 0, color: "#1C3520", fontSize: "14px" }}>{d.categoria || "Denúncia"}</h4>
+                  
+                  <h4 style={{ margin: 0, color: "#1C3520", fontSize: "14px" }}>
+                    {typeof d.categoria === 'object' && d.categoria !== null ? d.categoria.nome : (d.categoria || "Denúncia")}
+                  </h4>
+
                   <p style={{ margin: 0, color: "#666", fontSize: "12px" }}>{d.distancia.toFixed(1).replace(".", ",")} km</p>
                 </div>
               ))}
