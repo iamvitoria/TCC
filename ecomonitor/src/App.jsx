@@ -25,11 +25,12 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
+        <Route path="/perfil" element={<Profile />} />
+        <Route path="/ranking" element={<Ranking />} />
+
         <Route path="/home" element={ <ProtectedRoute> <Home /> </ProtectedRoute>} /> 
-        <Route path="/perfil" element={ <ProtectedRoute> <Profile /> </ProtectedRoute>} />
         <Route path="/mapa" element={ <ProtectedRoute> <Map /> </ProtectedRoute>} />
         <Route path="/conquistas" element={ <ProtectedRoute> <Achievements /> </ProtectedRoute>} />
-        <Route path="/ranking" element={ <ProtectedRoute> <Ranking /> </ProtectedRoute>} />
         <Route path="/denuncia" element={ <ProtectedRoute> <Report /> </ProtectedRoute>} />
         <Route path="/report-details/:id" element={ <ProtectedRoute> <ReportDetails /> </ProtectedRoute>} />
         <Route path="/admin-dashboard" element={ <ProtectedRoute adminOnly={true}> <AdminDashboard /> </ProtectedRoute>} />
